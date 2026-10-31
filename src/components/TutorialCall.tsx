@@ -1,0 +1,213 @@
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronUp, PhoneCall, PhoneOff, Skull } from "lucide-react";
+import { cn } from "../utils/cn";
+import { useT } from "../i18n";
+import { CALLER, useTut } from "../game/tutorial";
+
+/* ------------------------------------------------------------------
+   layer scale — the call always wins:
+     90  CRT overlay        94  black market      95  confirm dialog
+     96  breach / vault     97  vault reader
+    110  call window       112  incoming ring
+   ------------------------------------------------------------------ */
+const Z_CALL = 110;
+const Z_RING = 112;
+
+/* ------------------------------------------------------------------ */
+/* typewriter: reveals the line character by character, click to skip  */
+/* ------------------------------------------------------------------ */
+
+function Typed({ text, onDone }: { text: string; onDone: () => void }) {
+  const [shown, setShown] = useState(0);
+  const done = shown >= text.length;
+  const doneRef = useRef(false);
+
+  useEffect(() => {
+    setShown(0);
+    doneRef.current = false;
+  }, [text]);
+
+  useEffect(() => {
+    if (done) {
+      if (!doneRef.current) { doneRef.current = true; onDone(); }
+      return;
+    }
+    const h = setTimeout(() => setShown((n) => n + 1), 18);
+    return () => clearTimeout(h);
+  }, [shown, done, text, onDone]);
+
+  return (
+    <span>
+      {text.slice(0, shown)}
+      {!done && <span className="ml-[1px] inline-block h-[10px] w-[5px] translate-y-[1px] animate-blink bg-phosdim" />}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+function Portrait({ size = 34 }: { size?: number }) {
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center border border-amberdim bg-amber/10"
+      style={{ width: size, height: size }}
+    >
+      <Skull size={size * 0.56} className="text-amber" />
+    </span>
+  );
+}
+
+export default function TutorialCall() {
+  const { t, lang } = useT();
+  const { phase, step, answer, next, choose, end } = useTut();
+  const [typed, setTyped] = useState(false);
+  const [skip, setSkip] = useState(false);
+  const [folded, setFolded] = useState(false);
+
+  useEffect(() => {
+    setTyped(false);
+    setSkip(false);
+    setFolded(false); // a new line always unfolds the panel
+  }, [step?.id]);
+
+  /* ---------------- incoming call ---------------- */
+  if (phase === "ringing") {
+    return (
+      <div
+        className="fixed inset-0 flex items-center justify-center bg-ink/85 p-4 backdrop-blur-[2px]"
+        style={{ zIndex: Z_RING }}
+      >
+        <div className="anim-call-glow anim-msgin w-[min(320px,94%)] border border-amberdim bg-panel">
+          <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+            <span className="h-[6px] w-[6px] animate-softpulse bg-amber" />
+            <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-amber">
+              {t("tut.incoming")}
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center px-4 py-5">
+            <span className="anim-ring-shake text-amber">
+              <PhoneCall size={34} strokeWidth={1.6} />
+            </span>
+            <div className="mt-3 flex items-center gap-2">
+              <Portrait size={30} />
+              <span className="pixel text-[24px] leading-none text-phosbrite">{CALLER.nick}</span>
+            </div>
+            <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-faint">
+              {t("tut.unlisted")}
+            </div>
+
+            <button
+              onClick={answer}
+              className="mt-4 flex w-full items-center justify-center gap-2 border border-phosdim bg-phos/15 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink"
+            >
+              <PhoneCall size={12} /> {t("tut.answer")}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------- call in progress ---------------- */
+  if (phase !== "talking" || !step) return null;
+
+  const line = lang === "ru" ? step.ru : step.en;
+  const waiting = !!step.waitFor;
+
+  return (
+    <div
+      className="pointer-events-none fixed inset-x-0 bottom-[76px] flex justify-center px-2"
+      style={{ zIndex: Z_CALL }}
+    >
+      <div
+        className="anim-msgin pointer-events-auto w-[min(620px,100%)] border-2 border-amberdim bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(207,160,75,0.18)]"
+        onClick={() => !folded && setSkip(true)}
+      >
+        {/* caller strip */}
+        <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
+          <span className="h-[5px] w-[5px] animate-softpulse bg-amber" />
+          <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-amber">
+            {CALLER.nick}
+          </span>
+          <span className="text-[7.5px] uppercase tracking-[0.18em] text-faint">
+            · {t("tut.live")}
+          </span>
+          <button
+            onClick={(e) => { e.stopPropagation(); setFolded((f) => !f); }}
+            title={folded ? t("tut.unfold") : t("tut.fold")}
+            className="ml-auto flex items-center gap-1 border border-line3 px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-line3 hover:bg-panel2 hover:text-fog"
+          >
+            {folded ? <ChevronUp size={8} /> : <ChevronDown size={8} />}
+            {folded ? t("tut.unfold") : t("tut.fold")}
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); end(); }}
+            title={t("tut.hangup")}
+            className="flex items-center gap-1 border border-line3 px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
+          >
+            <PhoneOff size={8} /> {t("tut.hangup")}
+          </button>
+        </div>
+
+        {/* body */}
+        {folded ? (
+          <div className="flex items-center gap-2 px-2.5 py-[5px]">
+            <Portrait size={16} />
+            <span className="min-w-0 flex-1 truncate text-[9px] text-dim">{line}</span>
+            {waiting && <span className="h-[4px] w-[4px] shrink-0 animate-softpulse bg-amber" />}
+          </div>
+        ) : (
+        <div className="flex gap-2.5 px-2.5 py-2.5">
+          <Portrait />
+          <div className="min-w-0 flex-1">
+            <p className="min-h-[32px] text-[11px] leading-relaxed text-fog/95">
+              {skip ? line : <Typed text={line} onDone={() => setTyped(true)} />}
+            </p>
+
+            {/* yes / no fork */}
+            {step.choice && (skip || typed) && (
+              <div className="mt-2 flex gap-1.5">
+                <button
+                  onClick={(e) => { e.stopPropagation(); choose(true); }}
+                  className="flex-1 border border-phosdim bg-phos/10 py-[6px] text-[9px] font-bold uppercase tracking-[0.16em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
+                >
+                  {t("co.yes")}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); choose(false); }}
+                  className="flex-1 border border-line3 py-[6px] text-[9px] font-bold uppercase tracking-[0.16em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
+                >
+                  {t("co.no")}
+                </button>
+              </div>
+            )}
+
+            {/* continue / waiting */}
+            {!step.choice && (skip || typed) && (
+              waiting ? (
+                <div className="mt-1.5 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.18em] text-amber">
+                  <span className="h-[4px] w-[4px] animate-softpulse bg-amber" />
+                  {t("tut.waiting")}
+                </div>
+              ) : (
+                <button
+                  onClick={(e) => { e.stopPropagation(); next(); }}
+                  className={cn(
+                    "mt-1.5 border border-line3 px-3 py-[5px] text-[8.5px] font-bold uppercase tracking-[0.16em] transition-colors",
+                    step.final
+                      ? "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink"
+                      : "text-dim hover:bg-panel2 hover:text-fog"
+                  )}
+                >
+                  {step.final ? t("tut.end") : t("tut.next")}
+                </button>
+              )
+            )}
+          </div>
+        </div>
+        )}
+      </div>
+    </div>
+  );
+}

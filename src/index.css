@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-pixel: "VT323", "IBM Plex Mono", monospace;
+
+  /* graphite page */
+  --color-ink: #0b0d09;
+  --color-soot: #0e110c;
+  --color-panel: #12150e;
+  --color-panel2: #161a11;
+  --color-header: #1a1f14;
+  --color-well: #0a0c08;
+
+  /* borders */
+  --color-line: #262c1f;
+  --color-line2: #39422d;
+  --color-line3: #4d5940;
+
+  /* text */
+  --color-fog: #bcc4ae;
+  --color-dim: #77806b;
+  --color-faint: #4c5545;
+
+  /* muted phosphor palette */
+  --color-phos: #8fb56d;
+  --color-phosdim: #5f7a4b;
+  --color-phosbrite: #b3d98d;
+  --color-amber: #cfa04b;
+  --color-amberdim: #8f6f36;
+  --color-oxide: #b36a52;
+  --color-steel: #7f95a8;
+  --color-viole: #8f86b8;
+
+  --animate-blink: blink 1.1s steps(2, start) infinite;
+  --animate-softpulse: softpulse 1.8s ease-in-out infinite;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-mono);
+  color: var(--color-fog);
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ---------- scrollbars: square, recessed ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333b28 transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: #0d0f0a;
+  border-left: 1px solid #20261a;
+}
+*::-webkit-scrollbar-thumb {
+  background: #333b28;
+  border: 2px solid #0d0f0a;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #47543a;
+}
+*::-webkit-scrollbar-corner {
+  background: #0d0f0a;
+}
+
+::selection {
+  background: rgba(143, 181, 109, 0.28);
+  color: #e8eedd;
+}
+
+/* ---------- keyframes ---------- */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes softpulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes dashflow {
+  to { stroke-dashoffset: -28; }
+}
+@keyframes netsweep {
+  0% { top: -4%; opacity: 0; }
+  4% { opacity: 1; }
+  96% { opacity: 1; }
+  100% { top: 104%; opacity: 0; }
+}
+@keyframes ringout {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes msgin {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes denote {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.anim-dashflow { animation: dashflow 1.1s linear infinite; }
+.anim-dashflow-slow { animation: dashflow 3.2s linear infinite; }
+.anim-msgin { animation: msgin 0.22s ease-out both; }
+.anim-ringout { animation: ringout 0.9s ease-out forwards; }
+.anim-denote { animation: denote 2.4s ease-in-out infinite; }
+.net-sweep {
+  animation: netsweep 13s linear infinite;
+}
+
+/* ---------- CRT overlay ---------- */
+.crt-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.16) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  mix-blend-mode: multiply;
+}
+.crt-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 58%,
+    rgba(0, 0, 0, 0.28) 100%
+  );
+}
+.crt-tint {
+  background: linear-gradient(180deg, rgba(143, 181, 109, 0.02), rgba(0, 0, 0, 0.03));
+}
+
+/* ---------- ascii progress blocks ---------- */
+.blocksbar {
+  letter-spacing: 1px;
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* text helpers */
+.txt-glow-green { text-shadow: 0 0 6px rgba(143, 181, 109, 0.45); }
+.txt-glow-amber { text-shadow: 0 0 6px rgba(207, 160, 75, 0.4); }
+
+.pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.04em;
+}
+
+input[type="text"] {
+  outline: none;
+}
+
+/* ---------- tutorial ---------- */
+@keyframes tutpulse {
+  0%, 100% { box-shadow: 0 0 0 1px #cfa04b, 0 0 14px rgba(207,160,75,0.35); }
+  50%      { box-shadow: 0 0 0 2px #e8c478, 0 0 24px rgba(207,160,75,0.6); }
+}
+.tut-ring {
+  position: relative;
+  z-index: 45;
+  animation: tutpulse 1.25s ease-in-out infinite;
+  border-radius: 1px;
+}
+
+@keyframes ringshake {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-13deg); }
+  30% { transform: rotate(11deg); }
+  45% { transform: rotate(-8deg); }
+  60% { transform: rotate(6deg); }
+  75% { transform: rotate(-3deg); }
+}
+.anim-ring-shake { animation: ringshake 0.9s ease-in-out infinite; }
+
+@keyframes callglow {
+  0%, 100% { box-shadow: 0 0 30px rgba(207,160,75,0.18); }
+  50%      { box-shadow: 0 0 56px rgba(207,160,75,0.4); }
+}
+.anim-call-glow { animation: callglow 1.6s ease-in-out infinite; }

@@ -1,0 +1,500 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Siren, Snowflake, Unplug, Zap } from "lucide-react";
+import { cn } from "../utils/cn";
+import { blockBar, pad } from "../lib/util";
+import { useT } from "../i18n";
+import { StatusDot } from "./chrome";
+import { useGame } from "../game/state";
+import { SCRIPTS, scriptById } from "../game/data";
+import {
+  BOARD_H, boardWidth, cellPos, generateBreach, neighboursOf,
+  type BreachCell, type BreachMap, type BreachTier,
+} from "../game/breach";
+
+type Phase = "DIAL" | "RUN" | "WIN" | "LOSE";
+type CellState = "idle" | "ready" | "loading" | "done" | "current";
+
+const DIAL_KEYS = ["bg.dial1", "bg.dial2", "bg.dial3", "bg.dial4", "bg.dial5"];
+
+/* ------------------------------------------------------------------ */
+
+function Cell({
+  cell, cols, boardW, state, pct, onPick,
+}: {
+  cell: BreachCell; cols: number; boardW: number;
+  state: CellState; pct: number; onPick: () => void;
+}) {
+  const { t } = useT();
+  const { x, y } = cellPos(cell, cols, boardW);
+  const isAccess = cell.kind === "ACCESS";
+  const isEntry = cell.kind === "ENTRY";
+  const terminal = isAccess || isEntry;
+
+  const color =
+    state === "done" || state === "current" ? "#8fb56d"
+    : state === "loading" ? "#cfa04b"
+    : state === "ready" ? (isAccess ? "#b3d98d" : "#7f95a8")
+    : "#3e4733";
+
+  const w = terminal ? 70 : 54;
+  const h = terminal ? 28 : 26;
+
+  return (
+    <button
+      disabled={state !== "ready"}
+      onClick={onPick}
+      title={terminal ? undefined : t("bg.solve", { expr: cell.expr, n: cell.cost })}
+      className={cn(
+        "absolute -translate-x-1/2 -translate-y-1/2 outline-none transition-transform",
+        state === "ready" ? "cursor-pointer hover:scale-110" : "cursor-default"
+      )}
+      style={{ left: `${(x / boardW) * 100}%`, top: `${(y / BOARD_H) * 100}%` }}
+    >
+      <span
+        className={cn(
+          "relative flex flex-col items-center justify-center border transition-colors",
+          state === "ready" && "animate-softpulse",
+          state === "current" && "shadow-[0_0_14px_rgba(143,181,109,0.4)]"
+        )}
+        style={{
+          width: w, height: h,
+          borderColor: color,
+          borderWidth: state === "current" || state === "ready" ? 2 : 1,
+          background:
+            state === "done" || state === "current" ? "rgba(143,181,109,0.16)"
+            : state === "loading" ? "rgba(207,160,75,0.14)"
+            : state === "ready" ? "rgba(127,149,168,0.12)"
+            : "rgba(10,12,8,0.75)",
+          borderRadius: terminal ? 0 : 999,
+        }}
+      >
+        <span
+          className="text-[9px] font-bold uppercase leading-none tracking-[0.06em]"
+          style={{ color: state === "idle" ? "#59604f" : color }}
+        >
+          {isEntry ? t("bg.entry") : isAccess ? t("bg.access") : cell.expr}
+        </span>
+        {!terminal && (state === "done" || state === "current") && (
+          <span className="mt-[2px] text-[7px] leading-none text-phosdim">
+            {t("bg.cost", { n: cell.cost })}
+          </span>
+        )}
+        {state === "loading" && (
+          <span
+            className="absolute bottom-0 left-0 h-[3px] bg-amber transition-[width] duration-100"
+            style={{ width: `${pct}%` }}
+          />
+        )}
+        {state === "current" && (
+          <span className="absolute -right-[4px] -top-[4px] h-[6px] w-[6px] animate-softpulse bg-phosbrite" />
+        )}
+      </span>
+      {!terminal && (
+        <span
+          className="mt-[2px] block whitespace-nowrap text-[6.5px] uppercase tracking-[0.14em]"
+          style={{ color: state === "idle" ? "#444c3a" : "#77806b" }}
+        >
+          {t(`bg.kind.${cell.kind}`)}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+export default function BreachGame({
+  nodeCode, warden, tier, onWin, onLose, onAbort, onLog,
+}: {
+  nodeCode: string; warden: number; tier: BreachTier;
+  onWin: () => void;
+  onLose: (reason: "timeout" | "abort") => void;
+  onAbort: () => void;
+  onLog: (key: string, params?: Record<string, string | number>) => void;
+}) {
+  const { t, lang } = useT();
+  const { g } = useGame();
+  const map = useMemo<BreachMap>(() => generateBreach(tier), [tier]);
+  const boardW = boardWidth(map.cols);
+
+  const [phase, setPhase] = useState<Phase>("DIAL");
+  const [dialStep, setDialStep] = useState(0);
+  const [dialPct, setDialPct] = useState(0);
+
+  const [current, setCurrent] = useState(map.entry);
+  const [done, setDone] = useState<string[]>([map.entry]);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [hopPct, setHopPct] = useState(0);
+  const [depth, setDepth] = useState(0);
+
+  const [timerOn, setTimerOn] = useState(false);
+  const [left, setLeft] = useState(tier.timerSec);
+  const [frozen, setFrozen] = useState(0);
+  const [cool, setCool] = useState<Record<string, number>>({});
+
+  const timers = useRef<number[]>([]);
+  const settled = useRef(false);
+  const hopTimer = useRef<{ to: number; iv: number } | null>(null);
+  const add = (h: number) => timers.current.push(h);
+  const clearAll = () => {
+    timers.current.forEach((h) => { clearTimeout(h); clearInterval(h); });
+    timers.current = [];
+  };
+  useEffect(() => clearAll, []);
+
+  const owned = SCRIPTS.filter((s) => g.market.scripts.includes(s.id));
+
+  /* ---------------- dial-up ---------------- */
+  useEffect(() => {
+    DIAL_KEYS.forEach((_, i) =>
+      add(window.setTimeout(() => setDialStep(i + 1), 200 + i * (tier.dialMs / DIAL_KEYS.length)))
+    );
+    const iv = window.setInterval(
+      () => setDialPct((p) => Math.min(100, p + 100 / (tier.dialMs / 90))), 90
+    );
+    add(iv);
+    add(window.setTimeout(() => {
+      clearInterval(iv);
+      setDialPct(100);
+      setPhase("RUN");
+    }, tier.dialMs));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ---------------- WARDEN wakes on a timer of its own ---------------- */
+  useEffect(() => {
+    if (phase !== "RUN" || timerOn) return;
+    const h = window.setTimeout(() => setTimerOn(true), tier.alarmMs);
+    add(h);
+    return () => clearTimeout(h);
+  }, [phase, timerOn, tier.alarmMs]);
+
+  /* ---------------- countdown ---------------- */
+  useEffect(() => {
+    if (!timerOn || phase !== "RUN") return;
+    const iv = window.setInterval(() => {
+      setFrozen((f) => {
+        if (f > 0) return f - 1;
+        setLeft((v) => Math.max(0, v - 1));
+        return 0;
+      });
+      setCool((c) => {
+        const n: Record<string, number> = {};
+        Object.entries(c).forEach(([k, v]) => { if (v > 1) n[k] = v - 1; });
+        return n;
+      });
+    }, 1000);
+    add(iv);
+    return () => clearInterval(iv);
+  }, [timerOn, phase]);
+
+  /* cooldowns also tick before the alarm */
+  useEffect(() => {
+    if (phase !== "RUN" || timerOn) return;
+    const iv = window.setInterval(() => {
+      setCool((c) => {
+        const n: Record<string, number> = {};
+        Object.entries(c).forEach(([k, v]) => { if (v > 1) n[k] = v - 1; });
+        return n;
+      });
+    }, 1000);
+    add(iv);
+    return () => clearInterval(iv);
+  }, [phase, timerOn]);
+
+  useEffect(() => {
+    if (phase !== "RUN" || !timerOn || left > 0 || settled.current) return;
+    settled.current = true;
+    setPhase("LOSE");
+  }, [left, timerOn, phase]);
+
+  useEffect(() => {
+    if (phase === "WIN") add(window.setTimeout(onWin, 1400));
+    if (phase === "LOSE") add(window.setTimeout(() => onLose("timeout"), 1700));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  /* ---------------- hop ---------------- */
+  const land = useCallback(
+    (id: string) => {
+      setLoadingId(null);
+      setHopPct(0);
+      hopTimer.current = null;
+      setCurrent(id);
+      setDone((d) => (d.includes(id) ? d : [...d, id]));
+      setDepth((v) => v + 1);
+      setTimerOn(true); // first solved cell always wakes WARDEN
+      if (id === map.access && !settled.current) {
+        settled.current = true;
+        setPhase("WIN");
+      }
+    },
+    [map.access]
+  );
+
+  const step = useCallback(
+    (id: string) => {
+      if (phase !== "RUN" || loadingId || settled.current) return;
+      const cell = map.cells.find((c) => c.id === id);
+      if (!cell) return;
+      const ms = Math.max(300, cell.cost * 1000);
+      setLoadingId(id);
+      setHopPct(0);
+      const iv = window.setInterval(
+        () => setHopPct((p) => Math.min(100, p + 100 / (ms / 80))), 80
+      );
+      add(iv);
+      const to = window.setTimeout(() => { clearInterval(iv); land(id); }, ms);
+      add(to);
+      hopTimer.current = { to, iv };
+    },
+    [phase, loadingId, map.cells, land]
+  );
+
+  /* ---------------- scripts ---------------- */
+  const fire = (id: string) => {
+    if (phase !== "RUN" || cool[id]) return;
+    const sc = scriptById(id);
+    if (!sc) return;
+
+    if (sc.id === "sc_freeze") {
+      if (!timerOn) return;
+      setFrozen(sc.freeze ?? 5);
+    } else if (sc.id === "sc_spike") {
+      if (!loadingId || !hopTimer.current) return;
+      clearTimeout(hopTimer.current.to);
+      clearInterval(hopTimer.current.iv);
+      setHopPct(100);
+      land(loadingId);
+    }
+    setCool((c) => ({ ...c, [id]: sc.cooldown }));
+    onLog("t.scriptUse", { name: lang === "ru" ? sc.nameRu : sc.name });
+  };
+
+  const abort = () => {
+    if (settled.current) return;
+    settled.current = true;
+    clearAll();
+    onAbort();
+  };
+
+  const reachable = useMemo(
+    () => (phase === "RUN" && !loadingId ? neighboursOf(map, current).filter((n) => !done.includes(n)) : []),
+    [phase, loadingId, map, current, done]
+  );
+
+  const stateOf = (id: string): CellState => {
+    if (loadingId === id) return "loading";
+    if (id === current) return "current";
+    if (done.includes(id)) return "done";
+    if (reachable.includes(id)) return "ready";
+    return "idle";
+  };
+
+  const danger = timerOn && left <= 10;
+
+  return (
+    <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
+      <div
+        className="anim-msgin flex max-h-[94vh] w-full flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]"
+        style={{ maxWidth: Math.min(boardW + 40, 1120) }}
+      >
+        {/* title bar */}
+        <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
+          <StatusDot color={phase === "LOSE" ? "#c25b46" : phase === "WIN" ? "#8fb56d" : "#cfa04b"} pulse />
+          <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
+            {t("bg.title")} :: {nodeCode}
+          </span>
+          <span className="mx-1 hidden h-px flex-1 bg-line sm:block" />
+          <span className="ml-auto shrink-0 text-[8px] tracking-[0.14em] text-amberdim">WARDEN T{warden}</span>
+          <button
+            onClick={abort}
+            className="flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
+          >
+            <Unplug size={9} /> {t("bg.abort")}
+          </button>
+        </div>
+
+        {/* dial-up */}
+        {phase === "DIAL" && (
+          <div className="px-4 py-5 sm:px-6">
+            <div className="min-h-[104px]">
+              {DIAL_KEYS.slice(0, dialStep).map((k, i) => (
+                <div key={k} className="anim-msgin text-[10.5px] leading-[1.75] text-dim">
+                  <span className="text-phosdim">&gt; </span>
+                  {t(k, { code: nodeCode, w: warden })}
+                  {i === dialStep - 1 && (
+                    <span className="ml-1 inline-block h-[9px] w-[5px] translate-y-[1px] animate-blink bg-phosdim" />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="blocksbar mt-2 text-[17px] text-phos">
+              {blockBar(dialPct, 30)} <span className="text-[12px] text-dim">{Math.floor(dialPct)}%</span>
+            </div>
+            <div className="mt-1 text-[8px] uppercase tracking-[0.2em] text-faint">{t("bg.dialHint")}</div>
+          </div>
+        )}
+
+        {(phase === "RUN" || phase === "WIN" || phase === "LOSE") && (
+          <>
+            {/* warden strip */}
+            <div
+              className={cn(
+                "flex h-[30px] shrink-0 items-center gap-2 border-b px-2.5 transition-colors",
+                timerOn ? "border-oxide/50 bg-oxide/10" : "border-line bg-soot"
+              )}
+            >
+              {timerOn ? (
+                <>
+                  <Siren size={12} className={cn("text-oxide", danger && "animate-softpulse")} />
+                  <span className="hidden text-[9px] font-bold uppercase tracking-[0.2em] text-oxide sm:inline">
+                    WARDEN
+                  </span>
+                  <span
+                    className={cn(
+                      "pixel text-[22px] leading-none tabular-nums",
+                      frozen > 0 ? "text-steel"
+                      : danger ? "animate-softpulse text-[#ff5f45]" : "text-[#e0634a]"
+                    )}
+                    style={{ textShadow: "0 0 10px rgba(194,91,70,0.5)" }}
+                  >
+                    {Math.floor(left / 60)}:{pad(left % 60, 2)}
+                  </span>
+                  {frozen > 0 && (
+                    <span className="flex items-center gap-1 border border-steel/60 bg-steel/15 px-1 text-[8px] font-bold uppercase tracking-[0.12em] text-steel">
+                      <Snowflake size={9} /> {t("bg.frozen")} {frozen}s
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Siren size={11} className="text-faint" />
+                  <span className="truncate text-[8.5px] uppercase tracking-[0.16em] text-faint">
+                    {t("bg.alarmSoon")}
+                  </span>
+                </>
+              )}
+              <span className="ml-auto shrink-0 text-[8px] uppercase tracking-[0.14em] text-faint">
+                {t("bg.depth", { a: depth, b: map.tier.hops })}
+              </span>
+            </div>
+
+            {/* board */}
+            <div className="min-h-0 flex-1 overflow-auto bg-well px-2 py-2">
+              <div
+                className="relative mx-auto"
+                style={{ width: "100%", maxWidth: boardW, aspectRatio: `${boardW} / ${BOARD_H}`, minWidth: 320 }}
+              >
+                <svg
+                  className="absolute inset-0 h-full w-full"
+                  viewBox={`0 0 ${boardW} ${BOARD_H}`}
+                  preserveAspectRatio="none"
+                  aria-hidden
+                >
+                  {Array.from({ length: Math.floor(boardW / 40) }, (_, i) => (
+                    <line key={`v${i}`} x1={(i + 1) * 40} y1={0} x2={(i + 1) * 40} y2={BOARD_H}
+                      stroke="#171b12" strokeWidth={0.6} />
+                  ))}
+                  {Array.from({ length: 7 }, (_, i) => (
+                    <line key={`h${i}`} x1={0} y1={(i + 1) * 42} x2={boardW} y2={(i + 1) * 42}
+                      stroke="#171b12" strokeWidth={0.6} />
+                  ))}
+                  {map.links.map((l, i) => {
+                    const A = map.cells.find((c) => c.id === l.a)!;
+                    const B = map.cells.find((c) => c.id === l.b)!;
+                    const p1 = cellPos(A, map.cols, boardW);
+                    const p2 = cellPos(B, map.cols, boardW);
+                    const live = done.includes(l.a) && done.includes(l.b);
+                    const arming = l.a === current && loadingId === l.b;
+                    const open = l.a === current && reachable.includes(l.b);
+                    return (
+                      <line
+                        key={i}
+                        x1={p1.x + 28} y1={p1.y} x2={p2.x - 28} y2={p2.y}
+                        stroke={live ? "#8fb56d" : arming ? "#cfa04b" : open ? "#7f95a8" : "#2d3524"}
+                        strokeWidth={live || arming ? 1.8 : 1.1}
+                        strokeDasharray={arming ? "6 4" : open ? "4 4" : "none"}
+                        className={cn(arming && "anim-dashflow")}
+                        opacity={live || arming || open ? 0.95 : 0.55}
+                      />
+                    );
+                  })}
+                </svg>
+
+                {map.cells.map((c) => (
+                  <Cell
+                    key={c.id}
+                    cell={c}
+                    cols={map.cols}
+                    boardW={boardW}
+                    state={stateOf(c.id)}
+                    pct={loadingId === c.id ? hopPct : 0}
+                    onPick={() => step(c.id)}
+                  />
+                ))}
+
+                {(phase === "WIN" || phase === "LOSE") && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-ink/80">
+                    <div
+                      className="anim-msgin border px-5 py-3 text-center"
+                      style={{
+                        borderColor: phase === "WIN" ? "#8fb56d" : "#c25b46",
+                        background: phase === "WIN" ? "rgba(143,181,109,0.12)" : "rgba(194,91,70,0.12)",
+                      }}
+                    >
+                      <div className="pixel text-[30px] leading-none"
+                        style={{ color: phase === "WIN" ? "#b3d98d" : "#e0634a" }}>
+                        {phase === "WIN" ? t("bg.granted") : t("bg.lockout")}
+                      </div>
+                      <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-dim">
+                        {phase === "WIN" ? t("bg.grantedSub") : t("bg.lockoutSub", { n: tier.failRep })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* script rail + hint */}
+            <div className="flex shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5 py-[5px]">
+              <span className="hidden truncate text-[8px] uppercase tracking-[0.14em] text-faint md:inline">
+                {t("bg.hintHex")}
+              </span>
+              <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                <span className="text-[8px] uppercase tracking-[0.16em] text-faint">{t("bg.scripts")}:</span>
+                {owned.length === 0 && (
+                  <span className="text-[8px] uppercase tracking-[0.12em] text-faint/70">{t("bg.noScripts")}</span>
+                )}
+                {owned.map((sc) => {
+                  const cd = cool[sc.id] ?? 0;
+                  const usable =
+                    phase === "RUN" && !cd &&
+                    (sc.id === "sc_freeze" ? timerOn && frozen === 0 : !!loadingId);
+                  return (
+                    <button
+                      key={sc.id}
+                      onClick={() => fire(sc.id)}
+                      disabled={!usable}
+                      title={lang === "ru" ? sc.descRu : sc.desc}
+                      className={cn(
+                        "flex items-center gap-1 border px-1.5 py-[3px] text-[8px] font-bold uppercase tracking-[0.1em] transition-colors",
+                        usable
+                          ? "border-viole bg-viole/15 text-viole hover:bg-viole hover:text-ink"
+                          : "cursor-not-allowed border-line text-faint"
+                      )}
+                    >
+                      {sc.id === "sc_freeze" ? <Snowflake size={9} /> : <Zap size={9} />}
+                      <span className="hidden sm:inline">{lang === "ru" ? sc.nameRu : sc.name}</span>
+                      {cd > 0 && <span className="tabular-nums">{t("bg.cooldown", { n: cd })}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
