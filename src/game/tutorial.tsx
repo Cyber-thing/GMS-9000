@@ -183,12 +183,23 @@ export const TUT_STEPS: TutStep[] = [
   },
 ];
 
-export const DECLINE_STEP: TutStep = {
-  id: "declined",
-  en: "Suit yourself. Figure it out alone. And do not forget my contract.",
-  ru: "Ладно, сам разбирайся. И за контракт мой не забудь.",
-  final: true,
-};
+export const DECLINE_STEPS: TutStep[] = [
+  {
+    id: "declined",
+    en: "Suit yourself. Figure it out alone. I put you on the exchange. Good luck.",
+    ru: "Ладно, сам разбирайся. В базу я тебя добавил. Удачи.",
+    listing: true,
+  },
+  {
+    id: "declined_end",
+    en: "Jobs will find you from here.",
+    ru: "Заказы тебя сами найдут.",
+    final: true,
+  },
+];
+
+/** kept for callers that still expect a single step */
+export const DECLINE_STEP = DECLINE_STEPS[0];
 
 export const CALLER = { nick: "Ghost_404" };
 
@@ -267,6 +278,7 @@ interface Ctx {
   choose: (yes: boolean) => void;
   fire: (e: TutEvent) => void;
   satisfy: (e: TutEvent) => void;
+  seekTo: (stepId: string) => void;
   end: () => void;
   start: () => void;
 }
@@ -287,6 +299,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<Phase>(saved.phase === "over" ? "over" : saved.phase);
   const [idx, setIdx] = useState(saved.idx);
   const [declined, setDeclined] = useState(saved.declined);
+  const [dIdx, setDIdx] = useState(0);
   const idxRef = useRef(saved.idx);
   idxRef.current = idx;
 
@@ -296,7 +309,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     else store.set("tut.state", { phase, idx, declined });
   }, [phase, idx, declined]);
 
-  const step = declined ? DECLINE_STEP : (TUT_STEPS[idx] ?? null);
+  const step = declined ? (DECLINE_STEPS[dIdx] ?? null) : (TUT_STEPS[idx] ?? null);
   const active = phase === "ringing" || phase === "talking";
 
   const end = useCallback(() => {
@@ -309,11 +322,15 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const answer = useCallback(() => setPhase("talking"), []);
 
   const next = useCallback(() => {
-    if (declined) { end(); return; }
+    if (declined) {
+      if (dIdx + 1 >= DECLINE_STEPS.length) { end(); return; }
+      setDIdx((i) => i + 1);
+      return;
+    }
     const cur = TUT_STEPS[idxRef.current];
     if (!cur || cur.final) { end(); return; }
     setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
-  }, [declined, end]);
+  }, [declined, dIdx, end]);
 
   const choose = useCallback((yes: boolean) => {
     if (yes) setIdx((i) => i + 1);
@@ -326,6 +343,12 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     const cur = TUT_STEPS[idxRef.current];
     if (cur?.waitFor === e) setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
   }, [phase, declined]);
+
+  /** jump straight to a given step id — used to repair a reloaded session */
+  const seekTo = useCallback((stepId: string) => {
+    const i = TUT_STEPS.findIndex((x) => x.id === stepId);
+    if (i >= 0) setIdx((cur) => (i > cur ? i : cur));
+  }, []);
 
   /** satisfy a step whose objective is already true when it is reached
       (e.g. the payload was picked up before the script asked for it) */
@@ -361,10 +384,10 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
       isHl: (h: TutHighlight) =>
         phase === "talking" ? (step?.highlight ?? []).includes(h) : false,
       gating: phase === "talking" && !!step?.highlight?.length,
-      answer, next, choose, fire, satisfy, end, start,
+      answer, next, choose, fire, satisfy, seekTo, end, start,
     }),
     [phase, step, active, call, playCall, callNext, callAnswer, callRinging,
-     answer, next, choose, fire, satisfy, end, start]
+     answer, next, choose, fire, satisfy, seekTo, end, start]
   );
 
   return <TutCtx.Provider value={value}>{children}</TutCtx.Provider>;

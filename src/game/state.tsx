@@ -5,12 +5,14 @@ import { store, stampNow } from "../lib/util";
 import { ALL_NODES } from "../data/regions";
 import {
   OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_DELIVER, OP17_FORK,
-  OP17_TOLD, OP17_DISBELIEF, SABLE_PUNISH, SABLE_REWARD, SABLE_OFFER,
+  OP17_TOLD, OP17_DISBELIEF, OP17_SOLD_REFUSAL, SABLE_PUNISH, SABLE_REWARD, SABLE_OFFER,
+  FREDDY_IMPLANT, FREDDY_IMPLANT_2, FREDDY_IMPLANT_3, FREDDY_IMPLANT_4, FREDDY_IMPLANT_DONE,
+  FREDDY_PROJ, FREDDY_PROJ_2, FREDDY_PROJ_READY, FREDDY_PROJ_ALREADY, FREDDY_PROJ_DONE,
   ARCHIVE_PAY, ARCHIVE_REL,
   type Beat,
 } from "./questArchive";
 import {
-  CFG, CODEX, CONTACTS, CONTRACTS, NEIGHBOURS, NODE_META, UPGRADES,
+  CFG, CODEX, CONTACTS, CONTRACTS, NEIGHBOURS, NODE_META, SECTOR_REP, UPGRADES,
   codexById, contactById, contractById, factionById, filesOfNode, resolveFile, scriptById,
 } from "./data";
 import type {
@@ -44,8 +46,10 @@ const freshState = (): GameState => {
     regions: ["west1"],
     market: { unlocked: false, scripts: [] },
     sabotaged: [],
+    burning: [],
     burned: [],
     flags: {},
+    threadRead: {},
     stats: { hacks: 0, contracts: 0, files: 0, nodes: 0, sold: 0, sabotage: 0, failed: 0 },
     unread: { CHAT: 0, CODEX: 0, CONTACTS: 0, STATUS: 0 },
   };
@@ -67,6 +71,10 @@ export function nodeStateOf(id: string, s: GameState): NodeState {
   const m = NODE_META[id];
   if (!m) return "LOCKED";
   if (s.nodeStates[id] === "COMPROMISED") return "COMPROMISED";
+  /* whole sectors stay shut until the operator has a name */
+  const node = ALL_NODES.find((n) => n.id === id);
+  const gate = node ? SECTOR_REP[node.sector] ?? 0 : 0;
+  if (s.rep < gate) return "RESTRICTED";
   const unlocked = m.start || s.nodeStates[id] === "AVAILABLE";
   if (!unlocked) return "LOCKED";
   if (m.restricted && !reqMet(m.req, s)) return "RESTRICTED";
@@ -105,6 +113,7 @@ interface Ctx {
   sabotage: (nodeId: string) => boolean;
   pickChoice: (msgId: number, choiceId: string) => void;
   sableArrives: () => void;
+  openFreddy: () => void;
   openArchiveJob: () => void;
   setFlag: (k: string, v?: string | boolean) => void;
   pushBeat: (b: Beat) => void;
@@ -114,6 +123,7 @@ interface Ctx {
   fenceValue: (id: string) => number | { credits: number; owed?: ContractDef; spent: boolean };
   buyUpgrade: (id: string) => boolean;
   markTab: (tab: TabId) => void;
+  markThreadRead: (contact: string) => void;
   markCodexSeen: (id: string) => void;
   reset: () => void;
   lang: "en" | "ru";
@@ -140,8 +150,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       stats: { ...base.stats, ...saved.stats },
       market: { ...base.market, ...(saved.market ?? {}) },
       sabotaged: saved.sabotaged ?? [],
+      burning: saved.burning ?? [],
       burned: saved.burned ?? [],
       flags: saved.flags ?? {},
+      threadRead: saved.threadRead ?? {},
       contracts,
       recovering: false,   // the 4.2s timer is gone after a reload
     };
@@ -447,6 +459,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
     pushBeat(SABLE_OFFER);
   }, [g.flags.sable_met, setFlag, pushBeat]);
 
+  /** Freddy writes once the archive job is settled */
+  const openFreddy = useCallback(() => {
+    if (g.flags.fred_intro) return;
+    /* his target sits in GULF — do not offer work the operator cannot reach */
+    if (g.rep < (SECTOR_REP.w1_gulf ?? 0)) return;
+    setFlag("fred_intro");
+    setG((s) => ({
+      ...s,
+      contacts: s.contacts.includes("freddy") ? s.contacts : [...s.contacts, "freddy"],
+    }));
+    FREDDY_IMPLANT.forEach(pushBeat);
+    timers.current.push(window.setTimeout(() => FREDDY_PROJ.forEach(pushBeat), 1400));
+  }, [g.flags.fred_intro, g.rep, setFlag, pushBeat]);
+
   /** the operator answers a scripted question */
   const pickChoice = useCallback(
     (msgId: number, choiceId: string) => {
@@ -481,9 +507,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       if (choiceId === "tell") {
-        /* without the file he has nothing to look at — and he trusts the company */
         const stillHasIt = gRef.current.files.includes("f_termlist");
+        const soldIt = gRef.current.flags["sable-ok"] === true;
 
+        /* sold it to sable and still tries to talk — he throws you out */
+        if (soldIt) {
+          setFlag("arc_told", "sold_then_told");
+          setFlag("op17_blocked", true);
+          OP17_SOLD_REFUSAL.forEach((b, i) => later(() => pushBeat(b), i * 1200));
+          setG((s) => ({
+            ...s,
+            relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.emptyCivic },
+          }));
+          return;
+        }
+
+        /* no file to show — and he trusts the company */
         if (!stillHasIt) {
           setFlag("arc_told", "empty");
           OP17_DISBELIEF.forEach((b, i) => later(() => pushBeat(b), i * 1100));
@@ -495,6 +534,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
 
         setFlag("arc_told", "op17");
+        setFlag("sable-revenge", true);
+        setFlag("operator-knows", true);
+        setFlag("sable_blocked", true);
         OP17_TOLD.forEach((b, i) => later(() => pushBeat(b), i * 900));
         setG((s) => ({
           ...s,
@@ -524,8 +566,44 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      /* ---- Freddy: implant queue ---- */
+      if (choiceId === "fi_what") {
+        pushBeat({ id: "a4", from: "OP", line: { en: "What do you need?", ru: "Что нужно?" } });
+        later(() => FREDDY_IMPLANT_2.forEach(pushBeat), 800);
+        return;
+      }
+      if (choiceId === "fi_ask") {
+        pushBeat({ id: "a5", from: "OP", line: { en: "What do you want from me?", ru: "От меня что требуется?" } });
+        later(() => FREDDY_IMPLANT_3.forEach(pushBeat), 800);
+        return;
+      }
+      if (choiceId === "fi_ok") {
+        pushBeat({ id: "a6", from: "OP", line: { en: "All right.", ru: "Хорошо." } });
+        setG((s) => ({ ...s, contracts: { ...s.contracts, ct_implant: { state: "ACCEPTED", accepted: true } } }));
+        later(() => FREDDY_IMPLANT_4.forEach(pushBeat), 800);
+        return;
+      }
+
+      /* ---- Freddy: projectors ---- */
+      if (choiceId === "fp_what") {
+        pushBeat({ id: "a7", from: "OP", line: { en: "And?", ru: "И?" } });
+        later(() => FREDDY_PROJ_2.forEach(pushBeat), 800);
+        return;
+      }
+      if (choiceId === "fp_ok") {
+        pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь." } });
+        const already = gRef.current.nodeStates["w1p_crp2"] === "COMPROMISED";
+        setG((s) => ({
+          ...s,
+          contracts: { ...s.contracts, sb_projector: { state: already ? "TARGET ACCESSED" : "ACCEPTED", accepted: true } },
+        }));
+        later(() => (already ? FREDDY_PROJ_ALREADY : FREDDY_PROJ_READY).forEach(pushBeat), 850);
+        return;
+      }
+
       if (choiceId === "sendsable") {
         setFlag("arc_told", "sable");
+        setFlag("sable-ok", true);
         pushBeat({ id: "a3", from: "OP", line: { en: "Sending the list.", ru: "Отправляю список." } });
         setG((s) => ({
           ...s,
@@ -559,6 +637,23 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }));
       notify("DATA ACQUIRED", `${ru() ? f.nameRu : f.name} → DATA STORED`, "STATUS");
 
+      /* Freddy's job closes the moment the memo is in hand */
+      if (fileId === "f_queue_memo" && g.contracts.ct_implant?.state === "ACCEPTED") {
+        setG((s) => ({
+          ...s,
+          contracts: { ...s.contracts, ct_implant: { state: "COMPLETED" } },
+          credits: s.credits + 350,
+          rep: s.rep + 14,
+          relations: { ...s.relations, fusion: (s.relations.fusion ?? 0) - 12 },
+          burned: s.burned.includes(fileId) ? s.burned : [...s.burned, fileId],
+          stats: { ...s.stats, contracts: s.stats.contracts + 1 },
+        }));
+        FREDDY_IMPLANT_DONE.forEach((b, i) =>
+          timers.current.push(window.setTimeout(() => pushBeat(b), 700 + i * 1000))
+        );
+        notify("CONTRACT COMPLETED", "+350cr", "CONTACTS");
+      }
+
       /* a note that carries a WARDEN PASS key announces it plainly */
       const unlocks = Object.values(NODE_META).find((m) => m.passwordFrom === fileId);
       if (unlocks?.password) {
@@ -582,7 +677,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       });
     },
-    [g.files, g.contracts, notify, pushThread]
+    [g.files, g.contracts, notify, pushThread, pushBeat]
   );
 
   /* ---------------- contracts ---------------- */
@@ -721,7 +816,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (g.recovering) return;
     setG((s) => ({ ...s, recovering: true }));
     const t = window.setTimeout(() => {
-      setG((s) => ({ ...s, recovering: false, ops: 0 }));
+      setG((s) => ({ ...s, recovering: false, ops: 0, burning: [] }));
     }, CFG.recoveryMs);
     timers.current.push(t);
   }, [g.recovering]);
@@ -748,6 +843,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setG((s) => ({
         ...s,
         sabotaged: [...s.sabotaged, nodeId],
+        burning: s.burning.includes(nodeId) ? s.burning : [...s.burning, nodeId],
         relations: {
           ...s.relations,
           [meta.owner]: (s.relations[meta.owner] ?? 0) + CFG.relHitPerWarden * meta.warden,
@@ -763,6 +859,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
         ),
       }));
       notify("SABOTAGE COMPLETE", n?.code ?? nodeId, "CONTACTS");
+
+      /* Freddy pays on the spot, no report needed */
+      if (nodeId === "w1p_crp2") {
+        const pr = gRef.current.contracts.sb_projector?.state;
+        if (pr === "ACCEPTED" || pr === "TARGET ACCESSED") {
+          setG((s) => ({
+            ...s,
+            contracts: { ...s.contracts, sb_projector: { state: "COMPLETED" } },
+            credits: s.credits + 300,
+            rep: s.rep + 12,
+            stats: { ...s.stats, contracts: s.stats.contracts + 1, sabotage: s.stats.sabotage + 1 },
+          }));
+          FREDDY_PROJ_DONE.forEach((b, i) =>
+            timers.current.push(window.setTimeout(() => pushBeat(b), 900 + i * 900))
+          );
+          notify("CONTRACT COMPLETED", "+300cr", "CONTACTS");
+        }
+      }
 
       /* tell the client the job is physically done */
       CONTRACTS.forEach((ct) => {
@@ -781,7 +895,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       });
       return true;
     },
-    [g.sabotaged, g.nodeStates, g.contracts, notify, pushThread]
+    [g.sabotaged, g.nodeStates, g.contracts, notify, pushThread, pushBeat]
   );
 
   /* ---------------- black market ---------------- */
@@ -902,6 +1016,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   /* ---------------- misc ---------------- */
 
+  const markThreadRead = useCallback((contact: string) => {
+    setG((s) => {
+      const n = (s.threads[contact] ?? []).length;
+      return s.threadRead[contact] === n ? s : { ...s, threadRead: { ...s.threadRead, [contact]: n } };
+    });
+  }, []);
+
   const markTab = useCallback((tab: TabId) => {
     activeTab.current = tab;
     setG((s) => (s.unread[tab] === 0 ? s : { ...s, unread: { ...s.unread, [tab]: 0 } }));
@@ -924,15 +1045,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     () => ({
       g, notifs, lastHack, nodeState, canHack, hack, download,
       acceptContract, deliverContract, recover, failBreach,
-      sabotage, pickChoice, sableArrives, openArchiveJob, setFlag, pushBeat,
+      sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, setFlag, pushBeat,
       openMarket, buyScript, sellFile, fenceValue, buyUpgrade,
-      markTab, markCodexSeen, reset,
+      markTab, markThreadRead, markCodexSeen, reset,
       lang: langRef.current, setLangRef,
     }),
     [g, notifs, lastHack, nodeState, canHack, hack, download, acceptContract,
-     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, setFlag, pushBeat,
+     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, setFlag, pushBeat,
      openMarket, buyScript, sellFile, fenceValue,
-     buyUpgrade, markTab, markCodexSeen, reset, setLangRef]
+     buyUpgrade, markTab, markThreadRead, markCodexSeen, reset, setLangRef]
   );
 
   return <GameCtx.Provider value={value}>{children}</GameCtx.Provider>;

@@ -122,7 +122,11 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   },
   w1m_dsv: { owner: "slayer", cls: "CORPORATE", warden: 3, rep: 16, files: ["f_grain"] },
   w1m_crp: { owner: "intercell", cls: "CORPORATE", warden: 4, rep: 22, codex: ["c_sable"], intel: "Clearing host for the shell subsidiary. Shutting it down would be felt in two boardrooms." },
-  w1p_crp2: { owner: "takamuri", cls: "CORPORATE", warden: 3, rep: 18, codex: ["f_takamuri"], intel: "Freight index cross-references port manifests the Harbor Authority never published." },
+  w1p_crp2: {
+    owner: "takamuri", cls: "CORPORATE", warden: 3, rep: 18, codex: ["f_takamuri"],
+    sabotageGate: "sb_projector",
+    intel: "Freight desk and the hall it books. Projector rigs hang off the same controller as the index.",
+  },
   w1m_prv: { owner: "scavenger", cls: "UNDERGROUND", warden: 2, rep: 14, files: ["f_cbgate"], codex: ["c_koma"] },
 
   /* ---- Agogee: Atlantic ---- */
@@ -136,7 +140,11 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   w1e_dsv: { owner: "agogee", cls: "CORPORATE", warden: 3, rep: 16, files: ["f_fin_mirror"] },
 
   /* ---- Fusion: Gulf Relay ---- */
-  w1g_dsv: { owner: "fusion", cls: "CORPORATE", warden: 3, rep: 16, files: ["f_pressure"], codex: ["f_fusion"] },
+  w1g_dsv: {
+    owner: "fusion", cls: "CORPORATE", warden: 3, rep: 16,
+    files: ["f_queue_memo"], codex: ["f_fusion"],
+    intel: "Bio-implant sales. The waiting list is edited by hand whenever a premium client gets impatient.",
+  },
   w1g_prv2: { owner: "civic", cls: "GOVERNMENT", warden: 5, rep: 30, restricted: true, req: { rep: 70 }, files: ["f_range"] },
 
   /* ---- Arctic ---- */
@@ -184,10 +192,27 @@ export const NODE_META: Record<string, NodeMeta> = (() => {
       intel: o.intel,
       password: o.password,
       passwordFrom: o.passwordFrom,
+      sabotageGate: o.sabotageGate,
     };
   });
   return out;
 })();
+
+/** REP needed before a sector's hosts answer at all */
+export const SECTOR_REP: Record<string, number> = {
+  w1_pac: 0,
+  w1_north: 0,
+  w1_gulf: 45,
+  w1_atl: 80,
+  w1_arct: 120,
+  w1_mid: 160,
+  wl_eq: 60,
+  wl_and: 90,
+  wl_pam: 110,
+  wl_atl: 130,
+  wl_amz: 170,
+  wl_cape: 200,
+};
 
 /* which region each node belongs to */
 export const NODE_REGION: Record<string, string> = (() => {
@@ -237,7 +262,7 @@ export const FILES: DataFile[] = [
   F("f_agg_ledger", "AGOGEE-LEASE-LEDGER", "AGOGEE-РЕЕСТР-АРЕНДЫ", "CORPORATE DATA", "w1e_crp", "agogee", 640),
   F("f_watchlog", "WATCHDOG-LOGS", "ЖУРНАЛ-СТОРОЖА", "CLASSIFIED DATA", "w1e_sec", "agogee", 520),
   F("f_fin_mirror", "FIN-MIRROR-0200", "ФИН-ЗЕРКАЛО-0200", "CORPORATE DATA", "w1e_dsv", "agogee", 340),
-  F("f_pressure", "WELL-PRESSURE-SET", "ДАВЛЕНИЕ-СКВАЖИН", "CORPORATE DATA", "w1g_dsv", "fusion", 300),
+  F("f_queue_memo", "IMPLANT-QUEUE-OVERRIDE", "ПОДМЕНА-ОЧЕРЕДИ", "CLASSIFIED DATA", "w1g_dsv", "fusion", 520),
   F("f_range", "RANGE-TELEMETRY", "ТЕЛЕМЕТРИЯ-ПОЛИГОНА", "CLASSIFIED DATA", "w1g_prv2", "civic", 880),
   F("f_echo", "BEACON-ECHO-61", "ЭХО-МАЯКА-61", "INTEL", "w1a_rly", "indep", 400),
   F("f_aurora", "AURORA-TELEMETRY", "ТЕЛЕМЕТРИЯ-СИЯНИЯ", "INTEL", "w1a_res", "civic", 200),
@@ -400,12 +425,18 @@ export const CONTACTS: ContactDef[] = [
     silent: true,
   },
   {
+    id: "freddy", nick: "Freddy", faction: "indep", role: "petitioner", roleRu: "проситель", repReq: 9999,
+    intro: "", introRu: "", silent: true,
+  },
+  {
     id: "sablec", nick: "sable", faction: "intercell", role: "unknown", roleRu: "неизвестно", repReq: 9999,
     intro: "",
     introRu: "",
     silent: true,
   },
 ];
+
+export const FREDDY = "freddy";
 
 export const contactById = (id: string) => CONTACTS.find((c) => c.id === id);
 
@@ -425,6 +456,21 @@ export const CONTRACTS: ContractDef[] = [
     briefRu: "Один из наших сотрудников потерял доступ к архиву на корпоративном терминале. Нужно восстановить доступ.",
     target: "w1n_arc", file: "f_access_restored", credits: 200, rep: 12, relation: 10, repReq: 0,
     scripted: true,
+  },
+  {
+    id: "ct_implant", kind: "DATA", contact: "freddy", client: "indep",
+    title: "QUEUE JUMPED", titleRu: "ОЧЕРЕДЬ СДВИНУЛИ",
+    brief: "Break into the Fusion Cybernetics sales host and find out why my sister's implant slot moved.",
+    briefRu: "Вскрой сервер отдела продаж Fusion Cybernetics и выясни, почему очередь моей сестры сдвинули.",
+    target: "w1g_dsv", file: "f_queue_memo", credits: 350, rep: 14, relation: 12, repReq: 45,
+    scripted: true,
+  },
+  {
+    id: "sb_projector", kind: "SABOTAGE", contact: "freddy", client: "indep",
+    title: "HOUSE LIGHTS", titleRu: "СВЕТ В ЗАЛЕ",
+    brief: "Knock out the projectors at the Takamuri freight desk for a few hours. There is a presentation today.",
+    briefRu: "Вырубить проекторы в грузовом отделе Takamuri на несколько часов. Сегодня там презентация.",
+    target: "w1p_crp2", credits: 300, rep: 12, relation: 10, repReq: 0, scripted: true,
   },
 ];
 

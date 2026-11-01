@@ -98,8 +98,8 @@ export default function ArchiveWindow({
         {/* result */}
         {(phase === "found" || phase === "saved") && (
           <div className="shrink-0 border-t border-line2 bg-panel2 px-3 py-2.5">
-            <div className="text-[8px] uppercase tracking-[0.2em] text-oxide">{t("arc.sealed")}</div>
-            <div className="pixel mt-[2px] text-[17px] leading-tight text-[#e0634a]">
+            <div className="text-[8px] uppercase tracking-[0.2em] text-amberdim">{t("arc.sealed")}</div>
+            <div className="pixel mt-[2px] text-[17px] leading-tight text-amber">
               {t("arc.termTitle")}
             </div>
             {phase === "saved" ? (
@@ -109,7 +109,7 @@ export default function ArchiveWindow({
             ) : (
               <button
                 onClick={take}
-                className="mt-2 flex w-full items-center justify-center gap-2 border border-[#c25b46] bg-[#c25b46]/15 py-[7px] text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#e0634a] transition-colors hover:bg-[#c25b46] hover:text-ink"
+                className="mt-2 flex w-full items-center justify-center gap-2 border border-amberdim bg-amber/15 py-[7px] text-[9.5px] font-bold uppercase tracking-[0.16em] text-amber transition-colors hover:bg-amber hover:text-ink"
               >
                 <Download size={11} /> {t("arc.save")}
               </button>

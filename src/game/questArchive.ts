@@ -166,3 +166,128 @@ export const ARCHIVE_PAY = {
   relOp17Hidden: 0,
   relSablePunish: -30,
 };
+
+/* ==================================================================
+   FREDDY — two small jobs that open as conversations.
+   ================================================================== */
+
+export const FREDDY_IMPLANT: Beat[] = [
+  {
+    id: "fi1", from: "freddy" as never,
+    line: L("Hi — can you help me?", "Привет, вы можете мне помочь?"),
+    choices: [{ id: "fi_what", en: "What do you need?", ru: "Что нужно?" }],
+  },
+];
+
+export const FREDDY_IMPLANT_2: Beat[] = [
+  {
+    id: "fi2", from: "freddy" as never,
+    line: L(
+      "My sister was in the queue for a new implant. Her turn was coming up — she was due to get it this month. Then a notice arrived: force majeure, the queue is pushed back a year.",
+      "Моя сестра стояла в очереди за новым имплантом. Её время подходило, в этом месяце должны были отдать новый. Но пришло уведомление, что из-за форс-мажорных обстоятельств очередь перенесена на год."
+    ),
+    choices: [{ id: "fi_ask", en: "What do you want from me?", ru: "От меня что требуется?" }],
+  },
+];
+
+export const FREDDY_IMPLANT_3: Beat[] = [
+  {
+    id: "fi3", from: "freddy" as never,
+    line: L(
+      "I want to crack the Fusion Cybernetics server and find the reason. I will pay!",
+      "Я хочу вскрыть сервер Fusion Cybernetics и найти причину. Я заплачу!"
+    ),
+    choices: [{ id: "fi_ok", en: "All right.", ru: "Хорошо." }],
+  },
+];
+
+export const FREDDY_IMPLANT_4: Beat[] = [
+  {
+    id: "fi4", from: "freddy" as never,
+    line: L("Excellent! The server is somewhere in GULF!", "Отлично! Сервер где-то в GULF!"),
+  },
+];
+
+export const FREDDY_IMPLANT_DONE: Beat[] = [
+  {
+    id: "fi5", from: "OP",
+    line: L("Found it. Read this.", "Нашёл. Прочитай."),
+  },
+  {
+    id: "fi6", from: "freddy" as never,
+    line: L("Those absolute bastards!", "Вот же сволочи!"),
+  },
+];
+
+/* ---------------- projectors ---------------- */
+
+export const FREDDY_PROJ: Beat[] = [
+  {
+    id: "fp1", from: "freddy" as never,
+    line: L(
+      "One more thing, and this one is personal. The Takamuri freight desk books the presentation hall. My ex is presenting there today.",
+      "Ещё кое-что, и это личное. Грузовой отдел Takamuri держит презентационный зал. Сегодня там выступает моя бывшая."
+    ),
+    choices: [{ id: "fp_what", en: "And?", ru: "И?" }],
+  },
+];
+
+export const FREDDY_PROJ_2: Beat[] = [
+  {
+    id: "fp2", from: "freddy" as never,
+    line: L(
+      "Their projectors hang off the same controller as the freight index. Knock it over and the hall goes dark for a few hours. Pure spite. I will still pay.",
+      "Их проекторы висят на том же контроллере, что и грузовой индекс. Опрокинь его — и зал погаснет на несколько часов. Чистая мелочность. Но я всё равно заплачу."
+    ),
+    choices: [{ id: "fp_ok", en: "Taking it.", ru: "Берусь." }],
+  },
+];
+
+export const FREDDY_PROJ_READY: Beat[] = [
+  {
+    id: "fp3", from: "freddy" as never,
+    line: L("CRP-P06. Today. Please do not miss.", "CRP-P06. Сегодня. Только не промахнись."),
+  },
+];
+
+/** he reacts when the host was already breached before he asked */
+export const FREDDY_PROJ_ALREADY: Beat[] = [
+  {
+    id: "fp4", from: "freddy" as never,
+    line: L(
+      "Wait — you are already inside that host? Even better. Then you only have to pull the plug.",
+      "Погоди — ты уже внутри этого узла? Тогда ещё круче. Остаётся только дёрнуть рубильник."
+    ),
+  },
+];
+
+export const FREDDY_PROJ_DONE: Beat[] = [
+  {
+    id: "fp5", from: "freddy" as never,
+    line: L(
+      "The hall is dark. I can hear it from the street. Thank you.",
+      "Зал погас. Это слышно даже с улицы. Спасибо."
+    ),
+  },
+];
+
+/* ---------------- operator_17 refuses a seller ---------------- */
+
+export const OP17_SOLD_REFUSAL: Beat[] = [
+  {
+    id: "q14", from: "OP",
+    line: L(
+      "There was a sealed termination list in that archive.",
+      "В том архиве лежал закрытый список на увольнение."
+    ),
+  },
+  {
+    id: "q15", from: "op17",
+    line: L(
+      "What? Are you trying to shake me down? I have worked for them for fifteen years and I will never believe a thing like that. Think you are clever? Get lost.",
+      "Что? Ты меня на бабки развести пытаешься? Я на них работаю уже 15 лет и никогда в жизни не поверю в такое. Думаешь ты такой умный? Вали к черту!"
+    ),
+  },
+];
+
+export const FREDDY_PAY = { implant: 350, proj: 300 };

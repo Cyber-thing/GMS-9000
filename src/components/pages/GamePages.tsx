@@ -160,11 +160,13 @@ export function CodexPage() {
 /* CONTACTS                                                            */
 /* ================================================================== */
 
-export function ContactsPage() {
+export function ContactsPage({ home = 0 }: { home?: number }) {
   const { t, lang } = useT();
-  const { g, acceptContract, deliverContract, pickChoice } = useGame();
+  const { g, acceptContract, deliverContract, pickChoice, markThreadRead } = useGame();
   const { isHl, gating, fire } = useTut();
   const [open, setOpen] = useState<string | null>(null);
+  /* a bumped `home` means the game wants the operator back on the thread list */
+  useEffect(() => { if (home > 0) setOpen(null); }, [home]);
   const bodyRef = useRef<HTMLDivElement>(null);
   const offerRef = useRef<HTMLDivElement>(null);
 
@@ -188,6 +190,15 @@ export function ContactsPage() {
     const c = contactById(open)!;
     const thread = g.threads[open] ?? [];
     const fac = factionById(c.faction);
+    const threadBlocked = c.id === "op17"
+      ? g.flags.op17_blocked === true
+      : c.id === "sablec" ? g.flags.sable_blocked === true : false;
+    /* every job with this contact is settled and nothing awaits an answer */
+    const mine = CONTRACTS.filter((x) => x.contact === c.id && g.contracts[x.id]);
+    const threadClosed =
+      mine.length > 0 &&
+      mine.every((x) => ["COMPLETED", "FAILED"].includes(g.contracts[x.id].state)) &&
+      !thread.some((m) => m.choices && !m.picked);
     const hasLiveJob = CONTRACTS.some(
       (x) =>
         x.contact === c.id && g.contracts[x.id] &&
@@ -321,6 +332,22 @@ export function ContactsPage() {
               </div>
             );
           })}
+
+          {threadBlocked && (
+            <div className="anim-msgin mt-2 border border-oxide bg-oxide/12 px-2.5 py-2 text-center">
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-oxide">
+                {t("co.blocked")}
+              </div>
+              <div className="mt-[2px] text-[8.5px] uppercase tracking-[0.12em] text-oxide/70">
+                {t("co.blockedBody")}
+              </div>
+            </div>
+          )}
+          {!threadBlocked && threadClosed && (
+            <div className="mt-2 border border-line2 bg-panel2 py-[6px] text-center text-[9px] font-bold uppercase tracking-[0.18em] text-faint">
+              ✓ {t("co.finished")}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -336,11 +363,16 @@ export function ContactsPage() {
         const activeCt = CONTRACTS.filter(
           (ct) => ct.contact === c.id && g.contracts[ct.id] && g.contracts[ct.id].state !== "COMPLETED"
         );
+        const unread = (g.threadRead?.[c.id] ?? 0) < thread.length;
+        const blocked = c.id === "op17"
+          ? g.flags.op17_blocked === true
+          : c.id === "sablec" ? g.flags.sable_blocked === true : false;
         return (
           <button
             key={c.id}
             onClick={() => {
               setOpen(c.id);
+              markThreadRead(c.id);
               fire(`thread:${c.id}` as never);
             }}
             className={cn(
@@ -362,11 +394,23 @@ export function ContactsPage() {
                   {(lang === "ru" ? last.textRu : last.textEn) ?? last.text}
                 </p>
               )}
-              {activeCt.length > 0 && (
-                <span className="mt-[2px] inline-block bg-viole/20 px-[4px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-viole">
-                  {t(`cs.${g.contracts[activeCt[0].id].state}`)}
-                </span>
-              )}
+              <span className="mt-[3px] flex items-center gap-1.5">
+                {unread && (
+                  <span className="animate-softpulse bg-amber px-[5px] py-[1px] text-[9px] font-bold uppercase tracking-[0.16em] text-ink">
+                    {t("tab.new")}
+                  </span>
+                )}
+                {blocked && (
+                  <span className="border border-oxide px-[4px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-oxide">
+                    {t("co.blocked")}
+                  </span>
+                )}
+                {!unread && !blocked && activeCt.length > 0 && (
+                  <span className="bg-viole/20 px-[4px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-viole">
+                    {t(`cs.${g.contracts[activeCt[0].id].state}`)}
+                  </span>
+                )}
+              </span>
             </div>
           </button>
         );

@@ -17,6 +17,7 @@ import WardenPass from "./components/WardenPass";
 import ArchiveWindow from "./components/ArchiveWindow";
 import HackerExchange from "./components/HackerExchange";
 import KeyBanner from "./components/KeyBanner";
+import MessageToast from "./components/MessageToast";
 import { ROUTING_TIERS, usesRouting } from "./game/routing";
 import TutorialCall from "./components/TutorialCall";
 import { tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
@@ -85,7 +86,7 @@ export default function App() {
   const game = useGame();
   const {
     g, notifs, hack, download, canHack, failBreach, sabotage, markTab, nodeState,
-    openArchiveJob, setFlag, sableArrives,
+    openArchiveJob, openFreddy, setFlag, sableArrives,
   } = game;
   const tut = useTut();
   const tutFire = tut.fire;
@@ -529,6 +530,22 @@ export default function App() {
     if (ctState === "DELIVERED" || ctState === "COMPLETED") tutFire("deliver:ct_payroll");
   }, [ctState, tutFire]);
 
+  /* A reloaded session can be further along than the saved step index.
+     Walk the milestones in order and seek the script past the finished ones. */
+  const tutSeek = tut.seekTo;
+  const repaired = useRef(false);
+  useEffect(() => {
+    if (repaired.current || tut.phase !== "talking") return;
+    repaired.current = true;
+    const ct = g.contracts["ct_payroll"]?.state;
+    const done = (st?: string) => !!st && st !== "AVAILABLE";
+    if (ct === "COMPLETED" || ct === "DELIVERED") tutSeek("anon");
+    else if (g.files.includes("f_icx_payroll")) tutSeek("send");
+    else if (g.nodeStates["w1p_dsv"] === "COMPROMISED") tutSeek("vault");
+    else if (g.nodeStates["w1p_acc"] === "COMPROMISED") tutSeek("dsv2");
+    else if (done(ct)) tutSeek("world");
+  }, [tut.phase, g.contracts, g.files, g.nodeStates, tutSeek]);
+
   /* a beat whose goal is already met must not stall the call: these states
      can be true before the script asks for them (or after a reload) */
   const tutSatisfy = tut.satisfy;
@@ -601,26 +618,53 @@ export default function App() {
   const callId = tut.call?.script.id ?? null;
   const prevCall = useRef<string | null>(null);
   useEffect(() => {
-    if (prevCall.current === "sable1" && callId === null) sableArrives();
+    if (prevCall.current === "sable1" && callId === null) {
+      sableArrives();
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }
     prevCall.current = callId;
-  }, [callId, sableArrives]);
+  }, [callId, sableArrives, markTab]);
 
   /* ---------- tutorial: exchange listing, then the first real job ---------- */
   const [exchange, setExchange] = useState(false);
+  /** bumping this tells the contacts page to return to the thread list */
+  const [contactsHome, setContactsHome] = useState(0);
   const tutStep = tut.step?.id;
   useEffect(() => {
-    if (tut.phase === "talking" && tutStep === "listing" && !g.flags.listed) {
+    if (tut.phase === "talking" && (tutStep === "listing" || tutStep === "declined") && !g.flags.listed) {
       setFlag("listed");
       setExchange(true);
     }
   }, [tut.phase, tutStep, g.flags.listed, setFlag]);
 
-  /* operator_17 writes once the call is over */
+  /* operator_17 writes once the listing animation has played out */
   useEffect(() => {
-    if (tut.phase !== "over" || !g.flags.listed || g.flags.arc_intro) return;
-    const h = window.setTimeout(() => openArchiveJob(), 2500);
+    if (tut.phase !== "over" || !g.flags.listed || exchange || g.flags.arc_intro) return;
+    const h = window.setTimeout(() => {
+      openArchiveJob();
+      /* drop the operator straight onto the thread list, where it is waiting */
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }, 1800);
     timeouts.current.push(h);
-  }, [tut.phase, g.flags.listed, g.flags.arc_intro, openArchiveJob]);
+  }, [tut.phase, g.flags.listed, exchange, g.flags.arc_intro, openArchiveJob, markTab]);
+
+  /* Freddy follows once the archive job is settled */
+  useEffect(() => {
+    const st = g.contracts["ct_archive"]?.state;
+    if (st !== "COMPLETED" || g.flags.fred_intro) return;
+    if (g.rep < 45) return;   // his job lives in GULF
+    const h = window.setTimeout(() => {
+      openFreddy();
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }, 2600);
+    timeouts.current.push(h);
+  }, [g.contracts, g.flags.fred_intro, g.rep, openFreddy, markTab]);
 
   /* recovery feedback */
   const wasRecovering = useRef(false);
@@ -934,6 +978,7 @@ export default function App() {
             onSend={sendChat}
             operator={operator}
             occupancy={occupancy}
+            contactsHome={contactsHome}
           />
         </aside>
       </main>
@@ -944,6 +989,14 @@ export default function App() {
           onLog={(k, params) => print(t(k, params), "warn")}
         />
       )}
+
+      <MessageToast
+        onOpen={() => {
+          setTab("CONTACTS");
+          markTab("CONTACTS");
+          setContactsHome((n) => n + 1);
+        }}
+      />
 
       <KeyBanner />
 

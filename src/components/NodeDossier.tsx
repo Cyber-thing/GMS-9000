@@ -93,6 +93,9 @@ export default function NodeDossier({
   const sealed = !!meta.password;
   const routing = usesRouting(node.type, meta.warden);
   const wrecked = g.sabotaged.includes(node.id);
+  const burning = g.burning.includes(node.id);
+  /* some hosts only expose SABOTAGE once a client has asked for it */
+  const gateOk = !meta.sabotageGate || !!g.contracts[meta.sabotageGate];
   const reward = Math.round(
     (meta.rep + meta.warden * CFG.repPerWarden) * (breached ? CFG.repeatMult : 1)
   );
@@ -195,10 +198,15 @@ export default function NodeDossier({
         {/* ---- sabotage ---- */}
         {corp && st === "COMPROMISED" && (
           wrecked ? (
-            <div className="mt-1.5 flex items-center justify-center gap-1.5 border border-oxide/50 bg-oxide/10 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-oxide">
-              <Bomb size={10} /> {t("dos.sabotaged")}
+            <div
+              className={cn(
+                "mt-1.5 flex items-center justify-center gap-1.5 border py-[6px] text-[9px] font-bold uppercase tracking-[0.14em]",
+                burning ? "border-oxide/50 bg-oxide/10 text-oxide" : "border-amberdim/50 bg-amber/8 text-amberdim"
+              )}
+            >
+              <Bomb size={10} /> {burning ? t("dos.sabotaged") : t("dos.hardened")}
             </div>
-          ) : (
+          ) : !gateOk ? null : (
             <>
               <button
                 onClick={() => onSabotage(node.id)}

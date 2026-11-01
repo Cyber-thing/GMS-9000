@@ -53,6 +53,8 @@ export interface NodeMeta {
   password?: string;
   /** file that reveals the key once scanned */
   passwordFrom?: string;
+  /** SABOTAGE is only offered once this contract is live */
+  sabotageGate?: string;
 }
 
 export interface DataFile {
@@ -204,10 +206,14 @@ export interface GameState {
   regions: string[];                      // unlocked region ids
   market: MarketState;
   sabotaged: string[];                    // node ids knocked out
+  /** hosts still visibly smoking — cleared by the next identity reset */
+  burning: string[];
   /** files whose market value is spent: sold once or handed to a client */
   burned: string[];
   /** scripted-quest bookkeeping */
   flags: Record<string, string | boolean>;
+  /** how many messages of each thread the operator has actually seen */
+  threadRead: Record<string, number>;
   stats: {
     hacks: number; contracts: number; files: number; nodes: number;
     sold: number; sabotage: number; failed: number;

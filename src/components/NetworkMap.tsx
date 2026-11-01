@@ -18,6 +18,7 @@ import { pad } from "../lib/util";
 import { useT } from "../i18n";
 import { regionContinent, sectorName } from "../i18n/content";
 import { useTut } from "../game/tutorial";
+import { useGame } from "../game/state";
 import { useMapView, ZOOM } from "../hooks/useMapView";
 
 /* ------------------------------------------------------------------ */
@@ -49,6 +50,7 @@ function NodeMarker({
   burst,
   spot,
   dim,
+  burning,
 }: {
   node: NetNode;
   status: NodeState;
@@ -59,14 +61,17 @@ function NodeMarker({
   burst: boolean;
   spot: boolean;
   dim: boolean;
+  burning: boolean;
   onSelect: () => void;
 }) {
   const { t } = useT();
-  const color = connecting
-    ? STATUS_COLOR.CONNECTING
-    : connected
-      ? STATUS_COLOR.CONNECTED
-      : STATUS_COLOR[status];
+  const color = burning
+    ? "#e0634a"
+    : connecting
+      ? STATUS_COLOR.CONNECTING
+      : connected
+        ? STATUS_COLOR.CONNECTED
+        : STATUS_COLOR[status];
 
   const glyph = TYPE_GLYPH[node.type];
   const labelLeft = node.x > 1030;
@@ -96,6 +101,12 @@ function NodeMarker({
           <span
             className="anim-ringout pointer-events-none absolute inset-0 border"
             style={{ borderColor: STATUS_COLOR.CONNECTED }}
+          />
+        )}
+        {burning && (
+          <span
+            className="pointer-events-none absolute inset-[-5px] animate-softpulse rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(224,99,74,0.45), transparent 70%)" }}
           />
         )}
         {connected && (
@@ -194,6 +205,7 @@ export default function NetworkMap({
 }) {
   const { t, lang } = useT();
   const { isHl, gating } = useTut();
+  const { g } = useGame();
   const { frameRef, view, dragging, onPointerDown, zoomBy, reset, consumedDrag } = useMapView();
   /* ---- contain-fit the 1200x760 stage ---- */
   const hostRef = useRef<HTMLDivElement>(null);
@@ -565,6 +577,7 @@ export default function NetworkMap({
               connecting={connectingId === n.id}
               dimmed={!!selectedSector && n.sector !== selectedSector}
               burst={!!bursts[n.id]}
+              burning={g.burning?.includes(n.id) ?? false}
               spot={isHl(`node:${n.id}` as never)}
               dim={gating && !isHl(`node:${n.id}` as never)}
               onSelect={() => { if (!consumedDrag()) onSelectNode(n.id); }}

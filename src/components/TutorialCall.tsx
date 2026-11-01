@@ -65,7 +65,7 @@ function Portrait({ size = 34, avatar = "skull" }: { size?: number; avatar?: "sk
 
 export default function TutorialCall() {
   const { t, lang } = useT();
-  const { phase, step, answer, next, choose, end, call, callNext, callAnswer, callRinging } = useTut();
+  const { phase, step, answer, next, choose, call, callNext, callAnswer, callRinging } = useTut();
   const [typed, setTyped] = useState(false);
   const [skip, setSkip] = useState(false);
   const [folded, setFolded] = useState(false);
@@ -221,13 +221,10 @@ export default function TutorialCall() {
             {folded ? <ChevronUp size={8} /> : <ChevronDown size={8} />}
             {folded ? t("tut.unfold") : t("tut.fold")}
           </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); end(); }}
-            title={t("tut.hangup")}
-            className="flex items-center gap-1 border border-line3 px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
-          >
-            <PhoneOff size={8} /> {t("tut.hangup")}
-          </button>
+          {/* no hanging up mid-briefing: the script drives the session */}
+          <span className="flex items-center gap-1 border border-line px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-faint">
+            <PhoneOff size={8} /> {t("tut.locked")}
+          </span>
         </div>
 
         {/* body */}

@@ -410,6 +410,13 @@ export const DICT: Record<string, Entry> = {
   "co.none": { en: "no contacts yet — build REP and they will find you", ru: "контактов нет — набирайте REP, и вас найдут" },
   "co.pick": { en: "select a contact", ru: "выберите контакт" },
   "co.rep": { en: "REP {n}", ru: "REP {n}" },
+  "co.blocked": { en: "BLOCKED", ru: "ВЫ ЗАБЛОКИРОВАНЫ" },
+  "co.blockedBody": {
+    en: "this contact will not read anything else from you",
+    ru: "этот контакт больше не читает ваши сообщения",
+  },
+  "co.finished": { en: "CONVERSATION CLOSED", ru: "ДИАЛОГ ЗАВЕРШЁН" },
+  "nf.newmsg": { en: "NEW MESSAGE", ru: "НОВОЕ СООБЩЕНИЕ" },
   "co.jump": { en: "NEW JOB", ru: "НОВЫЙ ЗАКАЗ" },
   "co.jumpTip": { en: "jump to the live job in this thread", ru: "перейти к заказу в этой переписке" },
   "co.accept": { en: "ACCEPT CONTRACT", ru: "ПРИНЯТЬ КОНТРАКТ" },
@@ -426,6 +433,7 @@ export const DICT: Record<string, Entry> = {
   "tut.answer": { en: "ANSWER", ru: "ОТВЕТИТЬ" },
   "tut.live": { en: "line open", ru: "линия открыта" },
   "tut.hangup": { en: "HANG UP", ru: "СБРОСИТЬ" },
+  "tut.locked": { en: "LINE HELD", ru: "ЛИНИЯ ЗАНЯТА" },
   "tut.fold": { en: "HIDE", ru: "СВЕРНУТЬ" },
   "tut.unfold": { en: "SHOW", ru: "РАЗВЕРНУТЬ" },
   "tut.next": { en: "continue", ru: "дальше" },
@@ -608,6 +616,7 @@ export const DICT: Record<string, Entry> = {
   /* ---- sabotage ---- */
   "dos.sabotage": { en: "RUN SABOTAGE", ru: "ЗАПУСТИТЬ ДИВЕРСИЮ" },
   "dos.sabotaged": { en: "HOST DISABLED", ru: "УЗЕЛ ВЫВЕДЕН ИЗ СТРОЯ" },
+  "dos.hardened": { en: "HARDENED AFTER SABOTAGE", ru: "УСИЛЕНИЕ ПОСЛЕ ДИВЕРСИИ" },
   "dos.sabHint": {
     en: "corporate host — it can be wrecked instead of robbed",
     ru: "корпоративный узел — его можно разрушить вместо ограбления",

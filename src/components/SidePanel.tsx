@@ -26,6 +26,7 @@ export default function SidePanel({
   onSend,
   operator,
   occupancy,
+  contactsHome,
 }: {
   tab: TabId;
   onTab: (t: TabId) => void;
@@ -36,6 +37,7 @@ export default function SidePanel({
   onSend: (text: string) => void;
   operator: string;
   occupancy: number;
+  contactsHome: number;
 }) {
   const { t } = useT();
   const { g } = useGame();
@@ -97,7 +99,7 @@ export default function SidePanel({
         />
       )}
       {tab === "CODEX" && <CodexPage />}
-      {tab === "CONTACTS" && <ContactsPage />}
+      {tab === "CONTACTS" && <ContactsPage home={contactsHome} />}
       {tab === "STATUS" && <StatusPage operator={operator} />}
     </Panel>
   );
