@@ -36,8 +36,8 @@ function Cell({
     : state === "ready" ? (isAccess ? "#b3d98d" : "#7f95a8")
     : "#3e4733";
 
-  const w = terminal ? 74 : 62;
-  const h = terminal ? 30 : 30;
+  const w = terminal ? 82 : 70;
+  const h = terminal ? 34 : 34;
   const lit = state !== "idle";
 
   /* a tiny schematic glyph per node class */
@@ -99,19 +99,19 @@ function Cell({
         {/* core */}
         <span className="flex min-w-0 flex-1 flex-col items-center justify-center leading-none">
           {terminal ? (
-            <span className="text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: lit ? color : "#59604f" }}>
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em]" style={{ color: lit ? color : "#59604f" }}>
               {isEntry ? t("bg.entry") : t("bg.access")}
             </span>
           ) : (
             <>
               <span className="flex items-center gap-[3px]">
                 <Glyph />
-                <span className="text-[9px] font-bold tracking-[0.04em]" style={{ color: lit ? color : "#59604f" }}>
+                <span className="text-[11px] font-bold tracking-[0.04em]" style={{ color: lit ? color : "#59604f" }}>
                   {cell.expr}
                 </span>
               </span>
               <span
-                className="mt-[1px] text-[6.5px] uppercase tracking-[0.1em]"
+                className="mt-[1px] text-[9.5px] uppercase tracking-[0.08em]"
                 style={{ color: state === "done" || state === "current" ? "#8fb56d" : "#4c5545" }}
               >
                 {state === "done" || state === "current" ? t("bg.cost", { n: cell.cost }) : t(`bg.kind.${cell.kind}`)}
@@ -347,16 +347,16 @@ export default function BreachGame({
         style={{ maxWidth: Math.min(boardW + 40, 1120) }}
       >
         {/* title bar */}
-        <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
+        <div className="flex h-[32px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color={phase === "LOSE" ? "#c25b46" : phase === "WIN" ? "#8fb56d" : "#cfa04b"} pulse />
-          <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
+          <span className="truncate text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
             {t("bg.title")} :: {nodeCode}
           </span>
           <span className="mx-1 hidden h-px flex-1 bg-line sm:block" />
-          <span className="ml-auto shrink-0 text-[8px] tracking-[0.14em] text-amberdim">WARDEN T{warden}</span>
+          <span className="ml-auto shrink-0 text-[10px] tracking-[0.14em] text-amberdim">WARDEN T{warden}</span>
           <button
             onClick={abort}
-            className="flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
+            className="flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
           >
             <Unplug size={9} /> {t("bg.abort")}
           </button>
@@ -365,9 +365,9 @@ export default function BreachGame({
         {/* dial-up */}
         {phase === "DIAL" && (
           <div className="px-4 py-5 sm:px-6">
-            <div className="min-h-[104px]">
+            <div className="min-h-[116px]">
               {DIAL_KEYS.slice(0, dialStep).map((k, i) => (
-                <div key={k} className="anim-msgin text-[10.5px] leading-[1.75] text-dim">
+                <div key={k} className="anim-msgin text-[12.5px] leading-[1.75] text-dim">
                   <span className="text-phosdim">&gt; </span>
                   {t(k, { code: nodeCode, w: warden })}
                   {i === dialStep - 1 && (
@@ -376,10 +376,10 @@ export default function BreachGame({
                 </div>
               ))}
             </div>
-            <div className="blocksbar mt-2 text-[17px] text-phos">
-              {blockBar(dialPct, 30)} <span className="text-[12px] text-dim">{Math.floor(dialPct)}%</span>
+            <div className="blocksbar mt-2 text-[19px] text-phos">
+              {blockBar(dialPct, 30)} <span className="text-[14px] text-dim">{Math.floor(dialPct)}%</span>
             </div>
-            <div className="mt-1 text-[8px] uppercase tracking-[0.2em] text-faint">{t("bg.dialHint")}</div>
+            <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-faint">{t("bg.dialHint")}</div>
           </div>
         )}
 
@@ -388,19 +388,19 @@ export default function BreachGame({
             {/* warden strip */}
             <div
               className={cn(
-                "flex h-[30px] shrink-0 items-center gap-2 border-b px-2.5 transition-colors",
+                "flex h-[34px] shrink-0 items-center gap-2 border-b px-2.5 transition-colors",
                 timerOn ? "border-oxide/50 bg-oxide/10" : "border-line bg-soot"
               )}
             >
               {timerOn ? (
                 <>
                   <Siren size={12} className={cn("text-oxide", danger && "animate-softpulse")} />
-                  <span className="hidden text-[9px] font-bold uppercase tracking-[0.2em] text-oxide sm:inline">
+                  <span className="hidden text-[11px] font-bold uppercase tracking-[0.2em] text-oxide sm:inline">
                     WARDEN
                   </span>
                   <span
                     className={cn(
-                      "pixel text-[22px] leading-none tabular-nums",
+                      "pixel text-[24px] leading-none tabular-nums",
                       frozen > 0 ? "text-steel"
                       : danger ? "animate-softpulse text-[#ff5f45]" : "text-[#e0634a]"
                     )}
@@ -409,7 +409,7 @@ export default function BreachGame({
                     {Math.floor(left / 60)}:{pad(left % 60, 2)}
                   </span>
                   {frozen > 0 && (
-                    <span className="flex items-center gap-1 border border-steel/60 bg-steel/15 px-1 text-[8px] font-bold uppercase tracking-[0.12em] text-steel">
+                    <span className="flex items-center gap-1 border border-steel/60 bg-steel/15 px-1 text-[10px] font-bold uppercase tracking-[0.12em] text-steel">
                       <Snowflake size={9} /> {t("bg.frozen")} {frozen}s
                     </span>
                   )}
@@ -417,12 +417,12 @@ export default function BreachGame({
               ) : (
                 <>
                   <Siren size={11} className="text-faint" />
-                  <span className="truncate text-[8.5px] uppercase tracking-[0.16em] text-faint">
+                  <span className="truncate text-[10.5px] uppercase tracking-[0.16em] text-faint">
                     {t("bg.alarmSoon")}
                   </span>
                 </>
               )}
-              <span className="ml-auto shrink-0 text-[8px] uppercase tracking-[0.14em] text-faint">
+              <span className="ml-auto shrink-0 text-[10px] uppercase tracking-[0.14em] text-faint">
                 {t("bg.depth", { a: depth, b: map.tier.hops })}
               </span>
             </div>
@@ -515,11 +515,11 @@ export default function BreachGame({
                         background: phase === "WIN" ? "rgba(143,181,109,0.12)" : "rgba(194,91,70,0.12)",
                       }}
                     >
-                      <div className="pixel text-[30px] leading-none"
+                      <div className="pixel text-[32px] leading-none"
                         style={{ color: phase === "WIN" ? "#b3d98d" : "#e0634a" }}>
                         {phase === "WIN" ? t("bg.granted") : t("bg.lockout")}
                       </div>
-                      <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-dim">
+                      <div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-dim">
                         {phase === "WIN" ? t("bg.grantedSub") : t("bg.lockoutSub", { n: tier.failRep })}
                       </div>
                     </div>
@@ -530,13 +530,13 @@ export default function BreachGame({
 
             {/* script rail + hint */}
             <div className="flex shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5 py-[5px]">
-              <span className="hidden truncate text-[8px] uppercase tracking-[0.14em] text-faint md:inline">
+              <span className="hidden truncate text-[10px] uppercase tracking-[0.14em] text-faint md:inline">
                 {t("bg.hintHex")}
               </span>
               <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                <span className="text-[8px] uppercase tracking-[0.16em] text-faint">{t("bg.scripts")}:</span>
+                <span className="text-[10px] uppercase tracking-[0.16em] text-faint">{t("bg.scripts")}:</span>
                 {owned.length === 0 && (
-                  <span className="text-[8px] uppercase tracking-[0.12em] text-faint/70">{t("bg.noScripts")}</span>
+                  <span className="text-[10px] uppercase tracking-[0.12em] text-faint/70">{t("bg.noScripts")}</span>
                 )}
                 {owned.map((sc) => {
                   const cd = cool[sc.id] ?? 0;
@@ -550,7 +550,7 @@ export default function BreachGame({
                       disabled={!usable}
                       title={lang === "ru" ? sc.descRu : sc.desc}
                       className={cn(
-                        "flex items-center gap-1 border px-1.5 py-[3px] text-[8px] font-bold uppercase tracking-[0.1em] transition-colors",
+                        "flex items-center gap-1 border px-1.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.1em] transition-colors",
                         usable
                           ? "border-viole bg-viole/15 text-viole hover:bg-viole hover:text-ink"
                           : "cursor-not-allowed border-line text-faint"

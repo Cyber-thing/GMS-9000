@@ -55,7 +55,7 @@ export default function ChatPage({
     <div className="flex min-h-0 flex-1">
       {/* ---- channel rail ---- */}
       <div className="flex w-[82px] shrink-0 flex-col border-r border-line bg-soot sm:w-[94px]">
-        <div className="border-b border-line px-2 py-[5px] text-[7.5px] uppercase tracking-[0.2em] text-faint">
+        <div className="border-b border-line px-2 py-[5px] text-[9.5px] uppercase tracking-[0.2em] text-faint">
           channels
         </div>
         {CHANNELS.map((ch) => {
@@ -73,19 +73,19 @@ export default function ChatPage({
               <Hash size={9} className={cn("shrink-0", isActive ? "text-phos" : "text-faint")} />
               <span
                 className={cn(
-                  "min-w-0 flex-1 truncate text-[8.5px] font-bold uppercase tracking-[0.08em]",
+                  "min-w-0 flex-1 truncate text-[10.5px] font-bold uppercase tracking-[0.08em]",
                   isActive ? "text-phosbrite" : "text-dim group-hover:text-fog"
                 )}
               >
                 {t(`chs.${ch}`)}
               </span>
               {u > 0 && !isActive && (
-                <span className="shrink-0 bg-amber/20 px-[3px] text-[7px] text-amber">{u > 99 ? "99" : u}</span>
+                <span className="shrink-0 bg-amber/20 px-[3px] text-[9px] text-amber">{u > 99 ? "99" : u}</span>
               )}
             </button>
           );
         })}
-        <div className="mt-auto flex items-center gap-1 border-t border-line px-2 py-[5px] text-[7.5px] tracking-[0.14em] text-faint">
+        <div className="mt-auto flex items-center gap-1 border-t border-line px-2 py-[5px] text-[9.5px] tracking-[0.14em] text-faint">
           <Users size={9} /> {occupancy}
         </div>
       </div>
@@ -93,17 +93,17 @@ export default function ChatPage({
       {/* ---- conversation ---- */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex shrink-0 items-center gap-2 border-b border-line bg-panel2 px-2 py-[4px]">
-          <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-phosbrite">
+          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-phosbrite">
             #{t(`ch.${active}`)}
           </span>
-          <span className="truncate text-[8px] uppercase tracking-[0.12em] text-faint">
+          <span className="truncate text-[10px] uppercase tracking-[0.12em] text-faint">
             {t(`topic.${active}`)}
           </span>
         </div>
 
         <div ref={listRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto px-2 py-1.5">
           {list.map((m) => (
-            <div key={m.id} className="anim-msgin py-[2px] text-[10.5px] leading-[1.45]">
+            <div key={m.id} className="anim-msgin py-[2px] text-[12.5px] leading-[1.45]">
               <span className="tabular-nums text-faint">{m.t}</span>{" "}
               <span
                 className={cn("font-semibold", m.corp && "uppercase")}
@@ -117,12 +117,12 @@ export default function ChatPage({
             </div>
           ))}
           {list.length === 0 && (
-            <p className="py-4 text-center text-[10px] text-faint">{t("chat.quiet")}</p>
+            <p className="py-4 text-center text-[12px] text-faint">{t("chat.quiet")}</p>
           )}
         </div>
 
-        <div className="flex h-[30px] shrink-0 items-center border-t border-line2 bg-well">
-          <span className="flex shrink-0 items-center gap-1 pl-1.5 text-[9px] font-bold uppercase tracking-[0.08em] text-amber">
+        <div className="flex h-[34px] shrink-0 items-center border-t border-line2 bg-well">
+          <span className="flex shrink-0 items-center gap-1 pl-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-amber">
             <ChevronRight size={10} />
             <span className="hidden sm:inline">{operator.toLowerCase()}</span>
           </span>
@@ -133,13 +133,13 @@ export default function ChatPage({
             onKeyDown={(e) => e.key === "Enter" && submit()}
             maxLength={220}
             placeholder={t("chat.ph", { ch: t(`ch.${active}`).toLowerCase() })}
-            className="h-full min-w-0 flex-1 bg-transparent px-2 text-[11px] text-fog placeholder:text-faint"
+            className="h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] text-fog placeholder:text-faint"
             spellCheck={false}
             autoComplete="off"
           />
           <button
             onClick={submit}
-            className="h-full shrink-0 border-l border-line2 bg-panel px-2.5 text-[9px] font-bold uppercase tracking-[0.12em] text-phos transition-colors hover:bg-phos hover:text-ink"
+            className="h-full shrink-0 border-l border-line2 bg-panel px-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-phos transition-colors hover:bg-phos hover:text-ink"
           >
             {t("chat.send")}
           </button>

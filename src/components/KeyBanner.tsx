@@ -44,7 +44,7 @@ export default function KeyBanner() {
         >
           <KeyRound size={13} className={k.open ? "shrink-0 text-phos" : "shrink-0 animate-softpulse text-amber"} />
           <div className="min-w-0 flex-1">
-            <div className="text-[7.5px] font-bold uppercase tracking-[0.2em] text-faint">
+            <div className="text-[9.5px] font-bold uppercase tracking-[0.2em] text-faint">
               {t("nf.KEY RECOVERED")} · {k.code}
             </div>
             <button
@@ -53,7 +53,7 @@ export default function KeyBanner() {
               className="group flex items-center gap-1.5 text-left"
             >
               <span
-                className="pixel text-[19px] leading-none tracking-[0.14em]"
+                className="pixel text-[21px] leading-none tracking-[0.14em]"
                 style={{
                   color: k.open ? "#b3d98d" : "#e8c478",
                   textShadow: k.open ? "none" : "0 0 10px rgba(207,160,75,0.45)",

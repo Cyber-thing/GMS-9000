@@ -848,7 +848,7 @@ export default function App() {
                 key={id}
                 onClick={() => setPane(id)}
                 className={cn(
-                  "flex-1 px-2 py-[6px] text-[8.5px] font-bold uppercase tracking-[0.18em] transition-colors",
+                  "flex-1 px-2 py-[6px] text-[10.5px] font-bold uppercase tracking-[0.18em] transition-colors",
                   pane === id
                     ? "bg-phos/15 text-phosbrite shadow-[inset_0_-2px_0_#8fb56d]"
                     : "text-faint hover:bg-panel2 hover:text-dim"
@@ -944,15 +944,15 @@ export default function App() {
           </div>
 
           {/* map-column footer — the market door lives here, never over the canvas */}
-          <div className="flex h-[26px] shrink-0 items-center justify-end gap-2 border border-line bg-soot px-2">
-            <span className="mr-auto hidden truncate text-[7.5px] uppercase tracking-[0.18em] text-faint sm:inline">
+          <div className="flex h-[30px] shrink-0 items-center justify-end gap-2 border border-line bg-soot px-2">
+            <span className="mr-auto hidden truncate text-[9.5px] uppercase tracking-[0.18em] text-faint sm:inline">
               {inRegion ? t("map.panHint") : t("bm.footer")}
             </span>
             <button
               onClick={() => setMarketOpen(true)}
               title={t("bm.open")}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 border px-2 py-[3px] text-[8.5px] font-bold uppercase tracking-[0.14em] transition-all",
+                "flex shrink-0 items-center gap-1.5 border px-2 py-[3px] text-[10.5px] font-bold uppercase tracking-[0.14em] transition-all",
                 g.market.unlocked
                   ? "border-[#c25b46] bg-[#1a0f0d] text-[#e0634a] hover:bg-[#c25b46] hover:text-ink"
                   : "border-line3 text-dim hover:border-[#c25b46]/70 hover:text-[#e0634a]"

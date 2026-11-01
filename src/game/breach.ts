@@ -194,12 +194,12 @@ export function cheapestRoute(map: BreachMap): number {
 }
 
 /* layout helpers — drawing space grows with the board */
-export const BOARD_H = 320;
-export const boardWidth = (cols: number) => Math.max(560, Math.min(1080, 150 + cols * 86));
+export const BOARD_H = 340;
+export const boardWidth = (cols: number) => Math.max(600, Math.min(1120, 160 + cols * 96));
 
 export function cellPos(cell: BreachCell, cols: number, boardW: number) {
-  const x = 66 + (cell.col * (boardW - 132)) / Math.max(1, cols - 1);
-  const span = 116;
+  const x = 72 + (cell.col * (boardW - 144)) / Math.max(1, cols - 1);
+  const span = 124;
   const y =
     cell.rows === 1
       ? BOARD_H / 2

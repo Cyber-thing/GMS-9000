@@ -63,9 +63,9 @@ export default function ArchiveWindow({
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[92vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.78)]">
         {/* title */}
-        <div className="flex h-[26px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
+        <div className="flex h-[30px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <Archive size={11} className="text-steel" />
-          <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
+          <span className="truncate text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
             {t("arc.title")} :: {nodeCode}
           </span>
           <button onClick={onClose} className="ml-auto shrink-0 text-dim transition-colors hover:text-fog">
@@ -81,13 +81,13 @@ export default function ArchiveWindow({
               <div
                 key={name}
                 className={cn(
-                  "flex items-center gap-2 border-b border-line/40 px-1 py-[4px] text-[10px] transition-colors",
+                  "flex items-center gap-2 border-b border-line/40 px-1 py-[4px] text-[12px] transition-colors",
                   active ? "bg-amber/10 text-amber" : "text-dim"
                 )}
               >
                 <FileText size={9} className="shrink-0 opacity-70" />
                 <span className="min-w-0 flex-1 truncate">{name}</span>
-                <span className="shrink-0 tabular-nums text-[8px] text-faint">
+                <span className="shrink-0 tabular-nums text-[10px] text-faint">
                   {((i * 37) % 900) + 40}K
                 </span>
               </div>
@@ -98,18 +98,18 @@ export default function ArchiveWindow({
         {/* result */}
         {(phase === "found" || phase === "saved") && (
           <div className="shrink-0 border-t border-line2 bg-panel2 px-3 py-2.5">
-            <div className="text-[8px] uppercase tracking-[0.2em] text-amberdim">{t("arc.sealed")}</div>
-            <div className="pixel mt-[2px] text-[17px] leading-tight text-amber">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-amberdim">{t("arc.sealed")}</div>
+            <div className="pixel mt-[2px] text-[19px] leading-tight text-amber">
               {t("arc.termTitle")}
             </div>
             {phase === "saved" ? (
-              <div className="mt-2 border border-phosdim/50 bg-phos/10 py-[6px] text-center text-[9px] font-bold uppercase tracking-[0.14em] text-phos">
+              <div className="mt-2 border border-phosdim/50 bg-phos/10 py-[6px] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-phos">
                 ✓ {t("arc.saved")}
               </div>
             ) : (
               <button
                 onClick={take}
-                className="mt-2 flex w-full items-center justify-center gap-2 border border-amberdim bg-amber/15 py-[7px] text-[9.5px] font-bold uppercase tracking-[0.16em] text-amber transition-colors hover:bg-amber hover:text-ink"
+                className="mt-2 flex w-full items-center justify-center gap-2 border border-amberdim bg-amber/15 py-[7px] text-[11.5px] font-bold uppercase tracking-[0.16em] text-amber transition-colors hover:bg-amber hover:text-ink"
               >
                 <Download size={11} /> {t("arc.save")}
               </button>
@@ -118,22 +118,22 @@ export default function ArchiveWindow({
         )}
 
         {/* action bar */}
-        <div className="flex h-[34px] shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5">
+        <div className="flex h-[38px] shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5">
           {phase === "scanning" ? (
             <>
               <Radar size={11} className="animate-softpulse text-amber" />
-              <span className="text-[8.5px] uppercase tracking-[0.14em] text-amber">{t("arc.scanning")}</span>
-              <span className="blocksbar ml-auto text-[13px] text-amber">{blockBar(pct, 16)}</span>
+              <span className="text-[10.5px] uppercase tracking-[0.14em] text-amber">{t("arc.scanning")}</span>
+              <span className="blocksbar ml-auto text-[15px] text-amber">{blockBar(pct, 16)}</span>
             </>
           ) : phase === "idle" ? (
             <button
               onClick={scan}
-              className="flex w-full items-center justify-center gap-2 border border-phosdim bg-phos/12 py-[7px] text-[9.5px] font-bold uppercase tracking-[0.16em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
+              className="flex w-full items-center justify-center gap-2 border border-phosdim bg-phos/12 py-[7px] text-[11.5px] font-bold uppercase tracking-[0.16em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
             >
               <Radar size={11} /> {t("arc.scanBtn")}
             </button>
           ) : (
-            <span className="text-[8.5px] uppercase tracking-[0.14em] text-faint">{t("arc.restored")}</span>
+            <span className="text-[10.5px] uppercase tracking-[0.14em] text-faint">{t("arc.restored")}</span>
           )}
         </div>
       </div>

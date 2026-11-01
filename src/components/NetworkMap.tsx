@@ -96,7 +96,7 @@ function NodeMarker({
         opacity: dimmed ? 0.32 : 1,
       }}
     >
-      <span className="relative block h-[26px] w-[26px]">
+      <span className="relative block h-[30px] w-[26px]">
         {burst && (
           <span
             className="anim-ringout pointer-events-none absolute inset-0 border"
@@ -140,7 +140,7 @@ function NodeMarker({
       </span>
       <span
         className={cn(
-          "absolute whitespace-nowrap text-[9px] leading-none tracking-[0.12em]",
+          "absolute whitespace-nowrap text-[11px] leading-none tracking-[0.12em]",
           labelTop
             ? "left-1/2 top-full mt-[7px] -translate-x-1/2"
             : labelLeft
@@ -308,10 +308,10 @@ export default function NetworkMap({
       className="h-full"
       bodyClassName="relative bg-well"
       right={
-        <div className="flex items-center gap-2 text-[8.5px] uppercase tracking-[0.18em]">
+        <div className="flex items-center gap-2 text-[10.5px] uppercase tracking-[0.18em]">
           <button
             onClick={onBackToWorld}
-            className="flex items-center gap-1 border border-line2 px-1.5 py-[2px] text-[8px] font-bold tracking-[0.14em] text-dim transition-colors hover:border-phosdim hover:text-phos"
+            className="flex items-center gap-1 border border-line2 px-1.5 py-[2px] text-[10px] font-bold tracking-[0.14em] text-dim transition-colors hover:border-phosdim hover:text-phos"
             title={t("map.backTip")}
           >
             <ArrowUpFromLine size={9} /> {t("map.back")}
@@ -353,7 +353,7 @@ export default function NetworkMap({
             >
               <Maximize2 size={8} />
             </button>
-            <span className="ml-1 w-[30px] tabular-nums text-[8px] text-dim">
+            <span className="ml-1 w-[30px] tabular-nums text-[10px] text-dim">
               {view.scale.toFixed(1)}x
             </span>
           </span>
@@ -506,7 +506,7 @@ export default function NetworkMap({
                 {/* label chip */}
                 <div className="pointer-events-none absolute left-[16px] top-[15px] flex items-center gap-1.5">
                   <span
-                    className="px-1 py-[1px] text-[7.5px] font-bold tracking-[0.16em]"
+                    className="px-1 py-[1px] text-[9.5px] font-bold tracking-[0.16em]"
                     style={
                       sel
                         ? { background: col, color: "#0b0d09" }
@@ -516,7 +516,7 @@ export default function NetworkMap({
                     {s.code}
                   </span>
                   <span
-                    className="pixel text-[15px] uppercase leading-none tracking-[0.1em] transition-colors"
+                    className="pixel text-[17px] uppercase leading-none tracking-[0.1em] transition-colors"
                     style={{
                       color: sel ? col : "#9aa589",
                       textShadow: sel ? `0 0 10px ${col}66` : "0 1px 2px rgba(0,0,0,0.9)",
@@ -525,12 +525,12 @@ export default function NetworkMap({
                     {sectorName(lang, s.id, s.name)}
                   </span>
                   <StatusDot color={col} pulse={s.status !== "ONLINE"} />
-                  <span className="hidden text-[7.5px] tracking-[0.2em] md:inline" style={{ color: col }}>
+                  <span className="hidden text-[9.5px] tracking-[0.2em] md:inline" style={{ color: col }}>
                     {t(`st.${s.status}`)}
                   </span>
                 </div>
                 <span
-                  className="pointer-events-none absolute bottom-[4px] right-[6px] bg-ink/70 px-[3px] text-[8px] tracking-[0.14em]"
+                  className="pointer-events-none absolute bottom-[4px] right-[6px] bg-ink/70 px-[3px] text-[10px] tracking-[0.14em]"
                   style={{ color: sel ? col : "#6b7460" }}
                 >
                   {t("map.nd", { n: nodes.filter((n) => n.sector === s.id).length })}
@@ -540,12 +540,12 @@ export default function NetworkMap({
           })}
 
           {/* ======== rulers ======== */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[11px] justify-between px-[1px] text-[7px] leading-[11px] text-faint sm:flex">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[11px] justify-between px-[1px] text-[9px] leading-[11px] text-faint sm:flex">
             {rulerX.map((x) => (
               <span key={x} className="tabular-nums">{pad(x, 3)}</span>
             ))}
           </div>
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-[14px] flex-col justify-between py-[1px] text-[7px] leading-none text-faint sm:flex">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-[14px] flex-col justify-between py-[1px] text-[9px] leading-none text-faint sm:flex">
             {rulerY.map((y) => (
               <span key={y} className="tabular-nums">{pad(y, 3)}</span>
             ))}
@@ -595,7 +595,7 @@ export default function NetworkMap({
             }}
           >
             <div className="group relative">
-              <div className="border border-line bg-ink/90 px-1.5 py-[3px] text-[7.5px] font-bold tracking-[0.24em] text-faint transition-colors group-hover:text-dim">
+              <div className="border border-line bg-ink/90 px-1.5 py-[3px] text-[9.5px] font-bold tracking-[0.24em] text-faint transition-colors group-hover:text-dim">
                 {t("map.legend")}
               </div>
               <div className="pointer-events-none absolute bottom-full left-0 mb-1 hidden w-[172px] border border-line bg-ink/95 p-1.5 group-hover:block">
@@ -614,11 +614,11 @@ export default function NetworkMap({
                   ).map(([ty, g]) => (
                     <div key={ty} className="flex items-center gap-1.5">
                       <span className={cn("block h-[7px] w-[7px] shrink-0 border border-dim", shapeClass(g))} />
-                      <span className="truncate text-[7px] tracking-[0.14em] text-faint">{t(`tshort.${ty}`)}</span>
+                      <span className="truncate text-[9px] tracking-[0.14em] text-faint">{t(`tshort.${ty}`)}</span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-1.5 border-t border-line pt-1 text-[7px] tracking-[0.14em] text-faint">
+                <div className="mt-1.5 border-t border-line pt-1 text-[9px] tracking-[0.14em] text-faint">
                   {t("map.links")}
                 </div>
               </div>
