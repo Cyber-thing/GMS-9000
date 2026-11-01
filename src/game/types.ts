@@ -195,6 +195,8 @@ export interface GameState {
   regions: string[];                      // unlocked region ids
   market: MarketState;
   sabotaged: string[];                    // node ids knocked out
+  /** files whose market value is spent: sold once or handed to a client */
+  burned: string[];
   stats: {
     hacks: number; contracts: number; files: number; nodes: number;
     sold: number; sabotage: number; failed: number;
@@ -205,7 +207,11 @@ export interface GameState {
 export interface ThreadMsg {
   id: number;
   from: string;   // contact id or "OP"
+  /** rendered when no language variant is stored (legacy saves) */
   text: string;
+  /** language variants — kept so switching EN/RU re-renders old messages */
+  textEn?: string;
+  textRu?: string;
   t: string;
   contract?: string;
   action?: "offer" | "deliver" | "done";

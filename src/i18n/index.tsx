@@ -636,6 +636,11 @@ export const DICT: Record<string, Entry> = {
   "bm.sellEmpty": { en: "nothing to fence", ru: "сбывать нечего" },
   "bm.sell": { en: "SELL", ru: "ПРОДАТЬ" },
   "bm.owed": { en: "PROMISED TO {who}", ru: "ОБЕЩАНО: {who}" },
+  "bm.spent": { en: "already fenced", ru: "уже сбыт" },
+  "bm.spentWarn": {
+    en: "this copy is already circulating — the board pays scrap for it",
+    ru: "эта копия уже гуляет по сети — доска платит за неё гроши",
+  },
   "bm.owedWarn": {
     en: "fencing this breaks the contract — the client will remember",
     ru: "сбыт сорвёт контракт — заказчик это запомнит",

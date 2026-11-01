@@ -270,13 +270,13 @@ const shuffle = <T,>(a: T[]): T[] => [...a].sort(() => Math.random() - 0.5);
 const EXTS = ["DAT", "DOC", "MSG", "LOG", "TXT", "BIN"];
 
 /** builds a fresh, slightly different file system every time the host is entered */
-export function generateVault(nodeId: string, ownedFiles: string[]): VaultFS {
+export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles: string[] = []): VaultFS {
   const meta = NODE_META[nodeId];
   const theme = (meta && THEMES[meta.owner]) || FALLBACK;
 
-  /* payloads that are still out there */
+  /* payloads still worth recovering: not held, and not already fenced away */
   const all = filesOfNode(nodeId).map((f) => f.id);
-  const pending = all.filter((id) => !ownedFiles.includes(id));
+  const pending = all.filter((id) => !ownedFiles.includes(id) && !burnedFiles.includes(id));
 
   const folderNames = shuffle(theme.folders).slice(0, ri(3, Math.min(5, theme.folders.length)));
   const folders: VaultFolder[] = folderNames.map((name, fi) => ({

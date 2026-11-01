@@ -502,6 +502,20 @@ export default function App() {
     if (ctState === "DELIVERED" || ctState === "COMPLETED") tutFire("deliver:ct_payroll");
   }, [ctState, tutFire]);
 
+  /* a beat whose goal is already met must not stall the call: these states
+     can be true before the script asks for them (or after a reload) */
+  const tutSatisfy = tut.satisfy;
+  const tutStepId = tut.step?.id;
+  useEffect(() => {
+    if (!tutStepId) return;
+    if (tutStepId === "scan" && g.files.includes("f_icx_payroll")) tutSatisfy("file:f_icx_payroll");
+    if (tutStepId === "dsv2" && g.nodeStates["w1p_dsv"] === "COMPROMISED") tutSatisfy("hack:w1p_dsv");
+    if (tutStepId === "locked" && selectedNode === "w1p_acc") tutSatisfy("node:w1p_acc");
+    if (tutStepId === "dsv" && selectedNode === "w1p_dsv") tutSatisfy("node:w1p_dsv");
+    if (tutStepId === "world" && inRegion) tutSatisfy("region:west1");
+    if (tutStepId === "contacts" && tab === "CONTACTS") tutSatisfy("tab:CONTACTS");
+  }, [tutStepId, g.files, g.nodeStates, selectedNode, inRegion, tab, tutSatisfy]);
+
   /* ---------- sabotage ---------- */
   const runSabotage = useCallback(
     (id: string) => {
@@ -593,6 +607,8 @@ export default function App() {
     print(t("t.logout", { op }), "warn");
     setLoggedIn(false);
   }, [print, t]);
+
+  useEffect(() => { markTab(tab); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const switchTab = useCallback((id: TabId) => {
     setTab(id);
@@ -865,6 +881,7 @@ export default function App() {
             nodeCode={vn.code}
             ownerName={own ? (lang === "ru" ? own.nameRu : own.name) : ""}
             ownedFiles={g.files}
+            burnedFiles={g.burned}
             onAcquire={(fid) => runDownload(vaultId, fid)}
             onClose={closeVault}
             onLog={(k, params) => print(t(k, params), "dim")}

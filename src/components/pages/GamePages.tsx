@@ -231,7 +231,7 @@ export function ContactsPage() {
                   </span>
                 </div>
                 <p className={cn("pl-1 text-[10.5px] leading-snug", mine ? "text-[#ddd3ae]" : "text-fog/90")}>
-                  {m.text}
+                  {(lang === "ru" ? m.textRu : m.textEn) ?? m.text}
                 </p>
 
                 {/* contract card */}
@@ -342,7 +342,11 @@ export function ContactsPage() {
                   {fac ? (lang === "ru" ? fac.nameRu : fac.name) : ""}
                 </span>
               </div>
-              {last && <p className="mt-[1px] truncate text-[9.5px] text-dim">{last.text}</p>}
+              {last && (
+                <p className="mt-[1px] truncate text-[9.5px] text-dim">
+                  {(lang === "ru" ? last.textRu : last.textEn) ?? last.text}
+                </p>
+              )}
               {activeCt.length > 0 && (
                 <span className="mt-[2px] inline-block bg-viole/20 px-[4px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-viole">
                   {t(`cs.${g.contracts[activeCt[0].id].state}`)}

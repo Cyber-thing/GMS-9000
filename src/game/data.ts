@@ -30,6 +30,7 @@ export const CFG = {
   sellRelHit: -14,         // relation damage with the data owner
   betrayRelHit: -25,       // relation damage with a betrayed client
   betrayCrewGain: 12,      // relation gain with the underworld
+  resellMult: 0.07,        // a fenced file is worthless the second time round
 };
 
 /* ================================================================== */
@@ -462,22 +463,22 @@ export const CONTRACTS: ContractDef[] = [
   {
     id: "sb_meridian", kind: "SABOTAGE", contact: "op17", client: "civic",
     title: "UNSCHEDULED OUTAGE", titleRu: "ВНЕПЛАНОВОЕ ОТКЛЮЧЕНИЕ",
-    brief: "Officially the authority has no opinion about Intercell's west HQ. Unofficially, its guest port has been scanning our substations for a month. Knock it over.",
-    briefRu: "Официально у управления нет мнения о западной штаб-квартире Intercell. Неофициально её гостевой порт месяц сканирует наши подстанции. Опрокинь его.",
+    brief: "The Harbor Authority host on the Atlantic Shelf has been mirroring our southern meter traffic into its own ledger for a month. Officially we have no opinion about that. Unofficially — take the host down.",
+    briefRu: "Хост портового управления на атлантическом шельфе месяц зеркалит наш южный трафик счётчиков в свой реестр. Официально у нас нет мнения на этот счёт. Неофициально — погаси этот узел.",
     target: "wls_crp", credits: 620, rep: 18, relation: 11, afterReq: "ct_mirror", repReq: 78, regionReq: "wetlow",
   },
   {
     id: "sb_port", kind: "SABOTAGE", contact: "count", client: "scavenger",
     title: "CRATE AMNESIA", titleRu: "АМНЕЗИЯ ЯЩИКОВ",
-    brief: "The port authority host remembers a shipment the kingdom would rather it forgot. Do not steal the manifest — destroy the index that points at it.",
-    briefRu: "Хост портового управления помнит партию, о которой королевству лучше бы забыли. Манифест не воруй — уничтожь индекс, который на него указывает.",
+    brief: "Takamuri's freight desk indexes every crate that moves west, including one the kingdom would rather it forgot. Do not steal the index — burn it.",
+    briefRu: "Грузовой отдел Takamuri индексирует каждый ящик, идущий на запад, включая один, о котором королевству лучше бы забыли. Индекс не воруй — сожги его.",
     target: "w1p_crp2", credits: 840, rep: 22, relation: 12, afterReq: "ct_mission", repReq: 135, market: true,
   },
   {
     id: "sb_helix", kind: "SABOTAGE", contact: "sablec", client: "broken",
     title: "CUT THE SUBSIDIARY", titleRu: "ОТРЕЗАТЬ ДОЧКУ",
-    brief: "You read the memo. Now end the arrangement. The corporate host routing those shell transfers goes dark tonight — and the Connection remembers who did it.",
-    briefRu: "Записку ты читал. Теперь прекрати эту схему. Корпоративный хост, который гоняет переводы через подставную контору, сегодня погаснет — и Connection запомнит, кто это сделал.",
+    brief: "You read the memo. Now end the arrangement. Intercell's clearing host in the Midland Exchange routes those shell transfers — it goes dark tonight, and the Connection remembers who did it.",
+    briefRu: "Записку ты читал. Теперь прекрати эту схему. Клиринговый хост Intercell в Midland Exchange гоняет переводы через подставную контору — сегодня он погаснет, и Connection запомнит, кто это сделал.",
     target: "w1m_crp", credits: 1300, rep: 32, relation: 15, repReq: 185, market: true,
   },
 ];

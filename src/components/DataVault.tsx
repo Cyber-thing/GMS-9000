@@ -15,6 +15,7 @@ export default function DataVault({
   nodeCode,
   ownerName,
   ownedFiles,
+  burnedFiles,
   onAcquire,
   onClose,
   onLog,
@@ -23,6 +24,7 @@ export default function DataVault({
   nodeCode: string;
   ownerName: string;
   ownedFiles: string[];
+  burnedFiles: string[];
   onAcquire: (fileId: string) => void;
   onClose: () => void;
   onLog: (key: string, params?: Record<string, string | number>) => void;
@@ -32,7 +34,7 @@ export default function DataVault({
   /* while the script points at the exit, the browser panes go quiet */
   const leaving = isHl("vault:close");
 
-  const [fs, setFs] = useState<VaultFS>(() => generateVault(nodeId, ownedFiles));
+  const [fs, setFs] = useState<VaultFS>(() => generateVault(nodeId, ownedFiles, burnedFiles));
   const [openDir, setOpenDir] = useState(fs.folders[0]?.id ?? "");
   const [scanning, setScanning] = useState<string | null>(null);
   const [pct, setPct] = useState(0);

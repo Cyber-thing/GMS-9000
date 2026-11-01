@@ -1,5 +1,5 @@
 import {
-  createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode,
+  createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode,
 } from "react";
 import { store } from "../lib/util";
 
@@ -149,9 +149,10 @@ export const TUT_STEPS: TutStep[] = [
     id: "send",
     en: "I can see you have the file. Good. Throw it over to me — and do not you dare fence it on the black market before I get it.",
     ru: "Вижу файл у тебя. Отлично. Бросай его мне. И не вздумай продать его на чёрном рынке до того как пришлёшь мне!",
-    /* the operator is still inside the volume: light the way out first,
-       then the transfer button waiting in CONTACTS */
-    highlight: ["vault:close", "deliver"],
+    /* still inside the volume: light the way out, the CONTACTS tab to get
+       back to, and the transfer button itself — otherwise leaving the tab
+       during this beat would strand the operator */
+    highlight: ["vault:close", "tab:CONTACTS", "thread:ghost", "deliver"],
     waitFor: "deliver:ct_payroll",
   },
   {
@@ -196,6 +197,7 @@ interface Ctx {
   next: () => void;
   choose: (yes: boolean) => void;
   fire: (e: TutEvent) => void;
+  satisfy: (e: TutEvent) => void;
   end: () => void;
   start: () => void;
 }
@@ -204,12 +206,24 @@ const TutCtx = createContext<Ctx | null>(null);
 
 export const tutorialSeen = () => store.get<boolean>("tut.done", false);
 
+interface TutSave { phase: Phase; idx: number; declined: boolean }
+const loadTut = (): TutSave =>
+  store.get<TutSave>("tut.state", { phase: "idle", idx: 0, declined: false });
+
 export function TutorialProvider({ children }: { children: ReactNode }) {
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [idx, setIdx] = useState(0);
-  const [declined, setDeclined] = useState(false);
-  const idxRef = useRef(0);
+  const saved = loadTut();
+  /* a call that was ringing when the tab closed resumes as ringing */
+  const [phase, setPhase] = useState<Phase>(saved.phase === "over" ? "over" : saved.phase);
+  const [idx, setIdx] = useState(saved.idx);
+  const [declined, setDeclined] = useState(saved.declined);
+  const idxRef = useRef(saved.idx);
   idxRef.current = idx;
+
+  /* keep the script position across reloads */
+  useEffect(() => {
+    if (phase === "over") store.set("tut.state", { phase: "over", idx: 0, declined: false });
+    else store.set("tut.state", { phase, idx, declined });
+  }, [phase, idx, declined]);
 
   const step = declined ? DECLINE_STEP : (TUT_STEPS[idx] ?? null);
   const active = phase === "ringing" || phase === "talking";
@@ -217,6 +231,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const end = useCallback(() => {
     setPhase("over");
     store.set("tut.done", true);
+    store.set("tut.state", { phase: "over", idx: 0, declined: false });
   }, []);
 
   const start = useCallback(() => setPhase("ringing"), []);
@@ -241,6 +256,14 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     if (cur?.waitFor === e) setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
   }, [phase, declined]);
 
+  /** satisfy a step whose objective is already true when it is reached
+      (e.g. the payload was picked up before the script asked for it) */
+  const satisfy = useCallback((e: TutEvent) => {
+    if (phase !== "talking" || declined) return;
+    const cur = TUT_STEPS[idxRef.current];
+    if (cur?.waitFor === e) setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
+  }, [phase, declined]);
+
   const value = useMemo<Ctx>(
     () => ({
       phase, step, active,
@@ -249,9 +272,9 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
       isHl: (h: TutHighlight) =>
         phase === "talking" ? (step?.highlight ?? []).includes(h) : false,
       gating: phase === "talking" && !!step?.highlight?.length,
-      answer, next, choose, fire, end, start,
+      answer, next, choose, fire, satisfy, end, start,
     }),
-    [phase, step, active, answer, next, choose, fire, end, start]
+    [phase, step, active, answer, next, choose, fire, satisfy, end, start]
   );
 
   return <TutCtx.Provider value={value}>{children}</TutCtx.Provider>;

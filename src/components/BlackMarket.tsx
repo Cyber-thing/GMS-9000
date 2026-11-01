@@ -19,7 +19,7 @@ export default function BlackMarket({
   onLog: (key: string, params?: Record<string, string | number>) => void;
 }) {
   const { t, lang } = useT();
-  const { g, openMarket, buyScript, sellFile, acceptContract } = useGame();
+  const { g, openMarket, buyScript, sellFile, acceptContract, fenceValue } = useGame();
   const [tab, setTab] = useState<Tab>("sell");
 
   const unlocked = g.market.unlocked;
@@ -83,8 +83,10 @@ export default function BlackMarket({
           {g.files.map((id) => {
             const f = resolveFile(id);
             if (!f) return null;
+            const v = fenceValue(id);
+            const price = typeof v === "number" ? v : v.credits;
+            const spent = typeof v === "number" ? false : v.spent;
             const owed = owedBy(id);
-            const price = Math.round(f.value * (owed ? CFG.sellBonusQuest : 1));
             const client = owed ? factionById(owed.client) : null;
             return (
               <div
@@ -101,6 +103,7 @@ export default function BlackMarket({
                     </div>
                     <div className="truncate text-[7.5px] uppercase tracking-[0.12em] text-faint">
                       {t(`dcat.${f.cat}`)}
+                      {spent && <span className="ml-1 text-oxide">· {t("bm.spent")}</span>}
                     </div>
                   </div>
                   <button
@@ -115,7 +118,12 @@ export default function BlackMarket({
                     {t("bm.sell")} · {price}cr
                   </button>
                 </div>
-                {owed && (
+                {spent && (
+                  <div className="mt-1 border-t border-line pt-1 text-[8.5px] leading-snug text-faint">
+                    {t("bm.spentWarn")}
+                  </div>
+                )}
+                {owed && !spent && (
                   <div className="mt-1 flex items-start gap-1.5 border-t border-[#c25b46]/30 pt-1">
                     <TriangleAlert size={10} className="mt-[1px] shrink-0" style={{ color: RED }} />
                     <div className="min-w-0">

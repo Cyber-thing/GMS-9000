@@ -8,7 +8,7 @@ import {
   codexById, contactById, contractById, factionById, filesOfNode, resolveFile, scriptById,
 } from "./data";
 import type {
-  GameState, NodeState, Notif, NotifKind, Requirement, TabId, ThreadMsg,
+  ContractDef, GameState, NodeState, Notif, NotifKind, Requirement, TabId, ThreadMsg,
 } from "./types";
 
 /* ================================================================== */
@@ -38,6 +38,7 @@ const freshState = (): GameState => {
     regions: ["west1"],
     market: { unlocked: false, scripts: [] },
     sabotaged: [],
+    burned: [],
     stats: { hacks: 0, contracts: 0, files: 0, nodes: 0, sold: 0, sabotage: 0, failed: 0 },
     unread: { CHAT: 0, CODEX: 0, CONTACTS: 0, STATUS: 0 },
   };
@@ -98,6 +99,7 @@ interface Ctx {
   openMarket: () => boolean;
   buyScript: (id: string) => boolean;
   sellFile: (id: string) => { credits: number; betrayed?: string } | null;
+  fenceValue: (id: string) => number | { credits: number; owed?: ContractDef; spent: boolean };
   buyUpgrade: (id: string) => boolean;
   markTab: (tab: TabId) => void;
   markCodexSeen: (id: string) => void;
@@ -113,17 +115,29 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const saved = store.get<GameState | null>("game", null);
     if (!saved) return freshState();
     const base = freshState();
+    /* Transient flags must never survive a reload: their timers do not.
+       Anything mid-flight is settled here instead of hanging forever. */
+    const contracts = { ...(saved.contracts ?? {}) };
+    Object.entries(contracts).forEach(([id, pr]) => {
+      if (pr?.state === "DELIVERED") contracts[id] = { state: "COMPLETED" };
+    });
+
     return {
       ...base, ...saved,
       unread: { ...base.unread, ...saved.unread },
       stats: { ...base.stats, ...saved.stats },
       market: { ...base.market, ...(saved.market ?? {}) },
       sabotaged: saved.sabotaged ?? [],
+      burned: saved.burned ?? [],
+      contracts,
+      recovering: false,   // the 4.2s timer is gone after a reload
     };
   });
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [lastHack, setLastHack] = useState<HackResult | null>(null);
   const langRef = useRef<"en" | "ru">("en");
+  /** the tab the operator is currently looking at — never badge it */
+  const activeTab = useRef<TabId>("CHAT");
   const nid = useRef(1);
   const timers = useRef<number[]>([]);
 
@@ -134,8 +148,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const notify = useCallback((kind: NotifKind, text: string, tab?: TabId) => {
     setNotifs((n) => [...n.slice(-39), { id: nid.current++, kind, text, tab, t: stampNow() }]);
-    if (tab) setG((s) => ({ ...s, unread: { ...s.unread, [tab]: s.unread[tab] + 1 } }));
+    if (tab && tab !== activeTab.current)
+      setG((s) => ({ ...s, unread: { ...s.unread, [tab]: s.unread[tab] + 1 } }));
   }, []);
+
+  /** push a line that keeps both languages so it re-renders on EN/RU switch */
+  const say = useCallback(
+    (contact: string, en: string, ru_: string, extra: Partial<ThreadMsg> = {}) => {
+      setG((s) => ({
+        ...s,
+        threads: {
+          ...s.threads,
+          [contact]: [
+            ...(s.threads[contact] ?? []),
+            { id: nid.current++, from: extra.from ?? contact, text: ru() ? ru_ : en,
+              textEn: en, textRu: ru_, t: stampNow(), ...extra },
+          ],
+        },
+      }));
+    },
+    []
+  );
 
   const pushThread = useCallback((contact: string, msg: Omit<ThreadMsg, "id" | "t">) => {
     setG((s) => ({
@@ -161,7 +194,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
                   ...s.threads,
                   [c.id]: [
                     ...(s.threads[c.id] ?? []),
-                    { id: nid.current++, from: c.id, text: ru() ? c.introRu : c.intro, t: stampNow() },
+                    { id: nid.current++, from: c.id, text: ru() ? c.introRu : c.intro,
+                      textEn: c.intro, textRu: c.introRu, t: stampNow() },
                   ],
                 },
               }
@@ -204,6 +238,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
                         id: nid.current++,
                         from: ct.contact,
                         text: ru() ? ct.briefRu : ct.brief,
+                        textEn: ct.brief,
+                        textRu: ct.briefRu,
                         t: stampNow(),
                         contract: ct.id,
                         action: "offer",
@@ -360,14 +396,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
           setG((s) => ({ ...s, contracts: { ...s.contracts, [ct.id]: { state: "DATA ACQUIRED" } } }));
           const c = contactById(ct.contact);
           if (c) {
-            pushThread(ct.contact, {
-              from: ct.contact,
-              text: ru()
-                ? "вижу, файл у тебя. передавай — перевод готов."
-                : "i see you have it. transfer the file and the credits move.",
-              contract: ct.id,
-              action: "deliver",
-            });
+            say(ct.contact,
+              "i see you have it. transfer the file and the credits move.",
+              "вижу, файл у тебя. передавай — перевод готов.",
+              { contract: ct.id, action: "deliver" });
             notify("NEW CONTACT MESSAGE", `${c.nick}`, "CONTACTS");
           }
         }
@@ -383,48 +415,47 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const ct = contractById(id);
       if (!ct || g.contracts[id]?.state !== "AVAILABLE") return;
 
-      /* the operator may already hold the file / have breached the target */
+      /* the operator may already have done the work before taking the job */
       const hasFile = !!ct.file && g.files.includes(ct.file);
+      const wrecked = g.sabotaged.includes(ct.target);
       const breached = g.nodeStates[ct.target] === "COMPROMISED";
       const next =
         ct.kind === "SABOTAGE"
-          ? g.sabotaged.includes(ct.target) ? "SABOTAGED" : breached ? "TARGET ACCESSED" : "ACCEPTED"
+          ? wrecked ? "SABOTAGED" : breached ? "TARGET ACCESSED" : "ACCEPTED"
           : hasFile ? "DATA ACQUIRED" : breached ? "TARGET ACCESSED" : "ACCEPTED";
 
       setG((s) => ({ ...s, contracts: { ...s.contracts, [id]: { state: next, accepted: true } } }));
-      pushThread(ct.contact, {
-        from: "OP",
-        text: ru() ? "принимаю контракт." : "taking the contract.",
-      });
+      say(ct.contact, "taking the contract.", "принимаю контракт.", { from: "OP" });
+
       const tgt = ALL_NODES.find((n) => n.id === ct.target);
+      const code = tgt?.code ?? ct.target;
+
       if (ct.kind === "SABOTAGE") {
-        pushThread(ct.contact, {
-          from: ct.contact,
-          text: ru()
-            ? `цель: ${tgt?.code}. вскрой её и запусти ДИВЕРСИЮ. файлы не нужны.`
-            : `target: ${tgt?.code}. breach it and run SABOTAGE. no files required.`,
-          contract: id,
-        });
+        if (wrecked) {
+          /* already dark — go straight to the payout prompt, never a dead end */
+          say(ct.contact,
+            `${code} is already dark? You work ahead of me. Confirm it and I will pay.`,
+            `${code} уже погашен? Ты работаешь на опережение. Подтверди, и я заплачу.`,
+            { contract: id, action: "deliver" });
+        } else {
+          say(ct.contact,
+            `target: ${code}. breach it and run SABOTAGE. no files required.`,
+            `цель: ${code}. вскрой её и запусти ДИВЕРСИЮ. файлы не нужны.`,
+            { contract: id });
+        }
       } else if (hasFile) {
-        pushThread(ct.contact, {
-          from: ct.contact,
-          text: ru()
-            ? "уже держишь файл? быстро. передавай — перевод готов."
-            : "you already have it? fast. transfer the file and the credits move.",
-          contract: id,
-          action: "deliver",
-        });
+        say(ct.contact,
+          "you already have it? fast. transfer the file and the credits move.",
+          "уже держишь файл? быстро. передавай — перевод готов.",
+          { contract: id, action: "deliver" });
       } else {
-        pushThread(ct.contact, {
-          from: ct.contact,
-          text: ru()
-            ? `цель: ${tgt?.code}. достань ${ct.file?.toUpperCase()} и возвращайся.`
-            : `target: ${tgt?.code}. pull ${ct.file?.toUpperCase()} and come back.`,
-          contract: id,
-        });
+        say(ct.contact,
+          `target: ${code}. pull ${ct.file?.toUpperCase()} and come back.`,
+          `цель: ${code}. достань ${ct.file?.toUpperCase()} и возвращайся.`,
+          { contract: id });
       }
     },
-    [g.contracts, g.files, g.nodeStates, g.sabotaged, pushThread]
+    [g.contracts, g.files, g.nodeStates, g.sabotaged, say]
   );
 
   const deliverContract = useCallback(
@@ -439,40 +470,40 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!pr || !ready) return;
 
       setG((s) => ({ ...s, contracts: { ...s.contracts, [id]: { state: "DELIVERED" } } }));
-      pushThread(ct.contact, {
-        from: "OP",
-        text: ct.kind === "SABOTAGE"
-          ? ru() ? "готово. узел погашен." : "done. the host is dark."
-          : ru() ? `передаю ${ct.file?.toUpperCase()}` : `transferring ${ct.file?.toUpperCase()}`,
-      });
+      say(ct.contact,
+        ct.kind === "SABOTAGE" ? "done. the host is dark." : `transferring ${ct.file?.toUpperCase()}`,
+        ct.kind === "SABOTAGE" ? "готово. узел погашен." : `передаю ${ct.file?.toUpperCase()}`,
+        { from: "OP" });
 
       const t = window.setTimeout(() => {
-        setG((s) => ({
-          ...s,
-          contracts: { ...s.contracts, [id]: { state: "COMPLETED" } },
-          credits: s.credits + ct.credits,
-          rep: s.rep + ct.rep,
-          relations: { ...s.relations, [ct.client]: (s.relations[ct.client] ?? 0) + ct.relation },
-          stats: {
-            ...s.stats,
-            contracts: s.stats.contracts + 1,
-            sabotage: ct.kind === "SABOTAGE" ? s.stats.sabotage + 1 : s.stats.sabotage,
-          },
-        }));
-        pushThread(ct.contact, {
-          from: ct.contact,
-          text: ru()
-            ? `чисто. ${ct.credits} кредитов ушло. будешь нужен — найду.`
-            : `clean. ${ct.credits} credits sent. i will find you when i need you again.`,
-          contract: id,
-          action: "done",
+        setG((s) => {
+          /* the job may have been burned while the transfer was in flight */
+          if (s.contracts[id]?.state !== "DELIVERED") return s;
+          return {
+            ...s,
+            contracts: { ...s.contracts, [id]: { state: "COMPLETED" } },
+            credits: s.credits + ct.credits,
+            rep: s.rep + ct.rep,
+            relations: { ...s.relations, [ct.client]: (s.relations[ct.client] ?? 0) + ct.relation },
+            /* the client now holds the data: its street value is spent */
+            burned: ct.file && !s.burned.includes(ct.file) ? [...s.burned, ct.file] : s.burned,
+            stats: {
+              ...s.stats,
+              contracts: s.stats.contracts + 1,
+              sabotage: ct.kind === "SABOTAGE" ? s.stats.sabotage + 1 : s.stats.sabotage,
+            },
+          };
         });
+        say(ct.contact,
+          `clean. ${ct.credits} credits sent. i will find you when i need you again.`,
+          `чисто. ${ct.credits} кредитов ушло. будешь нужен — найду.`,
+          { contract: id, action: "done" });
         notify("CONTRACT COMPLETED", ru() ? ct.titleRu : ct.title, "CONTACTS");
         notify("REP INCREASED", `+${ct.rep} REP`, "STATUS");
       }, 1400);
       timers.current.push(t);
     },
-    [g.contracts, g.files, pushThread, notify]
+    [g.contracts, g.files, say, notify]
   );
 
   /* ---------------- identity reset ---------------- */
@@ -572,6 +603,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.market, g.credits, notify]
   );
 
+  /** current street value of a held file — collapses once it has been fenced */
+  const fenceValue = useCallback(
+    (id: string) => {
+      const f = resolveFile(id);
+      if (!f) return 0;
+      const owed = CONTRACTS.find(
+        (ct) =>
+          ct.kind === "DATA" && ct.file === id &&
+          g.contracts[ct.id] &&
+          !["COMPLETED", "FAILED"].includes(g.contracts[ct.id].state)
+      );
+      const spent = g.burned.includes(id);
+      const mult = spent ? CFG.resellMult : owed ? CFG.sellBonusQuest : 1;
+      return { credits: Math.max(1, Math.round(f.value * mult)), owed, spent };
+    },
+    [g.contracts, g.burned]
+  );
+
   /** fences a file. Selling contracted data burns the client. */
   const sellFile = useCallback(
     (id: string) => {
@@ -579,25 +628,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const f = resolveFile(id);
       if (!f) return null;
 
-      /* is this file promised to someone? */
-      const owed = CONTRACTS.find(
-        (ct) =>
-          ct.kind === "DATA" && ct.file === id &&
-          g.contracts[ct.id] &&
-          !["COMPLETED", "FAILED"].includes(g.contracts[ct.id].state)
-      );
-      const credits = Math.round(f.value * (owed ? CFG.sellBonusQuest : 1));
+      const v = fenceValue(id);
+      if (typeof v === "number") return null;
+      const { credits, owed, spent } = v;
       const crew = Math.random() < 0.5 ? "scavenger" : "broken";
 
       setG((s) => {
         const relations = { ...s.relations };
-        relations[f.owner] = (relations[f.owner] ?? 0) + CFG.sellRelHit;
-        relations[crew] = (relations[crew] ?? 0) + CFG.betrayCrewGain;
-        if (owed) relations[owed.client] = (relations[owed.client] ?? 0) + CFG.betrayRelHit;
+        /* a resold copy nobody wants does not anger anyone further */
+        if (!spent) {
+          relations[f.owner] = (relations[f.owner] ?? 0) + CFG.sellRelHit;
+          relations[crew] = (relations[crew] ?? 0) + CFG.betrayCrewGain;
+          if (owed) relations[owed.client] = (relations[owed.client] ?? 0) + CFG.betrayRelHit;
+        }
         return {
           ...s,
           credits: s.credits + credits,
           files: s.files.filter((x) => x !== id),
+          /* the copy is out there now: it can never be sold at full price again */
+          burned: s.burned.includes(id) ? s.burned : [...s.burned, id],
           relations,
           contracts: owed
             ? { ...s.contracts, [owed.id]: { state: "FAILED" as const } }
@@ -613,17 +662,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       notify("DATA SOLD", `${ru() ? f.nameRu : f.name} · +${credits}cr`, "STATUS");
       if (owed) {
         notify("CONTRACT FAILED", ru() ? owed.titleRu : owed.title, "CONTACTS");
-        pushThread(owed.contact, {
-          from: owed.contact,
-          text: ru()
-            ? "ты продал мой файл. я знаю, кому. больше я тебе ничего не дам."
-            : "you fenced my file. i know to whom. you get nothing else from me.",
-          contract: owed.id,
-        });
+        say(owed.contact,
+          "you fenced my file. i know to whom. you get nothing else from me.",
+          "ты продал мой файл. я знаю, кому. больше я тебе ничего не дам.",
+          { contract: owed.id });
       }
       return { credits, betrayed: owed?.client };
     },
-    [g.files, g.contracts, notify, pushThread]
+    [g.files, fenceValue, notify, say]
   );
 
   /* ---------------- upgrades ---------------- */
@@ -648,6 +694,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   /* ---------------- misc ---------------- */
 
   const markTab = useCallback((tab: TabId) => {
+    activeTab.current = tab;
     setG((s) => (s.unread[tab] === 0 ? s : { ...s, unread: { ...s.unread, [tab]: 0 } }));
   }, []);
 
@@ -668,12 +715,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     () => ({
       g, notifs, lastHack, nodeState, canHack, hack, download,
       acceptContract, deliverContract, recover, failBreach,
-      sabotage, openMarket, buyScript, sellFile, buyUpgrade,
+      sabotage, openMarket, buyScript, sellFile, fenceValue, buyUpgrade,
       markTab, markCodexSeen, reset,
       lang: langRef.current, setLangRef,
     }),
     [g, notifs, lastHack, nodeState, canHack, hack, download, acceptContract,
-     deliverContract, recover, failBreach, sabotage, openMarket, buyScript, sellFile,
+     deliverContract, recover, failBreach, sabotage, openMarket, buyScript, sellFile, fenceValue,
      buyUpgrade, markTab, markCodexSeen, reset, setLangRef]
   );
 
