@@ -21,6 +21,7 @@ export type TutEvent =
   | "vault:open"
   | "file:f_icx_payroll"
   | "deliver:ct_payroll"
+  | "thread:ghost"
   | "anonymity";
 
 /** spotlight keys read by the UI components */
@@ -33,14 +34,16 @@ export type TutHighlight =
   | "node:w1p_acc"
   | "connect"
   | "vault"
+  | "vault:close"
   | "deliver"
+  | "thread:ghost"
   | "anonymity";
 
 export interface TutStep {
   id: string;
   en: string;
   ru: string;
-  highlight?: TutHighlight;
+  highlight?: TutHighlight[];
   /** advances automatically when this event fires; otherwise click to continue */
   waitFor?: TutEvent;
   /** renders the yes / no fork */
@@ -63,50 +66,57 @@ export const TUT_STEPS: TutStep[] = [
   },
   {
     id: "panel",
-    en: "Main comms are on the right now.",
-    ru: "Основные коммуникации теперь справа.",
-    highlight: "sidepanel",
+    en: "The main comms window is here now.",
+    ru: "Окно главных коммуникаций теперь здесь.",
+    highlight: ["sidepanel"],
   },
   {
     id: "contacts",
     en: "Check your messages.",
     ru: "Загляни в переписки.",
-    highlight: "tab:CONTACTS",
+    highlight: ["tab:CONTACTS"],
     waitFor: "tab:CONTACTS",
   },
   {
     id: "offer",
     en: "There is a job from me in there. Easy money.",
     ru: "Там заказ от меня. Проще простого.",
-    highlight: "offer",
+    highlight: ["thread:ghost"],
+    waitFor: "thread:ghost",
+  },
+  {
+    id: "accept",
+    en: "Take it.",
+    ru: "Принимай.",
+    highlight: ["offer"],
     waitFor: "accept:ct_payroll",
   },
   {
     id: "world",
     en: "The server sits in WEST1.",
     ru: "Сервер находится на WEST1.",
-    highlight: "world:west1",
+    highlight: ["world:west1"],
     waitFor: "region:west1",
   },
   {
     id: "dsv",
     en: "That is our client right there.",
     ru: "Вот наш клиент.",
-    highlight: "node:w1p_dsv",
+    highlight: ["node:w1p_dsv"],
     waitFor: "node:w1p_dsv",
   },
   {
     id: "locked",
     en: "Damn — access is closed. Fine, deal with that first.",
     ru: "Чёрт, доступ закрыт. Ладно, разберись с этим.",
-    highlight: "node:w1p_acc",
+    highlight: ["node:w1p_acc", "connect"],
     waitFor: "node:w1p_acc",
   },
   {
     id: "genius",
     en: "Fire up GENIUS.",
     ru: "Запускай Гения.",
-    highlight: "connect",
+    highlight: ["connect"],
     waitFor: "breach:start",
   },
   {
@@ -119,14 +129,14 @@ export const TUT_STEPS: TutStep[] = [
     id: "dsv2",
     en: "There. The server is ours — fire up GENIUS.",
     ru: "Всё, сервер наш, запускай гения.",
-    highlight: "node:w1p_dsv",
+    highlight: ["node:w1p_dsv", "connect"],
     waitFor: "hack:w1p_dsv",
   },
   {
     id: "vault",
     en: "Open it up and find my documents.",
     ru: "Открывай и найди мои документы.",
-    highlight: "vault",
+    highlight: ["vault"],
     waitFor: "vault:open",
   },
   {
@@ -139,14 +149,16 @@ export const TUT_STEPS: TutStep[] = [
     id: "send",
     en: "I can see you have the file. Good. Throw it over to me — and do not you dare fence it on the black market before I get it.",
     ru: "Вижу файл у тебя. Отлично. Бросай его мне. И не вздумай продать его на чёрном рынке до того как пришлёшь мне!",
-    highlight: "deliver",
+    /* the operator is still inside the volume: light the way out first,
+       then the transfer button waiting in CONTACTS */
+    highlight: ["vault:close", "deliver"],
     waitFor: "deliver:ct_payroll",
   },
   {
     id: "anon",
     en: "One more thing — do not forget your anonymity, or they will find you like they found that idiot. Burn your identity at least every five runs.",
     ru: "И да, не забывай об анонимности, или тебя найдут как того идиота. Сбрасывай личность хотя-бы каждые 5 раз.",
-    highlight: "anonymity",
+    highlight: ["anonymity"],
     waitFor: "anonymity",
   },
   {
@@ -174,8 +186,12 @@ interface Ctx {
   phase: Phase;
   step: TutStep | null;
   hl: TutHighlight | null;
+  hls: TutHighlight[];
+  isHl: (h: TutHighlight) => boolean;
   /** true while the scripted call is running */
   active: boolean;
+  /** true when everything except the spotlight must be dimmed and inert */
+  gating: boolean;
   answer: () => void;
   next: () => void;
   choose: (yes: boolean) => void;
@@ -228,7 +244,11 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Ctx>(
     () => ({
       phase, step, active,
-      hl: phase === "talking" && step ? step.highlight ?? null : null,
+      hl: phase === "talking" && step ? step.highlight?.[0] ?? null : null,
+      hls: phase === "talking" && step ? step.highlight ?? [] : [],
+      isHl: (h: TutHighlight) =>
+        phase === "talking" ? (step?.highlight ?? []).includes(h) : false,
+      gating: phase === "talking" && !!step?.highlight?.length,
       answer, next, choose, fire, end, start,
     }),
     [phase, step, active, answer, next, choose, fire, end, start]

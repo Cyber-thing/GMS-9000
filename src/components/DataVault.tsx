@@ -6,6 +6,7 @@ import { useT } from "../i18n";
 import { StatusDot } from "./chrome";
 import { resolveFile } from "../game/data";
 import { generateVault, resolveScan, type VaultFS, type VaultFile, type VaultResult } from "../game/vault";
+import { useTut } from "../game/tutorial";
 
 const SCAN_MS = 1500;
 
@@ -27,6 +28,9 @@ export default function DataVault({
   onLog: (key: string, params?: Record<string, string | number>) => void;
 }) {
   const { t, lang } = useT();
+  const { isHl, gating } = useTut();
+  /* while the script points at the exit, the browser panes go quiet */
+  const leaving = isHl("vault:close");
 
   const [fs, setFs] = useState<VaultFS>(() => generateVault(nodeId, ownedFiles));
   const [openDir, setOpenDir] = useState(fs.folders[0]?.id ?? "");
@@ -137,7 +141,12 @@ export default function DataVault({
           </span>
           <button
             onClick={onClose}
-            className="ml-auto flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
+            className={cn(
+              "ml-auto flex shrink-0 items-center gap-1 border px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.12em] transition-colors",
+              leaving
+                ? "tut-ring border-amberdim bg-amber/15 text-amber hover:bg-amber hover:text-ink"
+                : "border-line3 text-dim hover:border-oxide hover:bg-oxide hover:text-ink"
+            )}
           >
             <X size={9} /> {t("dv.disconnect")}
           </button>
@@ -153,7 +162,7 @@ export default function DataVault({
         </div>
 
         {/* ---- panes ---- */}
-        <div className="flex min-h-0 flex-1">
+        <div className={cn("flex min-h-0 flex-1", (leaving || (gating && !isHl("vault"))) && "tut-dim")}>
           {/* folders */}
           <div className="w-[104px] shrink-0 overflow-y-auto border-r border-line bg-well sm:w-[132px]">
             {fs.folders.map((d) => {

@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft, BookLock, CheckCircle2, CircleDollarSign, Database,
+  ArrowDownToLine, ArrowLeft, BookLock, CheckCircle2, CircleDollarSign, Database,
   FileLock2, Handshake, Star, TrendingUp, Upload, UserRound, Zap,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
@@ -162,9 +162,24 @@ export function CodexPage() {
 
 export function ContactsPage() {
   const { t, lang } = useT();
-  const { g, acceptContract, deliverContract, answerTalk } = useGame();
-  const { hl } = useTut();
+  const { g, acceptContract, deliverContract } = useGame();
+  const { isHl, gating, fire } = useTut();
   const [open, setOpen] = useState<string | null>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const offerRef = useRef<HTMLDivElement>(null);
+
+  const jumpToOffer = () =>
+    offerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  /* opening a thread lands on the live job, not at the top of the backlog */
+  useEffect(() => {
+    if (!open) return;
+    const h = setTimeout(() => {
+      if (offerRef.current) jumpToOffer();
+      else if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }, 60);
+    return () => clearTimeout(h);
+  }, [open]);
 
   const unlocked = CONTACTS.filter((c) => g.contacts.includes(c.id));
   const locked = CONTACTS.filter((c) => !g.contacts.includes(c.id));
@@ -173,6 +188,11 @@ export function ContactsPage() {
     const c = contactById(open)!;
     const thread = g.threads[open] ?? [];
     const fac = factionById(c.faction);
+    const hasLiveJob = CONTRACTS.some(
+      (x) =>
+        x.contact === c.id && g.contracts[x.id] &&
+        !["COMPLETED", "FAILED"].includes(g.contracts[x.id].state)
+    );
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex shrink-0 items-center gap-2 border-b border-line bg-panel2 px-2 py-[5px]">
@@ -183,15 +203,27 @@ export function ContactsPage() {
           <span className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
             {lang === "ru" ? c.roleRu : c.role} · {fac ? (lang === "ru" ? fac.nameRu : fac.name) : ""}
           </span>
+          {hasLiveJob && (
+            <button
+              onClick={jumpToOffer}
+              title={t("co.jumpTip")}
+              className="ml-auto flex shrink-0 items-center gap-1 border border-amberdim bg-amber/10 px-1.5 py-[2px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-amber transition-colors hover:bg-amber hover:text-ink"
+            >
+              <ArrowDownToLine size={8} /> {t("co.jump")}
+            </button>
+          )}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+        <div ref={bodyRef} className="relative min-h-0 flex-1 overflow-y-auto px-2 py-2">
           {thread.map((m) => {
             const mine = m.from === "OP";
             const ct = m.contract ? contractById(m.contract) : null;
             const pr = ct ? g.contracts[ct.id] : null;
+            const liveJob =
+              !!ct && !!pr && !["COMPLETED", "FAILED"].includes(pr.state) &&
+              (m.action === "offer" || m.action === "deliver");
             return (
-              <div key={m.id} className="anim-msgin mb-1.5">
+              <div key={m.id} ref={liveJob ? offerRef : undefined} className="anim-msgin mb-1.5">
                 <div className="flex items-baseline gap-1.5 text-[10.5px] leading-snug">
                   <span className="shrink-0 tabular-nums text-faint">{m.t}</span>
                   <span className={cn("shrink-0 font-bold", mine ? "text-amber" : "text-steel")}>
@@ -244,7 +276,7 @@ export function ContactsPage() {
                         onClick={() => acceptContract(ct.id)}
                         className={cn(
                           "mt-1.5 w-full border border-phosdim bg-phos/10 py-[5px] text-[9px] font-bold uppercase tracking-[0.14em] text-phosbrite transition-colors hover:bg-phos hover:text-ink",
-                          hl === "offer" && "tut-ring"
+                          isHl("offer") && "tut-ring"
                         )}
                       >
                         {t("co.accept")}
@@ -259,29 +291,11 @@ export function ContactsPage() {
                     onClick={() => deliverContract(ct.id)}
                     className={cn(
                       "mt-1 flex w-full items-center justify-center gap-1.5 border border-amberdim bg-amber/10 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-amber transition-colors hover:bg-amber hover:text-ink",
-                      hl === "deliver" && "tut-ring"
+                      isHl("deliver") && "tut-ring"
                     )}
                   >
                     <Upload size={10} /> {ct.kind === "SABOTAGE" ? t("co.confirm") : t("co.deliver")}
                   </button>
-                )}
-
-                {/* yes / no small talk */}
-                {m.ask && !m.answered && (
-                  <div className="mt-1 flex gap-1.5">
-                    <button
-                      onClick={() => answerTalk(m.id, m.ask!, "yes")}
-                      className="flex-1 border border-phosdim/70 bg-phos/10 py-[5px] text-[9px] font-bold uppercase tracking-[0.14em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
-                    >
-                      {t("co.yes")}
-                    </button>
-                    <button
-                      onClick={() => answerTalk(m.id, m.ask!, "no")}
-                      className="flex-1 border border-line3 py-[5px] text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
-                    >
-                      {t("co.no")}
-                    </button>
-                  </div>
                 )}
 
                 {ct && m.action === "done" && (
@@ -310,8 +324,15 @@ export function ContactsPage() {
         return (
           <button
             key={c.id}
-            onClick={() => setOpen(c.id)}
-            className="flex w-full items-start gap-2 border-b border-line/60 px-2.5 py-[8px] text-left transition-colors hover:bg-panel2"
+            onClick={() => {
+              setOpen(c.id);
+              fire(`thread:${c.id}` as never);
+            }}
+            className={cn(
+              "flex w-full items-start gap-2 border-b border-line/60 px-2.5 py-[8px] text-left transition-colors hover:bg-panel2",
+              isHl(`thread:${c.id}` as never) && "tut-ring",
+              gating && !isHl(`thread:${c.id}` as never) && "tut-dim"
+            )}
           >
             <UserRound size={13} className="mt-[2px] shrink-0 text-steel" />
             <div className="min-w-0 flex-1">

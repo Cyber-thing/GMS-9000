@@ -36,8 +36,25 @@ function Cell({
     : state === "ready" ? (isAccess ? "#b3d98d" : "#7f95a8")
     : "#3e4733";
 
-  const w = terminal ? 70 : 54;
-  const h = terminal ? 28 : 26;
+  const w = terminal ? 74 : 62;
+  const h = terminal ? 30 : 30;
+  const lit = state !== "idle";
+
+  /* a tiny schematic glyph per node class */
+  const Glyph = () => {
+    const c = color;
+    if (cell.kind === "RELAY")
+      return <svg viewBox="0 0 10 10" className="h-[7px] w-[7px]"><path d="M1 5h2M7 5h2M5 1v8" stroke={c} strokeWidth="1.2" fill="none"/><circle cx="5" cy="5" r="1.6" fill="none" stroke={c} strokeWidth="1.1"/></svg>;
+    if (cell.kind === "JUNCTION")
+      return <svg viewBox="0 0 10 10" className="h-[7px] w-[7px]"><path d="M5 1v8M1 5h8M2.5 2.5l5 5M7.5 2.5l-5 5" stroke={c} strokeWidth="1" fill="none"/></svg>;
+    if (cell.kind === "BUFFER")
+      return <svg viewBox="0 0 10 10" className="h-[7px] w-[7px]"><rect x="1.5" y="2.5" width="7" height="5" fill="none" stroke={c} strokeWidth="1.1"/><path d="M3.5 4.5h3M3.5 6h2" stroke={c} strokeWidth="0.9"/></svg>;
+    if (cell.kind === "GATEWAY")
+      return <svg viewBox="0 0 10 10" className="h-[7px] w-[7px]"><path d="M2 8V3.5L5 1.5l3 2V8" fill="none" stroke={c} strokeWidth="1.1"/><path d="M4 8V5.5h2V8" fill="none" stroke={c} strokeWidth="1"/></svg>;
+    if (cell.kind === "CIPHER")
+      return <svg viewBox="0 0 10 10" className="h-[7px] w-[7px]"><rect x="2" y="4.5" width="6" height="4" fill="none" stroke={c} strokeWidth="1.1"/><path d="M3.5 4.5V3a1.5 1.5 0 013 0v1.5" fill="none" stroke={c} strokeWidth="1"/></svg>;
+    return null;
+  };
 
   return (
     <button
@@ -52,33 +69,70 @@ function Cell({
     >
       <span
         className={cn(
-          "relative flex flex-col items-center justify-center border transition-colors",
+          "relative flex items-stretch transition-colors",
           state === "ready" && "animate-softpulse",
-          state === "current" && "shadow-[0_0_14px_rgba(143,181,109,0.4)]"
+          state === "current" && "shadow-[0_0_16px_rgba(143,181,109,0.45)]"
         )}
         style={{
           width: w, height: h,
-          borderColor: color,
-          borderWidth: state === "current" || state === "ready" ? 2 : 1,
+          border: `${state === "current" || state === "ready" ? 2 : 1}px solid ${color}`,
           background:
-            state === "done" || state === "current" ? "rgba(143,181,109,0.16)"
-            : state === "loading" ? "rgba(207,160,75,0.14)"
-            : state === "ready" ? "rgba(127,149,168,0.12)"
-            : "rgba(10,12,8,0.75)",
-          borderRadius: terminal ? 0 : 999,
+            state === "done" || state === "current"
+              ? "linear-gradient(180deg, rgba(143,181,109,0.2), rgba(143,181,109,0.07))"
+              : state === "loading"
+                ? "linear-gradient(180deg, rgba(207,160,75,0.2), rgba(207,160,75,0.06))"
+                : state === "ready"
+                  ? "linear-gradient(180deg, rgba(127,149,168,0.18), rgba(127,149,168,0.05))"
+                  : "linear-gradient(180deg, rgba(18,22,14,0.95), rgba(10,12,8,0.95))",
+          clipPath: terminal
+            ? "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)"
+            : "polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px)",
         }}
       >
-        <span
-          className="text-[9px] font-bold uppercase leading-none tracking-[0.06em]"
-          style={{ color: state === "idle" ? "#59604f" : color }}
-        >
-          {isEntry ? t("bg.entry") : isAccess ? t("bg.access") : cell.expr}
+        {/* left pin rail */}
+        <span className="flex shrink-0 flex-col justify-center gap-[2px] px-[2px]" aria-hidden>
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="block h-[1px] w-[4px]" style={{ background: lit ? color : "#2f3726", opacity: 0.8 }} />
+          ))}
         </span>
-        {!terminal && (state === "done" || state === "current") && (
-          <span className="mt-[2px] text-[7px] leading-none text-phosdim">
-            {t("bg.cost", { n: cell.cost })}
+
+        {/* core */}
+        <span className="flex min-w-0 flex-1 flex-col items-center justify-center leading-none">
+          {terminal ? (
+            <span className="text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: lit ? color : "#59604f" }}>
+              {isEntry ? t("bg.entry") : t("bg.access")}
+            </span>
+          ) : (
+            <>
+              <span className="flex items-center gap-[3px]">
+                <Glyph />
+                <span className="text-[9px] font-bold tracking-[0.04em]" style={{ color: lit ? color : "#59604f" }}>
+                  {cell.expr}
+                </span>
+              </span>
+              <span
+                className="mt-[1px] text-[6.5px] uppercase tracking-[0.1em]"
+                style={{ color: state === "done" || state === "current" ? "#8fb56d" : "#4c5545" }}
+              >
+                {state === "done" || state === "current" ? t("bg.cost", { n: cell.cost }) : t(`bg.kind.${cell.kind}`)}
+              </span>
+            </>
+          )}
+        </span>
+
+        {/* right pin rail + status lamp */}
+        <span className="flex shrink-0 flex-col items-center justify-between py-[2px] pr-[2px]" aria-hidden>
+          <span
+            className={cn("block h-[3px] w-[3px]", state === "loading" && "animate-softpulse")}
+            style={{ background: lit ? color : "#2f3726", boxShadow: lit ? `0 0 4px ${color}` : "none" }}
+          />
+          <span className="flex flex-col gap-[2px]">
+            {[0, 1].map((i) => (
+              <span key={i} className="block h-[1px] w-[4px]" style={{ background: lit ? color : "#2f3726", opacity: 0.7 }} />
+            ))}
           </span>
-        )}
+        </span>
+
         {state === "loading" && (
           <span
             className="absolute bottom-0 left-0 h-[3px] bg-amber transition-[width] duration-100"
@@ -89,14 +143,7 @@ function Cell({
           <span className="absolute -right-[4px] -top-[4px] h-[6px] w-[6px] animate-softpulse bg-phosbrite" />
         )}
       </span>
-      {!terminal && (
-        <span
-          className="mt-[2px] block whitespace-nowrap text-[6.5px] uppercase tracking-[0.14em]"
-          style={{ color: state === "idle" ? "#444c3a" : "#77806b" }}
-        >
-          {t(`bg.kind.${cell.kind}`)}
-        </span>
-      )}
+
     </button>
   );
 }
@@ -392,13 +439,19 @@ export default function BreachGame({
                   preserveAspectRatio="none"
                   aria-hidden
                 >
-                  {Array.from({ length: Math.floor(boardW / 40) }, (_, i) => (
-                    <line key={`v${i}`} x1={(i + 1) * 40} y1={0} x2={(i + 1) * 40} y2={BOARD_H}
-                      stroke="#171b12" strokeWidth={0.6} />
+                  <defs>
+                    <pattern id="bgDots" width="16" height="16" patternUnits="userSpaceOnUse">
+                      <circle cx="1" cy="1" r="0.6" fill="#1e2417" />
+                    </pattern>
+                  </defs>
+                  <rect x={0} y={0} width={boardW} height={BOARD_H} fill="url(#bgDots)" />
+                  {Array.from({ length: Math.floor(boardW / 80) }, (_, i) => (
+                    <line key={`v${i}`} x1={(i + 1) * 80} y1={0} x2={(i + 1) * 80} y2={BOARD_H}
+                      stroke="#161a11" strokeWidth={0.6} />
                   ))}
-                  {Array.from({ length: 7 }, (_, i) => (
-                    <line key={`h${i}`} x1={0} y1={(i + 1) * 42} x2={boardW} y2={(i + 1) * 42}
-                      stroke="#171b12" strokeWidth={0.6} />
+                  {Array.from({ length: 4 }, (_, i) => (
+                    <line key={`h${i}`} x1={0} y1={(i + 1) * 76} x2={boardW} y2={(i + 1) * 76}
+                      stroke="#161a11" strokeWidth={0.6} />
                   ))}
                   {map.links.map((l, i) => {
                     const A = map.cells.find((c) => c.id === l.a)!;
@@ -408,16 +461,35 @@ export default function BreachGame({
                     const live = done.includes(l.a) && done.includes(l.b);
                     const arming = l.a === current && loadingId === l.b;
                     const open = l.a === current && reachable.includes(l.b);
+                    const col = live ? "#8fb56d" : arming ? "#cfa04b" : open ? "#7f95a8" : "#2b3322";
+                    const x1 = p1.x + 32, x2 = p2.x - 32;
+                    const mid = (x1 + x2) / 2;
+                    const bend = 7;
+                    const dir = Math.sign(p2.y - p1.y);
+                    /* right-angle trace with chamfered corners, like a real board */
+                    const d =
+                      Math.abs(p2.y - p1.y) < 2
+                        ? `M${x1} ${p1.y} L${x2} ${p2.y}`
+                        : `M${x1} ${p1.y} L${mid - bend} ${p1.y} L${mid} ${p1.y + bend * dir}` +
+                          ` L${mid} ${p2.y - bend * dir} L${mid + bend} ${p2.y} L${x2} ${p2.y}`;
                     return (
-                      <line
-                        key={i}
-                        x1={p1.x + 28} y1={p1.y} x2={p2.x - 28} y2={p2.y}
-                        stroke={live ? "#8fb56d" : arming ? "#cfa04b" : open ? "#7f95a8" : "#2d3524"}
-                        strokeWidth={live || arming ? 1.8 : 1.1}
-                        strokeDasharray={arming ? "6 4" : open ? "4 4" : "none"}
-                        className={cn(arming && "anim-dashflow")}
-                        opacity={live || arming || open ? 0.95 : 0.55}
-                      />
+                      <g key={i} opacity={live || arming || open ? 1 : 0.5}>
+                        {(live || arming) && (
+                          <path d={d} fill="none" stroke={col} strokeWidth={4} opacity={0.14} strokeLinejoin="round" />
+                        )}
+                        <path
+                          d={d}
+                          fill="none"
+                          stroke={col}
+                          strokeWidth={live || arming ? 1.7 : 1.1}
+                          strokeLinejoin="round"
+                          strokeDasharray={arming ? "6 4" : open ? "5 4" : "none"}
+                          className={cn(arming && "anim-dashflow")}
+                        />
+                        {/* via pads at both ends */}
+                        <circle cx={x1} cy={p1.y} r={1.9} fill="#0c0f09" stroke={col} strokeWidth={0.9} />
+                        <circle cx={x2} cy={p2.y} r={1.9} fill="#0c0f09" stroke={col} strokeWidth={0.9} />
+                      </g>
                     );
                   })}
                 </svg>

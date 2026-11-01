@@ -39,7 +39,7 @@ export default function SidePanel({
 }) {
   const { t } = useT();
   const { g } = useGame();
-  const { hl } = useTut();
+  const { hl, isHl, gating } = useTut();
 
   return (
     <Panel
@@ -70,7 +70,8 @@ export default function SidePanel({
                 active
                   ? "bg-panel text-phosbrite shadow-[inset_0_-2px_0_#8fb56d]"
                   : "text-faint hover:bg-panel2 hover:text-dim",
-                hl === `tab:${id}` && "tut-ring"
+                isHl(`tab:${id}` as never) && "tut-ring",
+                gating && hl !== "sidepanel" && !isHl(`tab:${id}` as never) && "tut-dim"
               )}
             >
               {ICONS[id]}

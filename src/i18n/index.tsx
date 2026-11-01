@@ -410,6 +410,8 @@ export const DICT: Record<string, Entry> = {
   "co.none": { en: "no contacts yet — build REP and they will find you", ru: "контактов нет — набирайте REP, и вас найдут" },
   "co.pick": { en: "select a contact", ru: "выберите контакт" },
   "co.rep": { en: "REP {n}", ru: "REP {n}" },
+  "co.jump": { en: "NEW JOB", ru: "НОВЫЙ ЗАКАЗ" },
+  "co.jumpTip": { en: "jump to the live job in this thread", ru: "перейти к заказу в этой переписке" },
   "co.accept": { en: "ACCEPT CONTRACT", ru: "ПРИНЯТЬ КОНТРАКТ" },
   "co.deliver": { en: "TRANSFER DATA", ru: "ПЕРЕДАТЬ ДАННЫЕ" },
   "co.target": { en: "target", ru: "цель" },

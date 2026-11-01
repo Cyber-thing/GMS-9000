@@ -46,8 +46,8 @@ export default function TopBar({
 }) {
   const { t, lang, setLang } = useT();
   const { g, recover } = useGame();
-  const { hl, fire } = useTut();
-  const tutAnon = hl === "anonymity";
+  const { isHl, fire } = useTut();
+  const tutAnon = isHl("anonymity");
   const now = useClock();
 
   /* persistent boot time so uptime survives reloads */

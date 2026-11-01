@@ -5,9 +5,7 @@ import { store, stampNow } from "../lib/util";
 import { ALL_NODES } from "../data/regions";
 import {
   CFG, CODEX, CONTACTS, CONTRACTS, NEIGHBOURS, NODE_META, UPGRADES,
-  CONTACT_AMBIENT, SMALL_TALK,
-  codexById, contactById, contractById, factionById, filesOfNode, resolveFile,
-  scriptById, smallTalkById,
+  codexById, contactById, contractById, factionById, filesOfNode, resolveFile, scriptById,
 } from "./data";
 import type {
   GameState, NodeState, Notif, NotifKind, Requirement, TabId, ThreadMsg,
@@ -97,7 +95,6 @@ interface Ctx {
   recover: () => void;
   failBreach: (nodeId: string, repLoss: number) => void;
   sabotage: (nodeId: string) => boolean;
-  answerTalk: (msgId: number, askId: string, answer: "yes" | "no") => void;
   openMarket: () => boolean;
   buyScript: (id: string) => boolean;
   sellFile: (id: string) => { credits: number; betrayed?: string } | null;
@@ -221,70 +218,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   }, [g.rep, g.contacts, g.contracts, g.market.unlocked, g.regions, notify]);
 
-  /* ---------- small talk: fires while a contact has no live job ---------- */
-  useEffect(() => {
-    const BUSY: string[] = ["AVAILABLE", "ACCEPTED", "TARGET ACCESSED", "DATA ACQUIRED", "SABOTAGED", "DELIVERED"];
-    for (const st of SMALL_TALK) {
-      if (g.codexSeen[st.id]) continue;
-      if (!g.contacts.includes(st.contact)) continue;
-      if (g.rep < st.repReq) continue;
-      /* never interrupt an open job */
-      const busy = CONTRACTS.some(
-        (o) => o.contact === st.contact && g.contracts[o.id] && BUSY.includes(g.contracts[o.id].state)
-      );
-      if (busy) continue;
-      /* one unanswered question at a time */
-      const pending = (g.threads[st.contact] ?? []).some((m) => m.ask && !m.answered);
-      if (pending) continue;
-
-      setG((s) =>
-        s.codexSeen[st.id]
-          ? s
-          : {
-              ...s,
-              codexSeen: { ...s.codexSeen, [st.id]: true },
-              threads: {
-                ...s.threads,
-                [st.contact]: [
-                  ...(s.threads[st.contact] ?? []),
-                  { id: nid.current++, from: st.contact, text: ru() ? st.ru : st.en, t: stampNow(), ask: st.id },
-                ],
-              },
-            }
-      );
-      notify("NEW CONTACT MESSAGE", contactById(st.contact)?.nick ?? "", "CONTACTS");
-      break;
-    }
-  }, [g.rep, g.contacts, g.contracts, g.threads, g.codexSeen, notify]);
-
-  /* ---------- ambient contact chatter keyed to standing ---------- */
-  useEffect(() => {
-    CONTACT_AMBIENT.forEach((line) => {
-      if (g.codexSeen[line.once]) return;              // reuse the seen-map as a fired-map
-      if (!g.contacts.includes(line.contact)) return;
-      if (line.rep !== undefined && g.rep < line.rep) return;
-      if (line.factionBelow && (g.relations[line.factionBelow.id] ?? 0) > line.factionBelow.value) return;
-      if (line.factionAbove && (g.relations[line.factionAbove.id] ?? 0) < line.factionAbove.value) return;
-
-      setG((s) =>
-        s.codexSeen[line.once]
-          ? s
-          : {
-              ...s,
-              codexSeen: { ...s.codexSeen, [line.once]: true },
-              threads: {
-                ...s.threads,
-                [line.contact]: [
-                  ...(s.threads[line.contact] ?? []),
-                  { id: nid.current++, from: line.contact, text: ru() ? line.ru : line.en, t: stampNow() },
-                ],
-              },
-            }
-      );
-      notify("NEW CONTACT MESSAGE", contactById(line.contact)?.nick ?? "", "CONTACTS");
-    });
-  }, [g.rep, g.relations, g.contacts, g.codexSeen, notify]);
-
   /* ---------------- hacking ---------------- */
 
   const nodeState = useCallback((id: string) => nodeStateOf(id, g), [g]);
@@ -318,6 +251,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       const newCodex = repeat ? [] : m.codex.filter((c) => g.codex[c] !== "DISCOVERED" && g.codex[c] !== "UPDATED");
       const updCodex = repeat ? [] : m.codex.filter((c) => g.codex[c] === "DISCOVERED" || g.codex[c] === "UPDATED");
+
       /* breaching a host exposes its direct neighbours on the routing graph */
       const unlocked = repeat
         ? []
@@ -388,9 +322,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const nm = own ? (ru() ? own.nameRu : own.name) : m.owner.toUpperCase();
         notify("FACTION RELATIONS CHANGED", `${nm} ${relHit}`, "STATUS");
       }
-      const cxName = (id: string) => {
-        const e = codexById(id);
-        return e ? (ru() ? e.titleRu : e.title) : id;
+      const cxName = (cid: string) => {
+        const e = codexById(cid);
+        return e ? (ru() ? e.titleRu : e.title) : cid;
       };
       newCodex.forEach((c) => notify("NEW CODEX ENTRY", cxName(c), "CODEX"));
       updCodex.forEach((c) => notify("CODEX UPDATED", cxName(c), "CODEX"));
@@ -541,7 +475,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.contracts, g.files, pushThread, notify]
   );
 
-  /* ---------------- genius recovery ---------------- */
+  /* ---------------- identity reset ---------------- */
 
   const recover = useCallback(() => {
     if (g.recovering) return;
@@ -561,39 +495,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       notify("WARDEN LOCKOUT", `${n?.code ?? nodeId} · -${repLoss} REP`, "STATUS");
     },
     [notify]
-  );
-
-  /* ---------------- small talk replies ---------------- */
-
-  const answerTalk = useCallback(
-    (msgId: number, askId: string, answer: "yes" | "no") => {
-      const st = smallTalkById(askId);
-      if (!st) return;
-      setG((s) => {
-        const thread = s.threads[st.contact] ?? [];
-        if (thread.some((m) => m.id === msgId && m.answered)) return s;
-        return {
-          ...s,
-          threads: {
-            ...s.threads,
-            [st.contact]: thread.map((m) => (m.id === msgId ? { ...m, answered: answer } : m)),
-          },
-        };
-      });
-      /* the operator's reply, then the contact's comeback */
-      pushThread(st.contact, {
-        from: "OP",
-        text: answer === "yes" ? (ru() ? "да." : "yes.") : (ru() ? "нет." : "no."),
-      });
-      const t = window.setTimeout(() => {
-        pushThread(st.contact, {
-          from: st.contact,
-          text: answer === "yes" ? (ru() ? st.yesRu : st.yesEn) : (ru() ? st.noRu : st.noEn),
-        });
-      }, 900);
-      timers.current.push(t);
-    },
-    [pushThread]
   );
 
   /* ---------------- sabotage ---------------- */
@@ -767,12 +668,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     () => ({
       g, notifs, lastHack, nodeState, canHack, hack, download,
       acceptContract, deliverContract, recover, failBreach,
-      sabotage, answerTalk, openMarket, buyScript, sellFile, buyUpgrade,
+      sabotage, openMarket, buyScript, sellFile, buyUpgrade,
       markTab, markCodexSeen, reset,
       lang: langRef.current, setLangRef,
     }),
     [g, notifs, lastHack, nodeState, canHack, hack, download, acceptContract,
-     deliverContract, recover, failBreach, sabotage, answerTalk, openMarket, buyScript, sellFile,
+     deliverContract, recover, failBreach, sabotage, openMarket, buyScript, sellFile,
      buyUpgrade, markTab, markCodexSeen, reset, setLangRef]
   );
 

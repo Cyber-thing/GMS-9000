@@ -168,12 +168,6 @@ input[type="text"] {
   0%, 100% { box-shadow: 0 0 0 1px #cfa04b, 0 0 14px rgba(207,160,75,0.35); }
   50%      { box-shadow: 0 0 0 2px #e8c478, 0 0 24px rgba(207,160,75,0.6); }
 }
-.tut-ring {
-  position: relative;
-  z-index: 45;
-  animation: tutpulse 1.25s ease-in-out infinite;
-  border-radius: 1px;
-}
 
 @keyframes ringshake {
   0%, 100% { transform: rotate(0deg); }
@@ -190,3 +184,32 @@ input[type="text"] {
   50%      { box-shadow: 0 0 56px rgba(207,160,75,0.4); }
 }
 .anim-call-glow { animation: callglow 1.6s ease-in-out infinite; }
+
+/* ---------- tutorial gating ---------- */
+/* NOTE: a CSS filter/opacity on a parent applies to its whole subtree and a
+   child cannot opt back out. So containers that hold a spotlight target are
+   never gated as a whole — their individual children get .tut-dim instead. */
+
+/* a whole region that holds no target */
+.tut-gated {
+  opacity: 0.2;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 200ms ease;
+}
+
+/* a single element inside an otherwise live region */
+.tut-dim {
+  opacity: 0.16;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+/* the spotlighted element */
+.tut-ring {
+  position: relative;
+  z-index: 60;
+  pointer-events: auto;
+  animation: tutpulse 1.25s ease-in-out infinite;
+  border-radius: 1px;
+}

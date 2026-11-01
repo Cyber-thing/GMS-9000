@@ -47,6 +47,7 @@ function NodeMarker({
   onSelect,
   burst,
   spot,
+  dim,
 }: {
   node: NetNode;
   status: NodeState;
@@ -56,6 +57,7 @@ function NodeMarker({
   dimmed: boolean;
   burst: boolean;
   spot: boolean;
+  dim: boolean;
   onSelect: () => void;
 }) {
   const { t } = useT();
@@ -78,7 +80,8 @@ function NodeMarker({
       title={`${node.code} · ${t("node.suffix", { t: t(`type.${node.type}`) })} · ${connected ? t("st.CONNECTED") : t(`st.${status}`)}`}
       className={cn(
         "group absolute z-20 cursor-crosshair outline-none transition-opacity duration-500",
-        spot && "tut-ring"
+        spot && "tut-ring",
+        dim && "tut-dim"
       )}
       style={{
         left: `${(node.x / MAP_W) * 100}%`,
@@ -189,7 +192,7 @@ export default function NetworkMap({
   onBackToWorld: () => void;
 }) {
   const { t, lang } = useT();
-  const { hl } = useTut();
+  const { isHl, gating } = useTut();
   const { frameRef, view, dragging, onPointerDown, zoomBy, reset, consumedDrag } = useMapView();
   /* ---- contain-fit the 1200x760 stage ---- */
   const hostRef = useRef<HTMLDivElement>(null);
@@ -452,11 +455,19 @@ export default function NetworkMap({
           {sectors.map((s) => {
             const sel = selectedSector === s.id;
             const col = STATUS_COLOR[s.status];
+            /* keep the sector that holds the spotlighted node readable */
+            const holdsTarget = nodes.some(
+              (n) => n.sector === s.id && isHl(`node:${n.id}` as never)
+            );
+            const secDim = gating && !holdsTarget;
             return (
               <div
                 key={s.id}
                 onClick={() => { if (!consumedDrag()) onSelectSector(s.id); }}
-                className="group absolute z-10 cursor-pointer transition-all duration-200"
+                className={cn(
+                  "group absolute z-10 cursor-pointer transition-all duration-200",
+                  secDim && "tut-dim"
+                )}
                 style={{
                   left: `${(s.x / MAP_W) * 100}%`,
                   top: `${(s.y / MAP_H) * 100}%`,
@@ -553,14 +564,15 @@ export default function NetworkMap({
               connecting={connectingId === n.id}
               dimmed={!!selectedSector && n.sector !== selectedSector}
               burst={!!bursts[n.id]}
-              spot={hl === `node:${n.id}`}
+              spot={isHl(`node:${n.id}` as never)}
+              dim={gating && !isHl(`node:${n.id}` as never)}
               onSelect={() => { if (!consumedDrag()) onSelectNode(n.id); }}
             />
           ))}
 
           {/* ======== legend (hover to expand) ======== */}
           <div
-            className="absolute bottom-[5px] left-[16px] z-[15] hidden md:block"
+            className={cn("absolute bottom-[5px] left-[16px] z-[15] hidden md:block", gating && "tut-dim")}
             style={{
               transform: `scale(${1 / view.scale})`,
               transformOrigin: "bottom left",

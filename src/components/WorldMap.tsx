@@ -100,7 +100,7 @@ export default function WorldMap({
   unlockedRegions: string[];
 }) {
   const { t, lang } = useT();
-  const { hl } = useTut();
+  const { isHl, gating } = useTut();
   const hostRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 300, h: 190 });
   useEffect(() => {
@@ -220,7 +220,8 @@ export default function WorldMap({
                 className={cn(
                   "group absolute z-20 outline-none",
                   trace && !active && "opacity-30",
-                  hl === `world:${r.id}` && "tut-ring"
+                  isHl(`world:${r.id}` as never) && "tut-ring",
+                  gating && !isHl(`world:${r.id}` as never) && "tut-dim"
                 )}
                 style={{ left: `${lonToX(r.lon) * 100}%`, top: `${latToY(r.lat) * 100}%`, transform: "translate(-50%,-50%)" }}
                 title={`${r.code} // ${regionContinent(lang, r.id, r.continent)}`}

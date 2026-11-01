@@ -62,7 +62,7 @@ export default function NodeDossier({
 }) {
   const { t, lang } = useT();
   const { g, nodeState, canHack } = useGame();
-  const { hl } = useTut();
+  const { isHl, gating } = useTut();
 
   if (!node) {
     return (
@@ -142,7 +142,7 @@ export default function NodeDossier({
             onClick={() => onEnterVault(node.id)}
             className={cn(
               "mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink hover:shadow-[0_0_14px_rgba(127,149,168,0.3)]",
-              hl === "vault" && "tut-ring"
+              isHl("vault") && "tut-ring"
             )}
           >
             <FolderOpen size={11} /> {t("dos.enter")}
@@ -158,7 +158,7 @@ export default function NodeDossier({
               chk.ok && breached &&
                 "border-viole/60 bg-viole/10 text-viole hover:bg-viole/25 hover:text-fog",
               !chk.ok && "cursor-not-allowed border-line text-faint",
-              hl === "connect" && chk.ok && "tut-ring"
+              isHl("connect") && chk.ok && "tut-ring"
             )}
           >
             {!chk.ok && chk.reason === "LOCKED" && <Lock size={11} />}
@@ -223,7 +223,7 @@ export default function NodeDossier({
         )}
 
         {/* ---- parameters ---- */}
-        <div className="mt-2 space-y-px border-y border-line py-1.5">
+        <div className={cn("mt-2 space-y-px border-y border-line py-1.5", gating && "tut-dim")}>
           <KV k={t("dos.class")} v={t(`ncls.${meta.cls}`)} />
           <KV k={t("dos.owner")} v={owner ? (lang === "ru" ? owner.nameRu : owner.name) : "—"} vc="#a8ad96" />
           <KV k={t("dos.region")} v={`${regionName ?? "—"} · ${sectorName ?? "—"}`} vc="#77806b" />

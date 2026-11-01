@@ -13,7 +13,7 @@ import DataVault from "./components/DataVault";
 import BlackMarket from "./components/BlackMarket";
 import Splash from "./components/Splash";
 import TutorialCall from "./components/TutorialCall";
-import { tutorialSeen, useTut } from "./game/tutorial";
+import { tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
 import { useColumns } from "./hooks/useColumns";
 import { EventLog, SectorPanel, mkEvent, type NetEvent } from "./components/InfoPanels";
 import TerminalBar, { type TermLine } from "./components/TerminalBar";
@@ -79,6 +79,10 @@ export default function App() {
   const { g, notifs, hack, download, canHack, failBreach, sabotage, markTab, nodeState } = game;
   const tut = useTut();
   const tutFire = tut.fire;
+  /* A region is gated only when it holds none of the current targets;
+     regions that do hold one stay live and dim their own children. */
+  const gate = (...own: TutHighlight[]) =>
+    tut.gating && !own.some((h) => tut.isHl(h)) ? "tut-gated" : "";
 
   const langRef = useRef(lang);
   langRef.current = lang;
@@ -637,6 +641,7 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-ink text-fog">
+      <div className={gate("anonymity")}>
       <TopBar
         sessions={compromised.size}
         fx={fx}
@@ -657,6 +662,7 @@ export default function App() {
         }
         onLogout={() => setAskLogout(true)}
       />
+      </div>
 
       <main
         ref={hostRef}
@@ -687,7 +693,8 @@ export default function App() {
           style={{ ["--col" as string]: `${colLeft}px` }}
           className={cn(
             "order-3 w-full flex-col gap-2 overflow-y-auto md:flex-row lg:order-1 lg:flex lg:h-full lg:min-w-0 lg:flex-none lg:basis-[var(--col)] lg:flex-col lg:overflow-x-hidden",
-            pane === "data" ? "flex min-h-0 flex-1" : "hidden"
+            pane === "data" ? "flex min-h-0 flex-1" : "hidden",
+            gate("node:w1p_dsv", "node:w1p_acc", "connect", "vault")
           )}
         >
           <div className="w-full md:w-1/3 lg:w-full">
@@ -721,18 +728,19 @@ export default function App() {
 
         <Resizer
           side="left"
+          className={cn("order-2", tut.gating && "tut-gated")}
           active={dragging === "left"}
           onDrag={startDrag}
           onReset={resetCol}
           onNudge={nudge}
-          className="order-2"
         />
 
         {/* map */}
         <section
           className={cn(
             "order-2 w-full flex-col gap-1.5 lg:order-3 lg:mx-0 lg:flex lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1",
-            pane === "map" ? "flex min-h-0 flex-1" : "hidden"
+            pane === "map" ? "flex min-h-0 flex-1" : "hidden",
+            gate("world:west1", "node:w1p_dsv", "node:w1p_acc")
           )}
         >
           <div className="min-h-0 flex-1">
@@ -786,17 +794,20 @@ export default function App() {
 
         <Resizer
           side="right"
+          className={cn("order-4", tut.gating && "tut-gated")}
           active={dragging === "right"}
           onDrag={startDrag}
           onReset={resetCol}
           onNudge={nudge}
-          className="order-4"
         />
 
         {/* right column: tabbed game panel */}
         <aside
           style={{ ["--col" as string]: `${colRight}px` }}
-          className="order-5 min-h-[210px] w-full shrink-0 basis-[44%] sm:basis-[42%] lg:order-5 lg:h-full lg:min-h-0 lg:min-w-0 lg:flex-none lg:basis-[var(--col)]"
+          className={cn(
+            "order-5 min-h-[210px] w-full shrink-0 basis-[44%] sm:basis-[42%] lg:order-5 lg:h-full lg:min-h-0 lg:min-w-0 lg:flex-none lg:basis-[var(--col)]",
+            gate("sidepanel", "tab:CONTACTS", "thread:ghost", "offer", "deliver")
+          )}
         >
           <SidePanel
             tab={tab}
@@ -821,7 +832,9 @@ export default function App() {
 
       <TutorialCall />
 
-      <TerminalBar lines={termLines} expanded={termOpen} onToggle={() => setTermOpen((o) => !o)} />
+      <div className={cn(tut.gating && "tut-gated")}>
+        <TerminalBar lines={termLines} expanded={termOpen} onToggle={() => setTermOpen((o) => !o)} />
+      </div>
 
       {breachId && (() => {
         const bn = ALL_NODES.find((x) => x.id === breachId);

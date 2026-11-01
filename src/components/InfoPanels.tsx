@@ -59,7 +59,7 @@ export function SectorPanel({
   emptyHint: string;
 }) {
   const { t, lang } = useT();
-  const { hl } = useTut();
+  const { isHl, gating } = useTut();
   if (!sector) {
     return (
       <Panel title={t("panel.sector")} className="shrink-0" bodyClassName="p-3">
@@ -132,7 +132,8 @@ export function SectorPanel({
               className={cn(
                 "flex w-full items-center gap-2 border-b border-line/60 px-3 py-[5px] text-left transition-colors",
                 sel ? "bg-phos/10" : "hover:bg-panel2",
-                hl === `node:${n.id}` && "tut-ring"
+                isHl(`node:${n.id}` as never) && "tut-ring",
+                gating && !isHl(`node:${n.id}` as never) && "tut-dim"
               )}
             >
               <TypeGlyphShape
