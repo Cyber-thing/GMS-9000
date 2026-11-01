@@ -226,6 +226,10 @@ const FALLBACK: Theme = {
 /* ------------------------------------------------------------------ */
 
 const PAYLOAD_TEXT: Record<string, [string, string]> = {
+  f_queue_memo: [
+    "QUEUE OVERRIDE — SALES PRIORITY\nPremium client (tier A, retainer paid) is dissatisfied with the casing colour of his current implant and demands a replacement unit this month. Stock is allocated. Accordingly, pull one recipient from the top of the public waiting list.\nSelection criteria: close enough to the front that a unit is reserved in their name, and insignificant enough that the deferral will not create problems — no legal cover, no press contacts, no family able to escalate. Candidate selected and moved to the next annual cycle. Notify by standard force-majeure template; do not state a reason.",
+    "ПОДМЕНА ОЧЕРЕДИ — ПРИОРИТЕТ ОТДЕЛА ПРОДАЖ\nПремиум-клиент (категория A, абонентская плата внесена) недоволен цветом корпуса своего импланта и требует замену уже в этом месяце. Склад распределён. Соответственно, снимаем одного получателя из начала общей очереди.\nКритерии отбора: достаточно близко к началу, чтобы за ним уже был закреплён блок, и достаточно незначительный, чтобы перенос не создал проблем — нет юридической поддержки, нет связей с прессой, нет родственников, способных поднять шум. Кандидат отобран и перенесён на следующий годовой цикл. Уведомить стандартным шаблоном о форс-мажоре; причину не указывать.",
+  ],
   f_wardenpass: [
     "DO NOT KEEP THIS ON THE SERVER!\nThe corporates decided to sponsor us — they gave us access to WARDEN PASS. No idea why; maybe they are covering up a mess of their own. Remember to circulate the temporary key to staff: \"CORE1MAX32\". There is other data on this server worth lifting, same as we did before.",
     "НЕ ХРАНИТЬ НА СЕРВЕРЕ!\nКорпораты решили проспонсировать нас, дали нам доступ к WARDEN PASS. Не знаю зачем им это, может решили скрыть какие-то свои косяки. Нужно не забыть разослать сотрудникам временный пароль \"CORE1MAX32\". Также на сервере есть и другие данные которые можно украсть, как мы делали ранее.",

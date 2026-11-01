@@ -6,8 +6,9 @@ import { ALL_NODES } from "../data/regions";
 import {
   OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_DELIVER, OP17_FORK,
   OP17_TOLD, OP17_DISBELIEF, OP17_SOLD_REFUSAL, SABLE_PUNISH, SABLE_REWARD, SABLE_OFFER,
-  FREDDY_IMPLANT, FREDDY_IMPLANT_2, FREDDY_IMPLANT_3, FREDDY_IMPLANT_4, FREDDY_IMPLANT_DONE,
-  FREDDY_PROJ, FREDDY_PROJ_2, FREDDY_PROJ_READY, FREDDY_PROJ_ALREADY, FREDDY_PROJ_DONE,
+  FREDDY_IMPLANT, FREDDY_IMPLANT_2, FREDDY_IMPLANT_3, FREDDY_IMPLANT_4,
+  FREDDY_IMPLANT_HOLD, FREDDY_IMPLANT_DONE,
+  MARLA_PROJ, MARLA_PROJ_2, MARLA_PROJ_3, MARLA_PROJ_READY, MARLA_PROJ_ALREADY, MARLA_PROJ_DONE,
   ARCHIVE_PAY, ARCHIVE_REL,
   type Beat,
 } from "./questArchive";
@@ -114,6 +115,7 @@ interface Ctx {
   pickChoice: (msgId: number, choiceId: string) => void;
   sableArrives: () => void;
   openFreddy: () => void;
+  openMarla: () => void;
   openArchiveJob: () => void;
   setFlag: (k: string, v?: string | boolean) => void;
   pushBeat: (b: Beat) => void;
@@ -124,6 +126,8 @@ interface Ctx {
   buyUpgrade: (id: string) => boolean;
   markTab: (tab: TabId) => void;
   markThreadRead: (contact: string) => void;
+  setOpenThread: (contact: string | null) => void;
+  isThreadOpen: (contact: string) => boolean;
   markCodexSeen: (id: string) => void;
   reset: () => void;
   lang: "en" | "ru";
@@ -164,6 +168,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const langRef = useRef<"en" | "ru">("en");
   /** the tab the operator is currently looking at — never badge it */
   const activeTab = useRef<TabId>("CHAT");
+  /** the contact thread open on screen, if any — never badge or toast it */
+  const activeThread = useRef<string | null>(null);
   const nid = useRef(1);
   const timers = useRef<number[]>([]);
 
@@ -182,17 +188,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
   /** push a line that keeps both languages so it re-renders on EN/RU switch */
   const say = useCallback(
     (contact: string, en: string, ru_: string, extra: Partial<ThreadMsg> = {}) => {
-      setG((s) => ({
-        ...s,
-        threads: {
-          ...s.threads,
-          [contact]: [
-            ...(s.threads[contact] ?? []),
-            { id: nid.current++, from: extra.from ?? contact, text: ru() ? ru_ : en,
-              textEn: en, textRu: ru_, t: stampNow(), ...extra },
-          ],
-        },
-      }));
+      setG((s) => {
+        const list = [
+          ...(s.threads[contact] ?? []),
+          { id: nid.current++, from: extra.from ?? contact, text: ru() ? ru_ : en,
+            textEn: en, textRu: ru_, t: stampNow(), ...extra },
+        ];
+        const seen = activeThread.current === contact && activeTab.current === "CONTACTS";
+        return {
+          ...s,
+          threads: { ...s.threads, [contact]: list },
+          threadRead: seen ? { ...s.threadRead, [contact]: list.length } : s.threadRead,
+        };
+      });
     },
     []
   );
@@ -408,25 +416,28 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const pushBeat = useCallback((b: Beat) => {
     const who = b.from === "OP" ? "op17" : b.from;
-    setG((s) => ({
-      ...s,
-      threads: {
-        ...s.threads,
-        [who]: [
-          ...(s.threads[who] ?? []),
-          {
-            id: nid.current++,
-            from: b.from === "OP" ? "OP" : b.from,
-            text: ru() ? b.line.ru : b.line.en,
-            textEn: b.line.en,
-            textRu: b.line.ru,
-            t: stampNow(),
-            choices: b.choices,
-          },
-        ],
-      },
-    }));
-    if (b.from !== "OP") {
+    setG((s) => {
+      const list = [
+        ...(s.threads[who] ?? []),
+        {
+          id: nid.current++,
+          from: b.from === "OP" ? "OP" : b.from,
+          text: ru() ? b.line.ru : b.line.en,
+          textEn: b.line.en,
+          textRu: b.line.ru,
+          t: stampNow(),
+          choices: b.choices,
+        },
+      ];
+      /* if the operator is reading this very thread, it is read on arrival */
+      const seen = activeThread.current === who && activeTab.current === "CONTACTS";
+      return {
+        ...s,
+        threads: { ...s.threads, [who]: list },
+        threadRead: seen ? { ...s.threadRead, [who]: list.length } : s.threadRead,
+      };
+    });
+    if (b.from !== "OP" && !(activeThread.current === who && activeTab.current === "CONTACTS")) {
       notify("NEW CONTACT MESSAGE", contactById(who)?.nick ?? who, "CONTACTS");
     }
   }, [notify]);
@@ -459,10 +470,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     pushBeat(SABLE_OFFER);
   }, [g.flags.sable_met, setFlag, pushBeat]);
 
-  /** Freddy writes once the archive job is settled */
+  /** Freddy asks about his sister's implant — his target sits in GULF */
   const openFreddy = useCallback(() => {
     if (g.flags.fred_intro) return;
-    /* his target sits in GULF — do not offer work the operator cannot reach */
     if (g.rep < (SECTOR_REP.w1_gulf ?? 0)) return;
     setFlag("fred_intro");
     setG((s) => ({
@@ -470,8 +480,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       contacts: s.contacts.includes("freddy") ? s.contacts : [...s.contacts, "freddy"],
     }));
     FREDDY_IMPLANT.forEach(pushBeat);
-    timers.current.push(window.setTimeout(() => FREDDY_PROJ.forEach(pushBeat), 1400));
   }, [g.flags.fred_intro, g.rep, setFlag, pushBeat]);
+
+  /** m4rla wants a hall to go dark — unrelated to Freddy, runs in parallel */
+  const openMarla = useCallback(() => {
+    if (g.flags.marla_intro) return;
+    setFlag("marla_intro");
+    setG((s) => ({
+      ...s,
+      contacts: s.contacts.includes("marla") ? s.contacts : [...s.contacts, "marla"],
+    }));
+    MARLA_PROJ.forEach(pushBeat);
+  }, [g.flags.marla_intro, setFlag, pushBeat]);
 
   /** the operator answers a scripted question */
   const pickChoice = useCallback(
@@ -584,20 +604,46 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      /* ---- Freddy: projectors ---- */
-      if (choiceId === "fp_what") {
-        pushBeat({ id: "a7", from: "OP", line: { en: "And?", ru: "И?" } });
-        later(() => FREDDY_PROJ_2.forEach(pushBeat), 800);
+      /* ---- m4rla: projectors ---- */
+      if (choiceId === "mp_which") {
+        pushBeat({ id: "a7", from: "OP", line: { en: "Which room?", ru: "Какой зал?" } });
+        later(() => MARLA_PROJ_2.forEach(pushBeat), 800);
         return;
       }
-      if (choiceId === "fp_ok") {
+      if (choiceId === "mp_why") {
+        pushBeat({
+          id: "a9", from: "OP",
+          line: { en: "And you want the projectors down.", ru: "И ты хочешь, чтобы проекторы вырубились." },
+        });
+        later(() => MARLA_PROJ_3.forEach(pushBeat), 800);
+        return;
+      }
+      if (choiceId === "mp_ok") {
         pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь." } });
         const already = gRef.current.nodeStates["w1p_crp2"] === "COMPROMISED";
         setG((s) => ({
           ...s,
           contracts: { ...s.contracts, sb_projector: { state: already ? "TARGET ACCESSED" : "ACCEPTED", accepted: true } },
         }));
-        later(() => (already ? FREDDY_PROJ_ALREADY : FREDDY_PROJ_READY).forEach(pushBeat), 850);
+        later(() => (already ? MARLA_PROJ_ALREADY : MARLA_PROJ_READY).forEach(pushBeat), 850);
+        return;
+      }
+
+      if (choiceId === "fi_send") {
+        if (!gRef.current.files.includes("f_queue_memo")) return;
+        setG((s) => ({
+          ...s,
+          contracts: { ...s.contracts, ct_implant: { state: "COMPLETED" } },
+          credits: s.credits + 350,
+          rep: s.rep + 14,
+          relations: { ...s.relations, fusion: (s.relations.fusion ?? 0) - 12 },
+          /* the copy is his now */
+          files: s.files.filter((x) => x !== "f_queue_memo"),
+          burned: s.burned.includes("f_queue_memo") ? s.burned : [...s.burned, "f_queue_memo"],
+          stats: { ...s.stats, contracts: s.stats.contracts + 1 },
+        }));
+        FREDDY_IMPLANT_DONE.forEach((b, i) => later(() => pushBeat(b), i * 1300));
+        notify("CONTRACT COMPLETED", "+350cr", "CONTACTS");
         return;
       }
 
@@ -637,21 +683,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }));
       notify("DATA ACQUIRED", `${ru() ? f.nameRu : f.name} → DATA STORED`, "STATUS");
 
-      /* Freddy's job closes the moment the memo is in hand */
-      if (fileId === "f_queue_memo" && g.contracts.ct_implant?.state === "ACCEPTED") {
-        setG((s) => ({
-          ...s,
-          contracts: { ...s.contracts, ct_implant: { state: "COMPLETED" } },
-          credits: s.credits + 350,
-          rep: s.rep + 14,
-          relations: { ...s.relations, fusion: (s.relations.fusion ?? 0) - 12 },
-          burned: s.burned.includes(fileId) ? s.burned : [...s.burned, fileId],
-          stats: { ...s.stats, contracts: s.stats.contracts + 1 },
-        }));
-        FREDDY_IMPLANT_DONE.forEach((b, i) =>
-          timers.current.push(window.setTimeout(() => pushBeat(b), 700 + i * 1000))
-        );
-        notify("CONTRACT COMPLETED", "+350cr", "CONTACTS");
+      /* the memo in hand only opens the hand-over — Freddy reacts on delivery */
+      if (fileId === "f_queue_memo") {
+        const st = g.contracts.ct_implant?.state;
+        if (st === "ACCEPTED" || st === "TARGET ACCESSED") {
+          setG((s) => ({ ...s, contracts: { ...s.contracts, ct_implant: { state: "DATA ACQUIRED" } } }));
+          timers.current.push(
+            window.setTimeout(() => FREDDY_IMPLANT_HOLD.forEach(pushBeat), 900)
+          );
+        }
       }
 
       /* a note that carries a WARDEN PASS key announces it plainly */
@@ -871,7 +911,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             rep: s.rep + 12,
             stats: { ...s.stats, contracts: s.stats.contracts + 1, sabotage: s.stats.sabotage + 1 },
           }));
-          FREDDY_PROJ_DONE.forEach((b, i) =>
+          MARLA_PROJ_DONE.forEach((b, i) =>
             timers.current.push(window.setTimeout(() => pushBeat(b), 900 + i * 900))
           );
           notify("CONTRACT COMPLETED", "+300cr", "CONTACTS");
@@ -1023,8 +1063,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  /** the contacts page reports which thread is on screen (null = the list) */
+  const setOpenThread = useCallback((contact: string | null) => {
+    activeThread.current = contact;
+    if (contact) markThreadRead(contact);
+  }, [markThreadRead]);
+
+  const isThreadOpen = useCallback(
+    (contact: string) => activeThread.current === contact && activeTab.current === "CONTACTS",
+    []
+  );
+
   const markTab = useCallback((tab: TabId) => {
     activeTab.current = tab;
+    if (tab !== "CONTACTS") activeThread.current = null;
     setG((s) => (s.unread[tab] === 0 ? s : { ...s, unread: { ...s.unread, [tab]: 0 } }));
   }, []);
 
@@ -1045,15 +1097,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     () => ({
       g, notifs, lastHack, nodeState, canHack, hack, download,
       acceptContract, deliverContract, recover, failBreach,
-      sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, setFlag, pushBeat,
+      sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, setFlag, pushBeat,
       openMarket, buyScript, sellFile, fenceValue, buyUpgrade,
-      markTab, markThreadRead, markCodexSeen, reset,
+      markTab, markThreadRead, setOpenThread, isThreadOpen, markCodexSeen, reset,
       lang: langRef.current, setLangRef,
     }),
     [g, notifs, lastHack, nodeState, canHack, hack, download, acceptContract,
-     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, setFlag, pushBeat,
+     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, setFlag, pushBeat,
      openMarket, buyScript, sellFile, fenceValue,
-     buyUpgrade, markTab, markThreadRead, markCodexSeen, reset, setLangRef]
+     buyUpgrade, markTab, markThreadRead, setOpenThread, isThreadOpen, markCodexSeen, reset, setLangRef]
   );
 
   return <GameCtx.Provider value={value}>{children}</GameCtx.Provider>;

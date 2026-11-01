@@ -162,11 +162,21 @@ export function CodexPage() {
 
 export function ContactsPage({ home = 0 }: { home?: number }) {
   const { t, lang } = useT();
-  const { g, acceptContract, deliverContract, pickChoice, markThreadRead } = useGame();
+  const { g, acceptContract, deliverContract, pickChoice, markThreadRead, setOpenThread } = useGame();
   const { isHl, gating, fire } = useTut();
   const [open, setOpen] = useState<string | null>(null);
   /* a bumped `home` means the game wants the operator back on the thread list */
   useEffect(() => { if (home > 0) setOpen(null); }, [home]);
+
+  /* tell the game which thread is on screen so it never badges or toasts it,
+     and mark it read while it stays open */
+  useEffect(() => {
+    setOpenThread(open);
+    return () => setOpenThread(null);
+  }, [open, setOpenThread]);
+  useEffect(() => {
+    if (open) markThreadRead(open);
+  }, [open, g.threads, markThreadRead]);
   const bodyRef = useRef<HTMLDivElement>(null);
   const offerRef = useRef<HTMLDivElement>(null);
 
@@ -363,7 +373,14 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
         const activeCt = CONTRACTS.filter(
           (ct) => ct.contact === c.id && g.contracts[ct.id] && g.contracts[ct.id].state !== "COMPLETED"
         );
-        const unread = (g.threadRead?.[c.id] ?? 0) < thread.length;
+        /* fresh lines arrived while away, or a question is still unanswered */
+        const missed = (g.threadRead?.[c.id] ?? 0) < thread.length;
+        const awaiting =
+          thread.some((m) => m.choices && !m.picked) ||
+          CONTRACTS.some(
+            (x) => x.contact === c.id && g.contracts[x.id]?.state === "AVAILABLE"
+          );
+        const unread = missed || awaiting;
         const blocked = c.id === "op17"
           ? g.flags.op17_blocked === true
           : c.id === "sablec" ? g.flags.sable_blocked === true : false;

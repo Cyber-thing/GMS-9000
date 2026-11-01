@@ -86,7 +86,7 @@ export default function App() {
   const game = useGame();
   const {
     g, notifs, hack, download, canHack, failBreach, sabotage, markTab, nodeState,
-    openArchiveJob, openFreddy, setFlag, sableArrives,
+    openArchiveJob, openFreddy, openMarla, setFlag, sableArrives,
   } = game;
   const tut = useTut();
   const tutFire = tut.fire;
@@ -652,19 +652,33 @@ export default function App() {
     timeouts.current.push(h);
   }, [tut.phase, g.flags.listed, exchange, g.flags.arc_intro, openArchiveJob, markTab]);
 
-  /* Freddy follows once the archive job is settled */
+  /* Two unrelated petitioners surface after the archive job, on their own
+     schedules — m4rla first (her target is in the opening sector), Freddy
+     once the operator has the standing to reach GULF. */
+  const archiveDone = g.contracts["ct_archive"]?.state === "COMPLETED";
+
   useEffect(() => {
-    const st = g.contracts["ct_archive"]?.state;
-    if (st !== "COMPLETED" || g.flags.fred_intro) return;
+    if (!archiveDone || g.flags.marla_intro) return;
+    const h = window.setTimeout(() => {
+      openMarla();
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }, 2600);
+    timeouts.current.push(h);
+  }, [archiveDone, g.flags.marla_intro, openMarla, markTab]);
+
+  useEffect(() => {
+    if (!archiveDone || g.flags.fred_intro) return;
     if (g.rep < 45) return;   // his job lives in GULF
     const h = window.setTimeout(() => {
       openFreddy();
       setTab("CONTACTS");
       markTab("CONTACTS");
       setContactsHome((n) => n + 1);
-    }, 2600);
+    }, 5200);
     timeouts.current.push(h);
-  }, [g.contracts, g.flags.fred_intro, g.rep, openFreddy, markTab]);
+  }, [archiveDone, g.flags.fred_intro, g.rep, openFreddy, markTab]);
 
   /* recovery feedback */
   const wasRecovering = useRef(false);

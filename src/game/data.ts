@@ -429,6 +429,10 @@ export const CONTACTS: ContactDef[] = [
     intro: "", introRu: "", silent: true,
   },
   {
+    id: "marla", nick: "m4rla", faction: "indep", role: "spiteful ex", roleRu: "мстительная бывшая", repReq: 9999,
+    intro: "", introRu: "", silent: true,
+  },
+  {
     id: "sablec", nick: "sable", faction: "intercell", role: "unknown", roleRu: "неизвестно", repReq: 9999,
     intro: "",
     introRu: "",
@@ -437,6 +441,7 @@ export const CONTACTS: ContactDef[] = [
 ];
 
 export const FREDDY = "freddy";
+export const MARLA = "marla";
 
 export const contactById = (id: string) => CONTACTS.find((c) => c.id === id);
 
@@ -466,7 +471,7 @@ export const CONTRACTS: ContractDef[] = [
     scripted: true,
   },
   {
-    id: "sb_projector", kind: "SABOTAGE", contact: "freddy", client: "indep",
+    id: "sb_projector", kind: "SABOTAGE", contact: "marla", client: "indep",
     title: "HOUSE LIGHTS", titleRu: "СВЕТ В ЗАЛЕ",
     brief: "Knock out the projectors at the Takamuri freight desk for a few hours. There is a presentation today.",
     briefRu: "Вырубить проекторы в грузовом отделе Takamuri на несколько часов. Сегодня там презентация.",

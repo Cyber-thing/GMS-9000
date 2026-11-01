@@ -208,52 +208,91 @@ export const FREDDY_IMPLANT_4: Beat[] = [
   },
 ];
 
+/** the memo is in hand — offer to pass it on */
+export const FREDDY_IMPLANT_HOLD: Beat[] = [
+  {
+    id: "fi5", from: "freddy" as never,
+    line: L(
+      "Did you get anything? Send it over, I want to read it myself.",
+      "Ты что-нибудь нашёл? Присылай, я хочу прочитать сам."
+    ),
+    choices: [{ id: "fi_send", en: "Send the memo", ru: "Отправить документ" }],
+  },
+];
+
 export const FREDDY_IMPLANT_DONE: Beat[] = [
   {
-    id: "fi5", from: "OP",
-    line: L("Found it. Read this.", "Нашёл. Прочитай."),
+    id: "fi6", from: "OP",
+    line: L("Here. This is why her slot moved.", "Вот. Из-за этого её очередь и сдвинули."),
   },
   {
-    id: "fi6", from: "freddy" as never,
+    id: "fi7", from: "freddy" as never,
     line: L("Those absolute bastards!", "Вот же сволочи!"),
   },
-];
-
-/* ---------------- projectors ---------------- */
-
-export const FREDDY_PROJ: Beat[] = [
   {
-    id: "fp1", from: "freddy" as never,
+    id: "fi8", from: "freddy" as never,
     line: L(
-      "One more thing, and this one is personal. The Takamuri freight desk books the presentation hall. My ex is presenting there today.",
-      "Ещё кое-что, и это личное. Грузовой отдел Takamuri держит презентационный зал. Сегодня там выступает моя бывшая."
+      "The colour. He did not like the COLOUR. And they went down the list looking for someone with nobody to stand up for them, and they picked her because she is nobody. Because she would not cause problems.",
+      "Цвет. Ему не понравился ЦВЕТ. И они пошли по списку искать того, за кого некому заступиться, и выбрали её, потому что она никто. Потому что она не создаст проблем."
     ),
-    choices: [{ id: "fp_what", en: "And?", ru: "И?" }],
   },
-];
-
-export const FREDDY_PROJ_2: Beat[] = [
   {
-    id: "fp2", from: "freddy" as never,
+    id: "fi9", from: "freddy" as never,
     line: L(
-      "Their projectors hang off the same controller as the freight index. Knock it over and the hall goes dark for a few hours. Pure spite. I will still pay.",
-      "Их проекторы висят на том же контроллере, что и грузовой индекс. Опрокинь его — и зал погаснет на несколько часов. Чистая мелочность. Но я всё равно заплачу."
+      "She waited two years. Thank you for finding this. I do not know what I am going to do with it yet, but I am keeping it.",
+      "Она ждала два года. Спасибо, что нашёл. Пока не знаю, что с этим делать, но я это так не оставлю."
     ),
-    choices: [{ id: "fp_ok", en: "Taking it.", ru: "Берусь." }],
   },
 ];
 
-export const FREDDY_PROJ_READY: Beat[] = [
+/* ==================================================================
+   m4rla — an unrelated job that happens to run in parallel.
+   ================================================================== */
+
+export const MARLA_PROJ: Beat[] = [
   {
-    id: "fp3", from: "freddy" as never,
-    line: L("CRP-P06. Today. Please do not miss.", "CRP-P06. Сегодня. Только не промахнись."),
+    id: "mp1", from: "marla" as never,
+    line: L(
+      "You take work, yes? Nothing heroic. I need a room to go dark.",
+      "Ты ведь берёшь работу? Ничего героического. Мне нужно, чтобы один зал погас."
+    ),
+    choices: [{ id: "mp_which", en: "Which room?", ru: "Какой зал?" }],
   },
 ];
 
-/** he reacts when the host was already breached before he asked */
-export const FREDDY_PROJ_ALREADY: Beat[] = [
+export const MARLA_PROJ_2: Beat[] = [
   {
-    id: "fp4", from: "freddy" as never,
+    id: "mp2", from: "marla" as never,
+    line: L(
+      "The presentation hall booked through the Takamuri freight desk. My ex is on stage there today, and he has been rehearsing that slide deck for a month.",
+      "Презентационный зал, который бронируют через грузовой отдел Takamuri. Сегодня там на сцене мой бывший, он этот показ репетировал целый месяц."
+    ),
+    choices: [{ id: "mp_why", en: "And you want the projectors down.", ru: "И ты хочешь, чтобы проекторы вырубились." }],
+  },
+];
+
+export const MARLA_PROJ_3: Beat[] = [
+  {
+    id: "mp3", from: "marla" as never,
+    line: L(
+      "The projector rigs hang off the same controller as the freight index. Knock it over and the hall is dark for a few hours. Petty? Completely. I am still paying.",
+      "Проекторы висят на том же контроллере, что и грузовой индекс. Опрокинь его — зал погаснет на несколько часов. Мелочно? Абсолютно. Платить я всё равно буду."
+    ),
+    choices: [{ id: "mp_ok", en: "Taking it.", ru: "Берусь." }],
+  },
+];
+
+export const MARLA_PROJ_READY: Beat[] = [
+  {
+    id: "mp4", from: "marla" as never,
+    line: L("CRP-P06. Today. Do not miss.", "CRP-P06. Сегодня. Только не промахнись."),
+  },
+];
+
+/** she reacts when the host was already breached before she asked */
+export const MARLA_PROJ_ALREADY: Beat[] = [
+  {
+    id: "mp5", from: "marla" as never,
     line: L(
       "Wait — you are already inside that host? Even better. Then you only have to pull the plug.",
       "Погоди — ты уже внутри этого узла? Тогда ещё круче. Остаётся только дёрнуть рубильник."
@@ -261,12 +300,12 @@ export const FREDDY_PROJ_ALREADY: Beat[] = [
   },
 ];
 
-export const FREDDY_PROJ_DONE: Beat[] = [
+export const MARLA_PROJ_DONE: Beat[] = [
   {
-    id: "fp5", from: "freddy" as never,
+    id: "mp6", from: "marla" as never,
     line: L(
-      "The hall is dark. I can hear it from the street. Thank you.",
-      "Зал погас. Это слышно даже с улицы. Спасибо."
+      "The hall is dark. I can hear it from the street. Worth every credit.",
+      "Зал погас. Это слышно даже с улицы. Каждый кредит того стоил."
     ),
   },
 ];
@@ -290,4 +329,5 @@ export const OP17_SOLD_REFUSAL: Beat[] = [
   },
 ];
 
-export const FREDDY_PAY = { implant: 350, proj: 300 };
+export const FREDDY_PAY = { implant: 350 };
+export const MARLA_PAY = { proj: 300 };

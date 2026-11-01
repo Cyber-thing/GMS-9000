@@ -7,7 +7,7 @@ import { contactById } from "../game/data";
 /** Bottom-right pop-up announcing a fresh line in a contact thread. */
 export default function MessageToast({ onOpen }: { onOpen: () => void }) {
   const { t } = useT();
-  const { g } = useGame();
+  const { g, isThreadOpen } = useGame();
   const [shown, setShown] = useState<{ nick: string; text: string } | null>(null);
   const seen = useRef<Record<string, number>>({});
   const primed = useRef(false);
@@ -26,11 +26,13 @@ export default function MessageToast({ onOpen }: { onOpen: () => void }) {
       seen.current[contact] = list.length;
       const last = list[list.length - 1];
       if (!last || last.from === "OP") continue;
+      /* already on screen — no point announcing it */
+      if (isThreadOpen(contact)) continue;
       setShown({ nick: contactById(contact)?.nick ?? contact, text: last.text });
       if (hide.current) clearTimeout(hide.current);
       hide.current = window.setTimeout(() => setShown(null), 6000);
     }
-  }, [g.threads]);
+  }, [g.threads, isThreadOpen]);
 
   useEffect(() => () => { if (hide.current) clearTimeout(hide.current); }, []);
 
