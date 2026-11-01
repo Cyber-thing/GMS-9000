@@ -31,7 +31,7 @@ function WardenBar({ level }: { level: number }) {
           }}
         />
       ))}
-      <span className="ml-1 text-[11px]" style={{ color: level >= 4 ? "#c25b46" : "#cfa04b" }}>
+      <span className="ml-1 text-[9px]" style={{ color: level >= 4 ? "#c25b46" : "#cfa04b" }}>
         T{level}
       </span>
     </span>
@@ -70,7 +70,7 @@ export default function NodeDossier({
   if (!node) {
     return (
       <Panel title={t("panel.node")} className="shrink-0" bodyClassName="p-3" accent="#4c5545">
-        <p className="text-[12.5px] leading-relaxed text-faint">
+        <p className="text-[10.5px] leading-relaxed text-faint">
           &gt; {t("node.none")}
           <span className="ml-1 inline-block h-[10px] w-[6px] translate-y-[1px] animate-blink bg-faint" />
           <br />
@@ -115,19 +115,19 @@ export default function NodeDossier({
       title={t("panel.node")}
       className="min-h-0 shrink-0"
       accent={color}
-      right={<span className="text-[10px] tracking-[0.16em] text-faint">{sectorCode}</span>}
+      right={<span className="text-[8px] tracking-[0.16em] text-faint">{sectorCode}</span>}
     >
       <div className="p-3">
         {/* header */}
         <div className="flex items-center justify-between gap-2">
           <span className="flex min-w-0 items-center gap-2">
             <TypeGlyphShape type={node.type} color={color} size={12} />
-            <span className="pixel truncate text-[24px] leading-none tracking-[0.06em] text-fog">
+            <span className="pixel truncate text-[22px] leading-none tracking-[0.06em] text-fog">
               {node.code}
             </span>
           </span>
           <span
-            className="shrink-0 border px-1.5 py-[2px] text-[10px] font-bold tracking-[0.14em]"
+            className="shrink-0 border px-1.5 py-[2px] text-[8px] font-bold tracking-[0.14em]"
             style={{ color, borderColor: `${color}66` }}
           >
             {t(`nst.${st}`)}
@@ -137,18 +137,18 @@ export default function NodeDossier({
         {/* ---- primary action ---- */}
         {hacking ? (
           <div className="mt-2.5 border border-amberdim/60 bg-amber/5 px-2.5 py-2">
-            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-amber">
+            <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.14em] text-amber">
               <span className="flex items-center gap-1.5">
                 <RadioTower size={10} className="animate-softpulse" /> {t("dos.hacking")}
               </span>
               <span className="tabular-nums">{Math.round(hackPct)}%</span>
             </div>
-            <div className="blocksbar mt-1.5 text-[18px] text-amber">{blockBar(hackPct, 18)}</div>
+            <div className="blocksbar mt-1.5 text-[16px] text-amber">{blockBar(hackPct, 18)}</div>
           </div>
         ) : sealed && st === "COMPROMISED" ? (
           <button
             onClick={() => onOpenArchive(node.id)}
-            className="mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[12px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink"
+            className="mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink"
           >
             <FolderOpen size={11} /> {t("dos.archive")}
           </button>
@@ -156,7 +156,7 @@ export default function NodeDossier({
           <button
             onClick={() => onEnterVault(node.id)}
             className={cn(
-              "mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[12px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink hover:shadow-[0_0_14px_rgba(127,149,168,0.3)]",
+              "mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink hover:shadow-[0_0_14px_rgba(127,149,168,0.3)]",
               isHl("vault") && "tut-ring"
             )}
           >
@@ -167,7 +167,7 @@ export default function NodeDossier({
             disabled={!chk.ok}
             onClick={() => onHack(node.id)}
             className={cn(
-              "mt-2.5 flex w-full items-center justify-center gap-2 border px-3 py-[8px] text-[12px] font-bold uppercase tracking-[0.16em] transition-all",
+              "mt-2.5 flex w-full items-center justify-center gap-2 border px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.16em] transition-all",
               chk.ok && !breached &&
                 "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink hover:shadow-[0_0_14px_rgba(143,181,109,0.25)]",
               chk.ok && breached &&
@@ -200,7 +200,7 @@ export default function NodeDossier({
           wrecked ? (
             <div
               className={cn(
-                "mt-1.5 flex items-center justify-center gap-1.5 border py-[6px] text-[11px] font-bold uppercase tracking-[0.14em]",
+                "mt-1.5 flex items-center justify-center gap-1.5 border py-[6px] text-[9px] font-bold uppercase tracking-[0.14em]",
                 burning ? "border-oxide/50 bg-oxide/10 text-oxide" : "border-amberdim/50 bg-amber/8 text-amberdim"
               )}
             >
@@ -210,11 +210,11 @@ export default function NodeDossier({
             <>
               <button
                 onClick={() => onSabotage(node.id)}
-                className="mt-1.5 flex w-full items-center justify-center gap-2 border border-[#c25b46] bg-[#c25b46]/15 px-3 py-[8px] text-[12px] font-bold uppercase tracking-[0.18em] text-[#e0634a] transition-all hover:bg-[#c25b46] hover:text-ink hover:shadow-[0_0_14px_rgba(194,91,70,0.35)]"
+                className="mt-1.5 flex w-full items-center justify-center gap-2 border border-[#c25b46] bg-[#c25b46]/15 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-[#e0634a] transition-all hover:bg-[#c25b46] hover:text-ink hover:shadow-[0_0_14px_rgba(194,91,70,0.35)]"
               >
                 <Bomb size={11} /> {t("dos.sabotage")}
               </button>
-              <p className="mt-1 text-[10.5px] uppercase leading-snug tracking-[0.1em] text-faint">
+              <p className="mt-1 text-[8.5px] uppercase leading-snug tracking-[0.1em] text-faint">
                 {t("dos.sabHint")}
               </p>
             </>
@@ -230,9 +230,9 @@ export default function NodeDossier({
               background: st === "RESTRICTED" ? "rgba(207,160,75,0.07)" : "rgba(143,181,109,0.05)",
             }}
           >
-            <div className="text-[10px] uppercase tracking-[0.18em] text-faint">{t("dos.cond")}</div>
+            <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("dos.cond")}</div>
             <div
-              className="mt-[2px] text-[12px] leading-snug"
+              className="mt-[2px] text-[10px] leading-snug"
               style={{ color: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "#77806b" : "#99a18c" }}
             >
               {condition}
@@ -241,7 +241,7 @@ export default function NodeDossier({
         )}
 
         {breached && (
-          <div className="mt-1.5 text-[10.5px] uppercase tracking-[0.16em] text-viole">
+          <div className="mt-1.5 text-[8.5px] uppercase tracking-[0.16em] text-viole">
             ◆ {t("dos.breached", { n: g.hackCount[node.id] })}
           </div>
         )}
@@ -263,10 +263,10 @@ export default function NodeDossier({
         {/* data discovery */}
         {st === "COMPROMISED" && vault && (
           <div className="mt-2.5 border-t border-line pt-2">
-            <p className="text-[11.5px] leading-snug text-faint">{t("dos.vaultHint")}</p>
+            <p className="text-[9.5px] leading-snug text-faint">{t("dos.vaultHint")}</p>
             {files.some((f) => g.files.includes(f.id)) && (
               <>
-                <div className="mt-1.5 flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-faint">
+                <div className="mt-1.5 flex items-center gap-1.5 text-[8.5px] uppercase tracking-[0.18em] text-faint">
                   <HardDriveDownload size={10} /> {t("dos.recovered")}
                 </div>
                 <div className="mt-1 space-y-1">
@@ -278,14 +278,14 @@ export default function NodeDossier({
                         className="flex items-center gap-2 border border-phosdim/40 bg-phos/5 px-2 py-[5px]"
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-[12px] text-phosbrite">
+                          <div className="truncate text-[10px] text-phosbrite">
                             {lang === "ru" ? f.nameRu : f.name}
                           </div>
-                          <div className="truncate text-[9.5px] uppercase tracking-[0.14em] text-faint">
+                          <div className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
                             {t(`dcat.${f.cat}`)} · {f.value}cr
                           </div>
                         </div>
-                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-phos">
+                        <span className="shrink-0 text-[8px] font-bold uppercase tracking-[0.14em] text-phos">
                           ✓ {t("dos.stored")}
                         </span>
                       </div>
@@ -298,11 +298,11 @@ export default function NodeDossier({
 
         {st === "COMPROMISED" && !vault && !sealed && (
           <div className="mt-2.5 border-t border-line pt-2">
-            <div className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-faint">
+            <div className="flex items-center gap-1.5 text-[8.5px] uppercase tracking-[0.18em] text-faint">
               <HardDriveDownload size={10} /> {t("dos.files")}
             </div>
             {files.length === 0 ? (
-              <p className="mt-1 text-[12px] text-faint">{t("dos.noFiles")}</p>
+              <p className="mt-1 text-[10px] text-faint">{t("dos.noFiles")}</p>
             ) : (
               <div className="mt-1 space-y-1">
                 {files.map((f) => {
@@ -316,21 +316,21 @@ export default function NodeDossier({
                       )}
                     >
                       <div className="min-w-0 flex-1">
-                        <div className={cn("truncate text-[12px]", owned ? "text-phosbrite" : "text-fog")}>
+                        <div className={cn("truncate text-[10px]", owned ? "text-phosbrite" : "text-fog")}>
                           {lang === "ru" ? f.nameRu : f.name}
                         </div>
-                        <div className="truncate text-[9.5px] uppercase tracking-[0.14em] text-faint">
+                        <div className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
                           {t(`dcat.${f.cat}`)} · {f.value}cr
                         </div>
                       </div>
                       {owned ? (
-                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-phos">
+                        <span className="shrink-0 text-[8px] font-bold uppercase tracking-[0.14em] text-phos">
                           ✓ {t("dos.stored")}
                         </span>
                       ) : (
                         <button
                           onClick={() => onDownload(node.id, f.id)}
-                          className="flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-phosdim hover:bg-phos/15 hover:text-phosbrite"
+                          className="flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[3px] text-[8px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-phosdim hover:bg-phos/15 hover:text-phosbrite"
                         >
                           <Download size={9} /> {t("dos.download")}
                         </button>
@@ -345,8 +345,8 @@ export default function NodeDossier({
 
         {st === "COMPROMISED" && meta.intel && (
           <div className="mt-2 border-l-2 border-steel/50 bg-steel/5 py-1 pl-2">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-steel">{t("dos.intel")}</div>
-            <p className="mt-[2px] text-[12px] leading-snug text-dim">{meta.intel}</p>
+            <div className="text-[8px] uppercase tracking-[0.18em] text-steel">{t("dos.intel")}</div>
+            <p className="mt-[2px] text-[10px] leading-snug text-dim">{meta.intel}</p>
           </div>
         )}
       </div>

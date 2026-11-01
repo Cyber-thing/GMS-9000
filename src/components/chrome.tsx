@@ -74,9 +74,9 @@ export function Panel({
         className
       )}
     >
-      <header className="flex h-[30px] shrink-0 select-none items-center gap-2 border-b border-line bg-header px-2">
+      <header className="flex h-[26px] shrink-0 select-none items-center gap-2 border-b border-line bg-header px-2">
         <span className="h-[7px] w-[7px] shrink-0" style={{ background: accent, opacity: 0.85 }} />
-        <h2 className="truncate text-[12px] font-semibold uppercase tracking-[0.22em] text-dim">{title}</h2>
+        <h2 className="truncate text-[10px] font-semibold uppercase tracking-[0.22em] text-dim">{title}</h2>
         <span className="mx-1 h-px flex-1 bg-line" />
         {right}
       </header>
@@ -92,8 +92,8 @@ export function Panel({
 export function KV({ k, v, vc }: { k: string; v: ReactNode; vc?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-[3px]">
-      <span className="shrink-0 text-[11px] uppercase tracking-[0.18em] text-faint">{k}</span>
-      <span className="truncate text-right text-[13px]" style={vc ? { color: vc } : undefined}>
+      <span className="shrink-0 text-[9px] uppercase tracking-[0.18em] text-faint">{k}</span>
+      <span className="truncate text-right text-[11px]" style={vc ? { color: vc } : undefined}>
         {v}
       </span>
     </div>

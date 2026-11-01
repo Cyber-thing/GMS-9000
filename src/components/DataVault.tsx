@@ -151,19 +151,19 @@ export default function DataVault({
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[92vh] w-[min(760px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* ---- title bar ---- */}
-        <div className="flex h-[32px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
+        <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color="#7f95a8" pulse />
-          <span className="truncate text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+          <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
             {t("dv.title")} :: {nodeCode}
           </span>
           <span className="mx-1 hidden h-px flex-1 bg-line sm:block" />
-          <span className="hidden shrink-0 truncate text-[10px] tracking-[0.14em] text-faint md:inline">
+          <span className="hidden shrink-0 truncate text-[8px] tracking-[0.14em] text-faint md:inline">
             {ownerName}
           </span>
           <button
             onClick={onClose}
             className={cn(
-              "ml-auto flex shrink-0 items-center gap-1 border px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.12em] transition-colors",
+              "ml-auto flex shrink-0 items-center gap-1 border px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.12em] transition-colors",
               leaving
                 ? "tut-ring border-amberdim bg-amber/15 text-amber hover:bg-amber hover:text-ink"
                 : "border-line3 text-dim hover:border-oxide hover:bg-oxide hover:text-ink"
@@ -174,7 +174,7 @@ export default function DataVault({
         </div>
 
         {/* ---- volume strip ---- */}
-        <div className="flex h-[26px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[10px] uppercase tracking-[0.14em] text-faint">
+        <div className="flex h-[22px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em] text-faint">
           <HardDrive size={10} className="text-phosdim" />
           <span className="text-phosdim">{fs.volume}:\</span>
           <span className="truncate">{folder ? folder.name : ""}</span>
@@ -205,13 +205,13 @@ export default function DataVault({
                   )}
                   <span
                     className={cn(
-                      "min-w-0 flex-1 truncate text-[11px] font-bold tracking-[0.06em]",
+                      "min-w-0 flex-1 truncate text-[9px] font-bold tracking-[0.06em]",
                       active ? "text-phosbrite" : "text-dim"
                     )}
                   >
                     {d.name}
                   </span>
-                  {hits > 0 && <span className="shrink-0 text-[10px] text-phos">●</span>}
+                  {hits > 0 && <span className="shrink-0 text-[8px] text-phos">●</span>}
                 </button>
               );
             })}
@@ -219,7 +219,7 @@ export default function DataVault({
 
           {/* files */}
           <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-            <div className="flex items-center gap-2 border-b border-line bg-panel2 px-2 py-[3px] text-[9.5px] uppercase tracking-[0.16em] text-faint">
+            <div className="flex items-center gap-2 border-b border-line bg-panel2 px-2 py-[3px] text-[7.5px] uppercase tracking-[0.16em] text-faint">
               <span className="min-w-0 flex-1">{t("dv.colName")}</span>
               <span className="hidden w-[46px] shrink-0 text-right sm:inline">{t("dv.colSize")}</span>
               <span className="hidden w-[62px] shrink-0 text-right md:inline">{t("dv.colDate")}</span>
@@ -237,16 +237,16 @@ export default function DataVault({
                 )}
               >
                 {icon(f)}
-                <span className={cn("min-w-0 flex-1 truncate text-[12px] tracking-[0.04em]", rowTone(f))}>
+                <span className={cn("min-w-0 flex-1 truncate text-[10px] tracking-[0.04em]", rowTone(f))}>
                   {f.name}
                 </span>
-                <span className="hidden w-[46px] shrink-0 text-right text-[11px] tabular-nums text-faint sm:inline">
+                <span className="hidden w-[46px] shrink-0 text-right text-[9px] tabular-nums text-faint sm:inline">
                   {f.size}
                 </span>
-                <span className="hidden w-[62px] shrink-0 text-right text-[11px] tabular-nums text-faint md:inline">
+                <span className="hidden w-[62px] shrink-0 text-right text-[9px] tabular-nums text-faint md:inline">
                   {f.date}
                 </span>
-                <span className="w-[66px] shrink-0 text-right text-[10px] uppercase tracking-[0.1em]">
+                <span className="w-[66px] shrink-0 text-right text-[8px] uppercase tracking-[0.1em]">
                   {f.scan === "scanning" ? (
                     <span className="text-amber">{t("dv.scanning")}</span>
                   ) : f.scan === "done" ? (
@@ -274,12 +274,12 @@ export default function DataVault({
         </div>
 
         {/* ---- status bar ---- */}
-        <div className="flex h-[28px] shrink-0 items-center gap-2 border-t border-line2 bg-soot px-2.5 text-[10px] uppercase tracking-[0.14em]">
+        <div className="flex h-[24px] shrink-0 items-center gap-2 border-t border-line2 bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em]">
           {scanning ? (
             <>
               <Radar size={10} className="animate-softpulse text-amber" />
               <span className="text-amber">{t("dv.scanning")}</span>
-              <span className="blocksbar ml-1 text-[14px] text-amber">{blockBar(pct, 14)}</span>
+              <span className="blocksbar ml-1 text-[12px] text-amber">{blockBar(pct, 14)}</span>
             </>
           ) : (
             <>
@@ -303,10 +303,10 @@ export default function DataVault({
             className="anim-msgin w-[min(460px,94%)] border bg-panel shadow-[0_0_50px_rgba(0,0,0,0.7)]"
             style={{ borderColor: reader.kind === "payload" ? "#8fb56d88" : "#7f95a888" }}
           >
-            <div className="flex h-[28px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+            <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
               <StatusDot color={reader.kind === "payload" ? "#8fb56d" : "#7f95a8"} pulse={reader.kind === "payload"} />
               <span
-                className="truncate text-[11px] font-bold uppercase tracking-[0.18em]"
+                className="truncate text-[9px] font-bold uppercase tracking-[0.18em]"
                 style={{ color: reader.kind === "payload" ? "#b3d98d" : "#99a18c" }}
               >
                 {reader.kind === "payload" ? t("dv.recovered") : t("dv.document")}
@@ -314,7 +314,7 @@ export default function DataVault({
             </div>
             <div className="px-3 py-3">
               <div
-                className="pixel text-[21px] leading-none"
+                className="pixel text-[19px] leading-none"
                 style={{ color: reader.kind === "payload" ? "#b3d98d" : "#bcc4ae" }}
               >
                 {reader.title}
@@ -324,7 +324,7 @@ export default function DataVault({
                   <p
                     key={i}
                     className={cn(
-                      "whitespace-pre-line text-[12.5px] leading-relaxed",
+                      "whitespace-pre-line text-[10.5px] leading-relaxed",
                       i === 0 ? "text-fog/90" : "mt-1.5 text-faint"
                     )}
                   >
@@ -333,13 +333,13 @@ export default function DataVault({
                 ))}
               </div>
               {reader.kind === "payload" && (
-                <div className="mt-2.5 border border-phosdim/50 bg-phos/10 px-2 py-[6px] text-[11px] font-bold uppercase tracking-[0.14em] text-phos">
+                <div className="mt-2.5 border border-phosdim/50 bg-phos/10 px-2 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-phos">
                   ✓ {t("dv.stored")}
                 </div>
               )}
               <button
                 onClick={() => setReader(null)}
-                className="mt-2 w-full border border-line3 py-[6px] text-[11px] font-bold uppercase tracking-[0.16em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
+                className="mt-2 w-full border border-line3 py-[6px] text-[9px] font-bold uppercase tracking-[0.16em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
               >
                 {t("dv.close")}
               </button>

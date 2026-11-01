@@ -46,11 +46,11 @@ export default function MessageToast({ onOpen }: { onOpen: () => void }) {
       >
         <MessageSquareDot size={13} className="mt-[1px] shrink-0 animate-softpulse text-amber" />
         <span className="min-w-0 flex-1">
-          <span className="block text-[10px] font-bold uppercase tracking-[0.2em] text-amber">
+          <span className="block text-[8px] font-bold uppercase tracking-[0.2em] text-amber">
             {t("nf.newmsg")}
           </span>
-          <span className="block truncate text-[12px] font-bold text-phosbrite">{shown.nick}</span>
-          <span className="block truncate text-[11px] text-dim">{shown.text}</span>
+          <span className="block truncate text-[10px] font-bold text-phosbrite">{shown.nick}</span>
+          <span className="block truncate text-[9px] text-dim">{shown.text}</span>
         </span>
         <X
           size={10}

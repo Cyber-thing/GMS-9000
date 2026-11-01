@@ -19,8 +19,8 @@ function useClock() {
 function Field({ label, value, color = "#bcc4ae" }: { label: string; value: React.ReactNode; color?: string }) {
   return (
     <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="text-[10.5px] uppercase tracking-[0.2em] text-faint">{label}</span>
-      <span className="text-[13px] font-medium leading-none" style={{ color }}>
+      <span className="text-[8.5px] uppercase tracking-[0.2em] text-faint">{label}</span>
+      <span className="text-[11px] font-medium leading-none" style={{ color }}>
         {value}
       </span>
     </div>
@@ -98,12 +98,12 @@ export default function TopBar({
       <div className="flex items-center gap-2.5 border-r border-line2 bg-phos px-3 text-ink">
         <ScanEye size={14} strokeWidth={2.2} />
         <div className="leading-none">
-          <div className="text-[13px] font-bold tracking-[0.14em]">GNS-9000</div>
-          <div className="mt-[2px] text-[9.5px] font-semibold uppercase tracking-[0.28em] opacity-80">
+          <div className="text-[11px] font-bold tracking-[0.14em]">GNS-9000</div>
+          <div className="mt-[2px] text-[7.5px] font-semibold uppercase tracking-[0.28em] opacity-80">
             {t("brand.sub")}
           </div>
         </div>
-        <span className="ml-1 border border-ink/40 px-1 py-[1px] text-[10px] font-bold tracking-widest">v2.4.1</span>
+        <span className="ml-1 border border-ink/40 px-1 py-[1px] text-[8px] font-bold tracking-widest">v2.4.1</span>
       </div>
 
       {/* status fields */}
@@ -162,12 +162,12 @@ export default function TopBar({
             />
           ))}
         </div>
-        <span className="w-[52px] tabular-nums text-[12px] text-dim">{kb.toFixed(1)}kb/s</span>
+        <span className="w-[52px] tabular-nums text-[10px] text-dim">{kb.toFixed(1)}kb/s</span>
       </div>
 
       {/* operator handle */}
       <div className="flex items-center gap-2 border-l border-line2 px-3">
-        <span className="hidden text-[10.5px] uppercase tracking-[0.2em] text-faint md:inline">{t("top.operator")}</span>
+        <span className="hidden text-[8.5px] uppercase tracking-[0.2em] text-faint md:inline">{t("top.operator")}</span>
         {editing ? (
           <span className="flex items-center gap-1">
             <input
@@ -180,7 +180,7 @@ export default function TopBar({
                 if (e.key === "Enter") commit();
                 if (e.key === "Escape") setEditing(false);
               }}
-              className="h-[20px] w-[110px] border border-line3 bg-well px-1 text-[13px] uppercase text-phosbrite placeholder:text-faint"
+              className="h-[20px] w-[110px] border border-line3 bg-well px-1 text-[11px] uppercase text-phosbrite placeholder:text-faint"
               placeholder={t("top.handlePh")}
             />
             <button onClick={commit} className="text-phos hover:text-phosbrite" aria-label={t("top.save")}>
@@ -196,7 +196,7 @@ export default function TopBar({
               setDraft(operator);
               setEditing(true);
             }}
-            className="group flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-amber hover:text-phosbrite"
+            className="group flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber hover:text-phosbrite"
             title={t("top.handleTip")}
           >
             {operator}
@@ -208,7 +208,7 @@ export default function TopBar({
       {/* GENIUS operation buffer */}
       <div className="flex shrink-0 items-center gap-2 border-l border-line2 px-2.5">
         <div className="leading-none">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-faint">{t("genius.title")}</div>
+          <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("genius.title")}</div>
           <div className="mt-[2px] flex items-center gap-[2px]">
             {Array.from({ length: CFG.opsLimit }, (_, i) => (
               <span
@@ -231,7 +231,7 @@ export default function TopBar({
             }}
             disabled={g.recovering}
             className={cn(
-              "border px-1.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.12em] transition-colors",
+              "border px-1.5 py-[3px] text-[8px] font-bold uppercase tracking-[0.12em] transition-colors",
               g.recovering
                 ? "animate-softpulse border-amberdim text-amber"
                 : "border-oxide bg-oxide/15 text-oxide hover:bg-oxide hover:text-ink",
@@ -242,7 +242,7 @@ export default function TopBar({
             {g.recovering ? t("genius.recovering") : t("genius.recover")}
           </button>
         ) : (
-          <span className="hidden text-[10px] uppercase tracking-[0.14em] text-phosdim xl:inline">
+          <span className="hidden text-[8px] uppercase tracking-[0.14em] text-phosdim xl:inline">
             {t("genius.ready")}
           </span>
         )}
@@ -251,7 +251,7 @@ export default function TopBar({
       {/* language toggle */}
       <button
         onClick={() => setLang(lang === "en" ? "ru" : "en")}
-        className="flex w-[58px] items-center justify-center gap-1 border-l border-line2 text-[11px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-phos"
+        className="flex w-[58px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-phos"
         title={t("top.langTip")}
       >
         <Languages size={12} />
@@ -261,7 +261,7 @@ export default function TopBar({
       {/* fx toggle */}
       <button
         onClick={onToggleFx}
-        className={`flex w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+        className={`flex w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
           fx ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
         }`}
         title={t("top.crtTip")}
@@ -274,7 +274,7 @@ export default function TopBar({
       <button
         onClick={onLogout}
         title={t("top.logoutTip")}
-        className="flex shrink-0 items-center justify-center gap-1.5 border-l border-line2 px-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-oxide hover:text-ink"
+        className="flex shrink-0 items-center justify-center gap-1.5 border-l border-line2 px-2.5 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-oxide hover:text-ink"
       >
         <LogOut size={12} />
         <span className="hidden md:inline">{t("top.logout")}</span>

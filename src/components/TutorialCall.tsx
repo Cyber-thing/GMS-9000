@@ -85,9 +85,9 @@ export default function TutorialCall() {
       return (
         <div className="fixed inset-0 z-[112] flex items-center justify-center bg-ink/85 p-4 backdrop-blur-[2px]">
           <div className="anim-call-glow anim-msgin w-[min(320px,94%)] border border-viole bg-panel">
-            <div className="flex h-[28px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+            <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
               <span className="h-[6px] w-[6px] animate-softpulse bg-viole" />
-              <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-viole">
+              <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-viole">
                 {t("tut.incoming")}
               </span>
             </div>
@@ -95,12 +95,12 @@ export default function TutorialCall() {
               <span className="anim-ring-shake text-viole"><PhoneCall size={34} strokeWidth={1.6} /></span>
               <div className="mt-3 flex items-center gap-2">
                 <Portrait size={30} avatar={call.script.avatar} />
-                <span className="pixel text-[26px] leading-none text-fog">{call.script.nick}</span>
+                <span className="pixel text-[24px] leading-none text-fog">{call.script.nick}</span>
               </div>
-              <div className="mt-1 text-[10px] uppercase tracking-[0.24em] text-faint">{t("tut.unlisted")}</div>
+              <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-faint">{t("tut.unlisted")}</div>
               <button
                 onClick={callAnswer}
-                className="mt-4 flex w-full items-center justify-center gap-2 border border-viole bg-viole/15 py-[9px] text-[12px] font-bold uppercase tracking-[0.2em] text-viole transition-all hover:bg-viole hover:text-ink"
+                className="mt-4 flex w-full items-center justify-center gap-2 border border-viole bg-viole/15 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-viole transition-all hover:bg-viole hover:text-ink"
               >
                 <PhoneCall size={12} /> {t("tut.answer")}
               </button>
@@ -116,25 +116,25 @@ export default function TutorialCall() {
           className="anim-msgin pointer-events-auto w-[min(620px,100%)] border-2 border-viole bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(143,134,184,0.2)]"
           onClick={() => setSkip(true)}
         >
-          <div className="flex h-[26px] items-center gap-2 border-b border-line2 bg-header px-2">
+          <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
             <span className="h-[5px] w-[5px] animate-softpulse bg-viole" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-viole">{call.script.nick}</span>
-            <span className="text-[9.5px] uppercase tracking-[0.18em] text-faint">· {t("tut.live")}</span>
-            <span className="ml-auto text-[9.5px] tabular-nums text-faint">
+            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-viole">{call.script.nick}</span>
+            <span className="text-[7.5px] uppercase tracking-[0.18em] text-faint">· {t("tut.live")}</span>
+            <span className="ml-auto text-[7.5px] tabular-nums text-faint">
               {call.idx + 1}/{call.script.lines.length}
             </span>
           </div>
           <div className="flex gap-2.5 px-2.5 py-2.5">
             <Portrait avatar={call.script.avatar} />
             <div className="min-w-0 flex-1">
-              <p className="min-h-[36px] text-[13px] leading-relaxed text-fog/95">
+              <p className="min-h-[32px] text-[11px] leading-relaxed text-fog/95">
                 {skip ? line : <Typed key={call.idx} text={line} onDone={() => setTyped(true)} />}
               </p>
               {(skip || typed) && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setSkip(false); setTyped(false); callNext(); }}
                   className={cn(
-                    "mt-1.5 border px-3 py-[5px] text-[10.5px] font-bold uppercase tracking-[0.16em] transition-colors",
+                    "mt-1.5 border px-3 py-[5px] text-[8.5px] font-bold uppercase tracking-[0.16em] transition-colors",
                     last
                       ? "border-viole bg-viole/15 text-viole hover:bg-viole hover:text-ink"
                       : "border-line3 text-dim hover:bg-panel2 hover:text-fog"
@@ -158,9 +158,9 @@ export default function TutorialCall() {
         style={{ zIndex: Z_RING }}
       >
         <div className="anim-call-glow anim-msgin w-[min(320px,94%)] border border-amberdim bg-panel">
-          <div className="flex h-[28px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+          <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
             <span className="h-[6px] w-[6px] animate-softpulse bg-amber" />
-            <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-amber">
+            <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-amber">
               {t("tut.incoming")}
             </span>
           </div>
@@ -171,15 +171,15 @@ export default function TutorialCall() {
             </span>
             <div className="mt-3 flex items-center gap-2">
               <Portrait size={30} />
-              <span className="pixel text-[26px] leading-none text-phosbrite">{CALLER.nick}</span>
+              <span className="pixel text-[24px] leading-none text-phosbrite">{CALLER.nick}</span>
             </div>
-            <div className="mt-1 text-[10px] uppercase tracking-[0.24em] text-faint">
+            <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-faint">
               {t("tut.unlisted")}
             </div>
 
             <button
               onClick={answer}
-              className="mt-4 flex w-full items-center justify-center gap-2 border border-phosdim bg-phos/15 py-[9px] text-[12px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink"
+              className="mt-4 flex w-full items-center justify-center gap-2 border border-phosdim bg-phos/15 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink"
             >
               <PhoneCall size={12} /> {t("tut.answer")}
             </button>
@@ -205,24 +205,24 @@ export default function TutorialCall() {
         onClick={() => !folded && setSkip(true)}
       >
         {/* caller strip */}
-        <div className="flex h-[26px] items-center gap-2 border-b border-line2 bg-header px-2">
+        <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
           <span className="h-[5px] w-[5px] animate-softpulse bg-amber" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber">
+          <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-amber">
             {CALLER.nick}
           </span>
-          <span className="text-[9.5px] uppercase tracking-[0.18em] text-faint">
+          <span className="text-[7.5px] uppercase tracking-[0.18em] text-faint">
             · {t("tut.live")}
           </span>
           <button
             onClick={(e) => { e.stopPropagation(); setFolded((f) => !f); }}
             title={folded ? t("tut.unfold") : t("tut.fold")}
-            className="ml-auto flex items-center gap-1 border border-line3 px-1.5 py-[1px] text-[9.5px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-line3 hover:bg-panel2 hover:text-fog"
+            className="ml-auto flex items-center gap-1 border border-line3 px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-line3 hover:bg-panel2 hover:text-fog"
           >
             {folded ? <ChevronUp size={8} /> : <ChevronDown size={8} />}
             {folded ? t("tut.unfold") : t("tut.fold")}
           </button>
           {/* no hanging up mid-briefing: the script drives the session */}
-          <span className="flex items-center gap-1 border border-line px-1.5 py-[1px] text-[9.5px] font-bold uppercase tracking-[0.12em] text-faint">
+          <span className="flex items-center gap-1 border border-line px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-faint">
             <PhoneOff size={8} /> {t("tut.locked")}
           </span>
         </div>
@@ -231,14 +231,14 @@ export default function TutorialCall() {
         {folded ? (
           <div className="flex items-center gap-2 px-2.5 py-[5px]">
             <Portrait size={16} />
-            <span className="min-w-0 flex-1 truncate text-[11px] text-dim">{line}</span>
+            <span className="min-w-0 flex-1 truncate text-[9px] text-dim">{line}</span>
             {waiting && <span className="h-[4px] w-[4px] shrink-0 animate-softpulse bg-amber" />}
           </div>
         ) : (
         <div className="flex gap-2.5 px-2.5 py-2.5">
           <Portrait />
           <div className="min-w-0 flex-1">
-            <p className="min-h-[36px] text-[13px] leading-relaxed text-fog/95">
+            <p className="min-h-[32px] text-[11px] leading-relaxed text-fog/95">
               {skip ? line : <Typed text={line} onDone={() => setTyped(true)} />}
             </p>
 
@@ -247,13 +247,13 @@ export default function TutorialCall() {
               <div className="mt-2 flex gap-1.5">
                 <button
                   onClick={(e) => { e.stopPropagation(); choose(true); }}
-                  className="flex-1 border border-phosdim bg-phos/10 py-[6px] text-[11px] font-bold uppercase tracking-[0.16em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
+                  className="flex-1 border border-phosdim bg-phos/10 py-[6px] text-[9px] font-bold uppercase tracking-[0.16em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
                 >
                   {t("co.yes")}
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); choose(false); }}
-                  className="flex-1 border border-line3 py-[6px] text-[11px] font-bold uppercase tracking-[0.16em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
+                  className="flex-1 border border-line3 py-[6px] text-[9px] font-bold uppercase tracking-[0.16em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
                 >
                   {t("co.no")}
                 </button>
@@ -263,7 +263,7 @@ export default function TutorialCall() {
             {/* continue / waiting */}
             {!step.choice && (skip || typed) && (
               waiting ? (
-                <div className="mt-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-amber">
+                <div className="mt-1.5 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.18em] text-amber">
                   <span className="h-[4px] w-[4px] animate-softpulse bg-amber" />
                   {t("tut.waiting")}
                 </div>
@@ -271,7 +271,7 @@ export default function TutorialCall() {
                 <button
                   onClick={(e) => { e.stopPropagation(); next(); }}
                   className={cn(
-                    "mt-1.5 border border-line3 px-3 py-[5px] text-[10.5px] font-bold uppercase tracking-[0.16em] transition-colors",
+                    "mt-1.5 border border-line3 px-3 py-[5px] text-[8.5px] font-bold uppercase tracking-[0.16em] transition-colors",
                     step.final
                       ? "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink"
                       : "text-dim hover:bg-panel2 hover:text-fog"

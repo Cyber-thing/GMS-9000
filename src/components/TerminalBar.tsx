@@ -52,19 +52,19 @@ export default function TerminalBar({
   return (
     <div className="relative z-30 shrink-0 border-t border-line2 bg-[#0d100a]">
       {/* header strip */}
-      <div className="flex h-[28px] items-center gap-2 border-b border-line px-2">
+      <div className="flex h-[24px] items-center gap-2 border-b border-line px-2">
         <TerminalSquare size={11} className="shrink-0 text-phosdim" />
-        <span className="truncate text-[11px] font-bold uppercase tracking-[0.22em] text-dim">{t("term.title")}</span>
+        <span className="truncate text-[9px] font-bold uppercase tracking-[0.22em] text-dim">{t("term.title")}</span>
         <span className="h-px flex-1 bg-line" />
         {!expanded && missed > 0 && (
-          <span className="shrink-0 animate-softpulse bg-amber px-[4px] text-[10px] font-bold tracking-[0.12em] text-ink">
+          <span className="shrink-0 animate-softpulse bg-amber px-[4px] text-[8px] font-bold tracking-[0.12em] text-ink">
             +{missed > 99 ? "99" : missed}
           </span>
         )}
-        <span className="hidden shrink-0 text-[10px] tracking-[0.16em] text-faint sm:inline">{t("term.hint")}</span>
+        <span className="hidden shrink-0 text-[8px] tracking-[0.16em] text-faint sm:inline">{t("term.hint")}</span>
         <button
           onClick={onToggle}
-          className="flex items-center gap-1 border border-line2 px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:border-line3 hover:text-fog"
+          className="flex items-center gap-1 border border-line2 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:border-line3 hover:text-fog"
         >
           {expanded ? (
             <>
@@ -83,11 +83,11 @@ export default function TerminalBar({
         ref={boxRef}
         className={cn(
           "overflow-y-auto px-2.5 font-mono transition-all duration-300",
-          expanded ? "h-[168px] py-1.5" : "h-[30px] py-0"
+          expanded ? "h-[150px] py-1.5" : "h-[26px] py-0"
         )}
       >
         {(expanded ? lines.slice(-90) : lines.slice(-1)).map((l) => (
-          <div key={l.id} className="flex items-baseline gap-2 whitespace-nowrap text-[12.5px] leading-[1.65]">
+          <div key={l.id} className="flex items-baseline gap-2 whitespace-nowrap text-[10.5px] leading-[1.65]">
             <span className="shrink-0 tabular-nums text-faint">[{l.t}]</span>
             <span style={{ color: l.tone ? TONE_COLOR[l.tone] : "#99a18c" }}>
               <span className="text-faint">&gt; </span>
@@ -96,9 +96,9 @@ export default function TerminalBar({
             </span>
           </div>
         ))}
-        {!expanded && !last && <span className="text-[12.5px] text-faint">&gt; {t("term.ready")}</span>}
+        {!expanded && !last && <span className="text-[10.5px] text-faint">&gt; {t("term.ready")}</span>}
         {expanded && (
-          <div className="flex items-baseline gap-2 text-[12.5px] leading-[1.65]">
+          <div className="flex items-baseline gap-2 text-[10.5px] leading-[1.65]">
             <span className="shrink-0 tabular-nums text-faint">[--:--:--]</span>
             <span className="text-faint">
               &gt; <span className="ml-0 inline-block h-[10px] w-[6px] translate-y-[1px] animate-blink bg-phosdim" />
@@ -108,7 +108,7 @@ export default function TerminalBar({
       </div>
 
       {/* status strip */}
-      <div className="flex h-[18px] items-center gap-3 border-t border-line bg-soot px-2.5 text-[10px] uppercase tracking-[0.16em] text-faint">
+      <div className="flex h-[18px] items-center gap-3 border-t border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.16em] text-faint">
         <span>{t("term.mem")}</span>
         <span>{t("term.buf", { n: lines.length })}</span>
         <span className="hidden sm:inline">{t("term.line")}</span>

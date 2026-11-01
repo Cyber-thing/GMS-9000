@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { store } from "../lib/util";
 
 export const COL = {
-  leftDefault: 318,
-  rightDefault: 404,
-  minSide: 240,
-  maxSide: 720,
+  leftDefault: 292,
+  rightDefault: 372,
+  minSide: 210,
+  maxSide: 680,
   minMap: 300,
   gap: 8, // tailwind gap-2 between columns
   handle: 7, // resizer width

@@ -62,31 +62,31 @@ export default function HackerExchange({
     <div className="pointer-events-none fixed inset-0 z-[108] flex items-center justify-center bg-ink/88 p-4 backdrop-blur-[2px]">
       {!badge ? (
         <div className="anim-msgin w-[min(380px,94%)] border border-line3 bg-panel shadow-[0_0_60px_rgba(0,0,0,0.8)]">
-          <div className="flex h-[28px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+          <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
             <Database size={11} className="text-phosdim" />
-            <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] text-dim">
+            <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-dim">
               {t("ex.title")}
             </span>
-            <span className="ml-auto animate-blink text-[10px] text-phosdim">●</span>
+            <span className="ml-auto animate-blink text-[8px] text-phosdim">●</span>
           </div>
-          <div className="relative h-[200px] overflow-hidden bg-well px-3 py-1.5">
+          <div className="relative h-[188px] overflow-hidden bg-well px-3 py-1.5">
             {view.map((n, i) => {
               const isMe = n === operator.toUpperCase();
               return (
                 <div
                   key={`${n}_${offset}_${i}`}
-                  className="flex items-baseline gap-2 py-[2px] text-[13px] leading-tight"
+                  className="flex items-baseline gap-2 py-[2px] text-[11px] leading-tight"
                   style={{
                     color: isMe ? "#b3d98d" : "#5b6450",
                     textShadow: isMe ? "0 0 10px rgba(143,181,109,0.6)" : "none",
                     opacity: isMe ? 1 : landed ? 0.4 : 0.75,
                   }}
                 >
-                  <span className="w-[42px] shrink-0 tabular-nums text-[10px] text-faint">
+                  <span className="w-[42px] shrink-0 tabular-nums text-[8px] text-faint">
                     {String(offset + i + 1).padStart(5, "0")}
                   </span>
                   <span className={isMe ? "font-bold tracking-[0.1em]" : ""}>{n}</span>
-                  {isMe && <span className="ml-auto text-[10px] tracking-[0.16em] text-phos">◄ {t("ex.you")}</span>}
+                  {isMe && <span className="ml-auto text-[8px] tracking-[0.16em] text-phos">◄ {t("ex.you")}</span>}
                 </div>
               );
             })}
@@ -99,15 +99,15 @@ export default function HackerExchange({
               }}
             />
           </div>
-          <div className="border-t border-line bg-soot px-2.5 py-[4px] text-[9.5px] uppercase tracking-[0.18em] text-faint">
+          <div className="border-t border-line bg-soot px-2.5 py-[4px] text-[7.5px] uppercase tracking-[0.18em] text-faint">
             {landed ? t("ex.listed") : t("ex.indexing")}
           </div>
         </div>
       ) : (
         <div className="anim-msgin text-center">
-          <div className="text-[11px] uppercase tracking-[0.4em] text-faint">{t("ex.statusLabel")}</div>
+          <div className="text-[9px] uppercase tracking-[0.4em] text-faint">{t("ex.statusLabel")}</div>
           <div
-            className="pixel mt-1 text-[50px] leading-none text-phosbrite"
+            className="pixel mt-1 text-[46px] leading-none text-phosbrite"
             style={{ textShadow: "0 0 22px rgba(143,181,109,0.45)" }}
           >
             {t("ex.rookie")}

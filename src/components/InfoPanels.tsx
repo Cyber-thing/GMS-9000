@@ -65,7 +65,7 @@ export function SectorPanel({
   if (!sector) {
     return (
       <Panel title={t("panel.sector")} className="shrink-0" bodyClassName="p-3">
-        <p className="text-[12.5px] leading-relaxed text-faint">
+        <p className="text-[10.5px] leading-relaxed text-faint">
           &gt; {t("sec.none")}
           <span className="ml-1 inline-block h-[10px] w-[6px] translate-y-[1px] animate-blink bg-faint" />
           <br />
@@ -92,15 +92,15 @@ export function SectorPanel({
       title={t("panel.sector")}
       className="shrink-0"
       accent={STATUS_COLOR[sector.status]}
-      right={<span className="text-[10px] tracking-[0.2em] text-faint">{sector.code}</span>}
+      right={<span className="text-[8px] tracking-[0.2em] text-faint">{sector.code}</span>}
     >
       <div className="px-3 pb-2 pt-2.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="pixel text-[21px] leading-none tracking-[0.06em] text-fog">
+          <span className="pixel text-[19px] leading-none tracking-[0.06em] text-fog">
             {sectorName(lang, sector.id, sector.name)}
           </span>
           <span
-            className="shrink-0 border px-1.5 py-[2px] text-[10px] font-bold tracking-[0.18em]"
+            className="shrink-0 border px-1.5 py-[2px] text-[8px] font-bold tracking-[0.18em]"
             style={{ color: STATUS_COLOR[sector.status], borderColor: `${STATUS_COLOR[sector.status]}55` }}
           >
             {t(`st.${sector.status}`)}
@@ -118,7 +118,7 @@ export function SectorPanel({
             }
           />
         </div>
-        <p className="mt-2 text-[12px] leading-relaxed text-dim">
+        <p className="mt-2 text-[10px] leading-relaxed text-dim">
           {sectorDesc(lang, sector.id, sector.desc)}
         </p>
       </div>
@@ -143,13 +143,13 @@ export function SectorPanel({
                 color={STATUS_COLOR[st]}
                 hollow={st === "LOCKED"}
               />
-              <span className={cn("w-[66px] shrink-0 text-[12px] tracking-[0.08em]", sel ? "text-phosbrite" : "text-fog")}>
+              <span className={cn("w-[66px] shrink-0 text-[10px] tracking-[0.08em]", sel ? "text-phosbrite" : "text-fog")}>
                 {n.code}
               </span>
-              <span className="hidden min-w-0 flex-1 truncate text-[10.5px] uppercase tracking-[0.12em] text-faint xl:inline">
+              <span className="hidden min-w-0 flex-1 truncate text-[8.5px] uppercase tracking-[0.12em] text-faint xl:inline">
                 {t(`tshort.${n.type}`)}
               </span>
-              <span className="ml-auto shrink-0 text-[10px] tracking-[0.14em]" style={{ color: STATUS_COLOR[st] }}>
+              <span className="ml-auto shrink-0 text-[8px] tracking-[0.14em]" style={{ color: STATUS_COLOR[st] }}>
                 {t(`nst.${st}`)}
               </span>
             </button>
@@ -204,12 +204,12 @@ export function EventLog({ events }: { events: NetEvent[] }) {
       title={t("panel.events")}
       className="min-h-[110px] flex-1"
       accent="#7f95a8"
-      right={<span className="text-[10px] tracking-[0.2em] text-faint">{t("ev.entries", { n: events.length })}</span>}
+      right={<span className="text-[8px] tracking-[0.2em] text-faint">{t("ev.entries", { n: events.length })}</span>}
       bodyClassName="relative"
     >
       <div ref={boxRef} className="absolute inset-0 overflow-y-auto px-2.5 py-1.5">
         {events.map((e) => (
-          <div key={e.id} className="anim-msgin flex items-baseline gap-1.5 py-[1.5px] text-[12px] leading-snug">
+          <div key={e.id} className="anim-msgin flex items-baseline gap-1.5 py-[1.5px] text-[10px] leading-snug">
             <span className="shrink-0 tabular-nums text-faint">{e.t}</span>
             <span className="shrink-0 font-bold" style={{ color: EV_COLOR[e.kind] }}>
               {EV_MARK[e.kind]}
@@ -217,7 +217,7 @@ export function EventLog({ events }: { events: NetEvent[] }) {
             <span style={{ color: EV_COLOR[e.kind] }}>{e.text}</span>
           </div>
         ))}
-        {events.length === 0 && <p className="py-2 text-[12px] text-faint">{t("ev.waiting")}</p>}
+        {events.length === 0 && <p className="py-2 text-[10px] text-faint">{t("ev.waiting")}</p>}
       </div>
     </Panel>
   );

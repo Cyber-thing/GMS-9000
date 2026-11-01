@@ -140,7 +140,6 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   w1e_dsv: { owner: "agogee", cls: "CORPORATE", warden: 3, rep: 16, files: ["f_fin_mirror"] },
 
   /* ---- Fusion: Gulf Relay ---- */
-  w1g_acc: { owner: "fusion", cls: "PUBLIC", warden: 2, rep: 12, req: { rep: 100 } },
   w1g_dsv: {
     owner: "fusion", cls: "CORPORATE", warden: 3, rep: 16,
     files: ["f_queue_memo"], codex: ["f_fusion"],

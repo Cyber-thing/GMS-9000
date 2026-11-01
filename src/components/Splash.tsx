@@ -69,7 +69,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
         {/* presents */}
         <div
           className={cnx(
-            "text-[13px] uppercase tracking-[0.42em] text-amber transition-all duration-500 sm:text-[15px]",
+            "text-[11px] uppercase tracking-[0.42em] text-amber transition-all duration-500 sm:text-[13px]",
             stage >= 1 ? "opacity-100" : "translate-y-1 opacity-0"
           )}
           style={{ textShadow: "0 0 12px rgba(207,160,75,0.35)" }}
@@ -82,7 +82,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
           aria-label="GNS-9000"
           className={cnx(
             "mx-auto mt-5 overflow-x-auto whitespace-pre text-phosbrite transition-all duration-700",
-            "text-[7px] leading-[1.05] xs:text-[8px] sm:text-[11px] md:text-[13px]",
+            "text-[5px] leading-[1.05] xs:text-[6px] sm:text-[9px] md:text-[11px]",
             stage >= 2 ? "scale-100 opacity-100" : "scale-[0.97] opacity-0"
           )}
           style={{ textShadow: "0 0 14px rgba(143,181,109,0.4)", fontFamily: "var(--font-mono)" }}
@@ -103,7 +103,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
         </div>
         <p
           className={cnx(
-            "mt-3 text-[11px] uppercase leading-relaxed tracking-[0.26em] text-dim transition-opacity duration-500 sm:text-[12px]",
+            "mt-3 text-[9px] uppercase leading-relaxed tracking-[0.26em] text-dim transition-opacity duration-500 sm:text-[10px]",
             stage >= 3 ? "opacity-100" : "opacity-0"
           )}
         >
@@ -113,7 +113,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
         {/* prompt */}
         <p
           className={cnx(
-            "mt-8 text-[11px] uppercase tracking-[0.3em] text-faint transition-opacity duration-500",
+            "mt-8 text-[9px] uppercase tracking-[0.3em] text-faint transition-opacity duration-500",
             stage >= 4 ? "opacity-100" : "opacity-0"
           )}
         >

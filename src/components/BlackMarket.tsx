@@ -31,10 +31,10 @@ export default function BlackMarket({
       <Shell onClose={onClose} tab={tab} setTab={setTab} locked>
         <div className="flex flex-col items-center px-5 py-6 text-center">
           <Lock size={26} style={{ color: RED }} />
-          <div className="pixel mt-2 text-[24px] leading-none" style={{ color: RED }}>
+          <div className="pixel mt-2 text-[22px] leading-none" style={{ color: RED }}>
             {t("bm.locked")}
           </div>
-          <p className="mt-2 max-w-[400px] text-[12.5px] leading-relaxed text-dim">
+          <p className="mt-2 max-w-[400px] text-[10.5px] leading-relaxed text-dim">
             {t("bm.lockedBody")}
           </p>
           <button
@@ -43,7 +43,7 @@ export default function BlackMarket({
               if (openMarket()) onLog("t.marketOpen");
             }}
             className={cn(
-              "mt-4 w-full max-w-[300px] border px-4 py-[9px] text-[12px] font-bold uppercase tracking-[0.18em] transition-colors",
+              "mt-4 w-full max-w-[300px] border px-4 py-[9px] text-[10px] font-bold uppercase tracking-[0.18em] transition-colors",
               afford
                 ? "border-[#c25b46] bg-[#c25b46]/15 text-[#e0634a] hover:bg-[#c25b46] hover:text-ink"
                 : "cursor-not-allowed border-line text-faint"
@@ -51,7 +51,7 @@ export default function BlackMarket({
           >
             {afford ? t("bm.buyAccess", { n: CFG.marketPrice }) : t("bm.needCr")}
           </button>
-          <div className="mt-2 text-[11px] tabular-nums text-faint">
+          <div className="mt-2 text-[9px] tabular-nums text-faint">
             {g.credits} / {CFG.marketPrice} cr
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function BlackMarket({
       {tab === "sell" && (
         <div className="min-h-0 flex-1 overflow-y-auto p-2">
           {g.files.length === 0 && (
-            <p className="px-1 py-3 text-[12px] text-faint">{t("bm.sellEmpty")}</p>
+            <p className="px-1 py-3 text-[10px] text-faint">{t("bm.sellEmpty")}</p>
           )}
           {g.files.map((id) => {
             const f = resolveFile(id);
@@ -98,10 +98,10 @@ export default function BlackMarket({
               >
                 <div className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[12.5px] text-fog">
+                    <div className="truncate text-[10.5px] text-fog">
                       {lang === "ru" ? f.nameRu : f.name}
                     </div>
-                    <div className="truncate text-[9.5px] uppercase tracking-[0.12em] text-faint">
+                    <div className="truncate text-[7.5px] uppercase tracking-[0.12em] text-faint">
                       {t(`dcat.${f.cat}`)}
                       {spent && <span className="ml-1 text-oxide">· {t("bm.spent")}</span>}
                     </div>
@@ -113,13 +113,13 @@ export default function BlackMarket({
                       onLog("t.sold", { name: lang === "ru" ? f.nameRu : f.name, n: r.credits });
                       if (owed) onLog("t.betray", { title: lang === "ru" ? owed.titleRu : owed.title });
                     }}
-                    className="shrink-0 border border-[#c25b46] bg-[#c25b46]/15 px-2 py-[4px] text-[11px] font-bold uppercase tracking-[0.12em] text-[#e0634a] transition-colors hover:bg-[#c25b46] hover:text-ink"
+                    className="shrink-0 border border-[#c25b46] bg-[#c25b46]/15 px-2 py-[4px] text-[9px] font-bold uppercase tracking-[0.12em] text-[#e0634a] transition-colors hover:bg-[#c25b46] hover:text-ink"
                   >
                     {t("bm.sell")} · {price}cr
                   </button>
                 </div>
                 {spent && (
-                  <div className="mt-1 border-t border-line pt-1 text-[10.5px] leading-snug text-faint">
+                  <div className="mt-1 border-t border-line pt-1 text-[8.5px] leading-snug text-faint">
                     {t("bm.spentWarn")}
                   </div>
                 )}
@@ -127,10 +127,10 @@ export default function BlackMarket({
                   <div className="mt-1 flex items-start gap-1.5 border-t border-[#c25b46]/30 pt-1">
                     <TriangleAlert size={10} className="mt-[1px] shrink-0" style={{ color: RED }} />
                     <div className="min-w-0">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.12em]" style={{ color: RED }}>
+                      <div className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: RED }}>
                         {t("bm.owed", { who: client ? (lang === "ru" ? client.nameRu : client.name) : "" })}
                       </div>
-                      <div className="text-[10.5px] leading-snug text-dim">{t("bm.owedWarn")}</div>
+                      <div className="text-[8.5px] leading-snug text-dim">{t("bm.owedWarn")}</div>
                     </div>
                   </div>
                 )}
@@ -151,19 +151,19 @@ export default function BlackMarket({
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="flex items-center gap-1.5">
                     {sc.freeze ? <Skull size={11} style={{ color: RED }} /> : <Zap size={11} style={{ color: RED }} />}
-                    <span className="text-[12.5px] font-bold tracking-[0.06em] text-fog">
+                    <span className="text-[10.5px] font-bold tracking-[0.06em] text-fog">
                       {lang === "ru" ? sc.nameRu : sc.name}
                     </span>
                   </span>
-                  <span className="shrink-0 text-[11px] uppercase tracking-[0.12em] text-faint">
+                  <span className="shrink-0 text-[9px] uppercase tracking-[0.12em] text-faint">
                     {t("bm.cd", { n: sc.cooldown })}
                   </span>
                 </div>
-                <p className="mt-1 text-[11.5px] leading-snug text-dim">
+                <p className="mt-1 text-[9.5px] leading-snug text-dim">
                   {lang === "ru" ? sc.descRu : sc.desc}
                 </p>
                 {have ? (
-                  <div className="mt-1.5 border border-phosdim/50 bg-phos/10 py-[5px] text-center text-[11px] font-bold uppercase tracking-[0.14em] text-phos">
+                  <div className="mt-1.5 border border-phosdim/50 bg-phos/10 py-[5px] text-center text-[9px] font-bold uppercase tracking-[0.14em] text-phos">
                     ✓ {t("bm.owned")}
                   </div>
                 ) : (
@@ -173,7 +173,7 @@ export default function BlackMarket({
                       if (buyScript(sc.id)) onLog("t.script", { name: lang === "ru" ? sc.nameRu : sc.name });
                     }}
                     className={cn(
-                      "mt-1.5 w-full border py-[5px] text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+                      "mt-1.5 w-full border py-[5px] text-[9px] font-bold uppercase tracking-[0.14em] transition-colors",
                       afford
                         ? "border-[#c25b46] bg-[#c25b46]/15 text-[#e0634a] hover:bg-[#c25b46] hover:text-ink"
                         : "cursor-not-allowed border-line text-faint"
@@ -191,11 +191,11 @@ export default function BlackMarket({
       {/* ================= JOBS ================= */}
       {tab === "jobs" && (
         <div className="min-h-0 flex-1 overflow-y-auto p-2">
-          <p className="mb-1.5 px-1 text-[10.5px] uppercase leading-snug tracking-[0.12em] text-faint">
+          <p className="mb-1.5 px-1 text-[8.5px] uppercase leading-snug tracking-[0.12em] text-faint">
             {t("bm.jobsHint")}
           </p>
           {crewJobs.length === 0 && (
-            <p className="px-1 py-2 text-[12px] text-faint">{t("bm.jobsEmpty")}</p>
+            <p className="px-1 py-2 text-[10px] text-faint">{t("bm.jobsEmpty")}</p>
           )}
           {crewJobs.map((ct) => {
             const pr = g.contracts[ct.id];
@@ -204,18 +204,18 @@ export default function BlackMarket({
             return (
               <div key={ct.id} className="mb-1.5 border border-[#c25b46]/40 bg-[#c25b46]/6 p-2">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-[12.5px] font-bold tracking-[0.06em]" style={{ color: "#e0634a" }}>
+                  <span className="truncate text-[10.5px] font-bold tracking-[0.06em]" style={{ color: "#e0634a" }}>
                     {lang === "ru" ? ct.titleRu : ct.title}
                   </span>
-                  <span className="shrink-0 border px-1 text-[9.5px] font-bold uppercase tracking-[0.1em]"
+                  <span className="shrink-0 border px-1 text-[7.5px] font-bold uppercase tracking-[0.1em]"
                     style={{ color: RED, borderColor: `${RED}66` }}>
                     {t(`co.kind.${ct.kind}`)}
                   </span>
                 </div>
-                <p className="mt-1 text-[11.5px] leading-snug text-dim">
+                <p className="mt-1 text-[9.5px] leading-snug text-dim">
                   {lang === "ru" ? ct.briefRu : ct.brief}
                 </p>
-                <div className="mt-1 space-y-[2px] border-t border-line pt-1 text-[11px] text-faint">
+                <div className="mt-1 space-y-[2px] border-t border-line pt-1 text-[9px] text-faint">
                   <div>{t("co.target")}: <span className="text-fog">{node?.code}</span></div>
                   <div>
                     {t("co.payout")}: <span className="text-amber">{ct.credits}cr</span> ·{" "}
@@ -232,13 +232,13 @@ export default function BlackMarket({
                       acceptContract(ct.id);
                       onLog("t.jobTaken", { title: lang === "ru" ? ct.titleRu : ct.title });
                     }}
-                    className="mt-1.5 w-full border border-[#c25b46] bg-[#c25b46]/15 py-[6px] text-[11px] font-bold uppercase tracking-[0.14em] text-[#e0634a] transition-colors hover:bg-[#c25b46] hover:text-ink"
+                    className="mt-1.5 w-full border border-[#c25b46] bg-[#c25b46]/15 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-[#e0634a] transition-colors hover:bg-[#c25b46] hover:text-ink"
                   >
                     {t("co.accept")}
                   </button>
                 )}
                 {pr.state !== "AVAILABLE" && pr.state !== "COMPLETED" && (
-                  <div className="mt-1.5 border border-line py-[5px] text-center text-[10.5px] uppercase tracking-[0.12em] text-faint">
+                  <div className="mt-1.5 border border-line py-[5px] text-center text-[8.5px] uppercase tracking-[0.12em] text-faint">
                     {t("bm.inContacts")}
                   </div>
                 )}
@@ -274,14 +274,14 @@ function Shell({
       >
         {/* title */}
         <div
-          className="flex h-[32px] shrink-0 items-center gap-2 border-b px-2.5"
+          className="flex h-[28px] shrink-0 items-center gap-2 border-b px-2.5"
           style={{ borderColor: "#c25b4855", background: "rgba(194,91,70,0.12)" }}
         >
           <ShoppingBag size={12} style={{ color: RED }} />
-          <span className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: "#e0634a" }}>
+          <span className="text-[9px] font-bold uppercase tracking-[0.22em]" style={{ color: "#e0634a" }}>
             {t("bm.title")}
           </span>
-          <span className="ml-auto flex items-center gap-1 text-[11px] tabular-nums text-amber">
+          <span className="ml-auto flex items-center gap-1 text-[9px] tabular-nums text-amber">
             <Banknote size={10} /> {g.credits}cr
           </span>
           <button onClick={onClose} className="shrink-0 text-dim transition-colors hover:text-fog">
@@ -297,7 +297,7 @@ function Shell({
                 key={id}
                 onClick={() => setTab(id)}
                 className={cn(
-                  "flex-1 border-r px-2 py-[6px] text-[10.5px] font-bold uppercase tracking-[0.14em] transition-colors last:border-r-0",
+                  "flex-1 border-r px-2 py-[6px] text-[8.5px] font-bold uppercase tracking-[0.14em] transition-colors last:border-r-0",
                   tab === id ? "text-[#e0634a]" : "text-faint hover:text-dim"
                 )}
                 style={{
@@ -315,7 +315,7 @@ function Shell({
         {children}
 
         <div
-          className="shrink-0 border-t px-2.5 py-[4px] text-center text-[9.5px] uppercase tracking-[0.18em] text-faint"
+          className="shrink-0 border-t px-2.5 py-[4px] text-center text-[7.5px] uppercase tracking-[0.18em] text-faint"
           style={{ borderColor: "#c25b4833" }}
         >
           {t("bm.motto")}

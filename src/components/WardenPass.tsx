@@ -52,9 +52,9 @@ export default function WardenPass({
         className="anim-msgin w-[min(420px,96%)] border bg-panel shadow-[0_0_70px_rgba(0,0,0,0.8)]"
         style={{ borderColor: state === "granted" ? "#8fb56d" : "#cfa04b88" }}
       >
-        <div className="flex h-[30px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+        <div className="flex h-[26px] items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color={state === "granted" ? "#8fb56d" : "#cfa04b"} pulse />
-          <span className="truncate text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+          <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
             {nodeCode}
           </span>
           <button onClick={onClose} className="ml-auto shrink-0 text-dim transition-colors hover:text-fog">
@@ -67,17 +67,17 @@ export default function WardenPass({
           <div className="flex items-center gap-2 border border-amberdim/60 bg-amber/8 px-2.5 py-2">
             <ShieldAlert size={16} className="shrink-0 text-amber" />
             <div className="min-w-0">
-              <div className="text-[12px] font-bold uppercase tracking-[0.18em] text-amber">
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber">
                 {t("wp.banner")}
               </div>
-              <div className="text-[10px] uppercase tracking-[0.14em] text-amberdim">
+              <div className="text-[8px] uppercase tracking-[0.14em] text-amberdim">
                 {t("wp.sub")}
               </div>
             </div>
           </div>
 
           {/* field */}
-          <label className="mt-3 block text-[11px] uppercase tracking-[0.24em] text-faint">
+          <label className="mt-3 block text-[9px] uppercase tracking-[0.24em] text-faint">
             {t("wp.prompt")}
           </label>
           <div
@@ -96,13 +96,13 @@ export default function WardenPass({
               onChange={(e) => { setValue(e.target.value); if (state === "denied") setState("idle"); }}
               onKeyDown={(e) => e.key === "Enter" && submit()}
               placeholder={t("wp.ph")}
-              className="h-[38px] w-full bg-transparent text-[15px] font-semibold uppercase tracking-[0.18em] text-phosbrite placeholder:text-[11px] placeholder:tracking-[0.18em] placeholder:text-faint"
+              className="h-[34px] w-full bg-transparent text-[13px] font-semibold uppercase tracking-[0.18em] text-phosbrite placeholder:text-[9px] placeholder:tracking-[0.18em] placeholder:text-faint"
             />
             <span className="h-[13px] w-[7px] shrink-0 animate-blink bg-phosdim" />
           </div>
 
           {/* verdict */}
-          <div className="mt-2 min-h-[16px] text-[12px] uppercase tracking-[0.16em]">
+          <div className="mt-2 min-h-[16px] text-[10px] uppercase tracking-[0.16em]">
             {state === "checking" && <span className="animate-softpulse text-amber">{t("wp.checking")}</span>}
             {state === "denied" && (
               <span className="text-oxide">
@@ -117,7 +117,7 @@ export default function WardenPass({
             onClick={submit}
             disabled={state === "checking" || state === "granted" || !value.trim()}
             className={cn(
-              "mt-2 flex w-full items-center justify-center gap-2 border px-3 py-[8px] text-[12px] font-bold uppercase tracking-[0.2em] transition-colors",
+              "mt-2 flex w-full items-center justify-center gap-2 border px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.2em] transition-colors",
               value.trim() && state !== "checking" && state !== "granted"
                 ? "border-amberdim bg-amber/12 text-amber hover:bg-amber hover:text-ink"
                 : "cursor-not-allowed border-line text-faint"
@@ -126,7 +126,7 @@ export default function WardenPass({
             <Lock size={11} /> {t("wp.submit")}
           </button>
 
-          <p className="mt-2 text-[10.5px] uppercase leading-relaxed tracking-[0.1em] text-faint">
+          <p className="mt-2 text-[8.5px] uppercase leading-relaxed tracking-[0.1em] text-faint">
             {t("wp.foot")}
           </p>
         </div>

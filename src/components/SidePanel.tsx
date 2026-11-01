@@ -51,7 +51,7 @@ export default function SidePanel({
       bodyClassName="flex min-h-0 flex-col"
       right={
         tab === "STATUS" ? (
-          <span className="flex items-center gap-2 text-[10px] tracking-[0.14em]">
+          <span className="flex items-center gap-2 text-[8px] tracking-[0.14em]">
             <span className="text-amber">{g.credits}cr</span>
             <span className="text-phos">{g.rep} REP</span>
           </span>
@@ -68,7 +68,7 @@ export default function SidePanel({
               key={id}
               onClick={() => onTab(id)}
               className={cn(
-                "relative flex flex-1 items-center justify-center gap-1 border-r border-line px-1 py-[7px] text-[10.5px] font-bold uppercase tracking-[0.1em] transition-colors last:border-r-0",
+                "relative flex flex-1 items-center justify-center gap-1 border-r border-line px-1 py-[7px] text-[8.5px] font-bold uppercase tracking-[0.1em] transition-colors last:border-r-0",
                 active
                   ? "bg-panel text-phosbrite shadow-[inset_0_-2px_0_#8fb56d]"
                   : "text-faint hover:bg-panel2 hover:text-dim",

@@ -49,30 +49,30 @@ export function RouteTrace({ region }: { region: RegionDef }) {
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-ink/88 backdrop-blur-[1px]">
       <div className="pointer-events-none absolute inset-0 opacity-[0.05]" style={{ background: "repeating-linear-gradient(to bottom, transparent 0 3px, #8fb56d 3px 4px)" }} />
       <div className="w-[min(420px,90%)] border border-line2 bg-soot shadow-[0_0_60px_rgba(143,181,109,0.07)]">
-        <div className="flex h-[30px] items-center gap-2 border-b border-line bg-header px-2.5">
+        <div className="flex h-[26px] items-center gap-2 border-b border-line bg-header px-2.5">
           <StatusDot color="#cfa04b" pulse />
-          <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-dim">
+          <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-dim">
             {t("trace.title")}
           </span>
         </div>
         <div className="px-4 py-3">
-          <div className="pixel text-[28px] leading-none text-phosbrite">
+          <div className="pixel text-[26px] leading-none text-phosbrite">
             {region.code}{" "}
-            <span className="text-[18px] text-dim">// {regionContinent(lang, region.id, region.continent)}</span>
+            <span className="text-[16px] text-dim">// {regionContinent(lang, region.id, region.continent)}</span>
           </div>
-          <div className="blocksbar mt-2 text-[20px] text-phos">
-            {blockBar(pct, 26)} <span className="text-[14px] text-dim">{Math.floor(pct)}%</span>
+          <div className="blocksbar mt-2 text-[18px] text-phos">
+            {blockBar(pct, 26)} <span className="text-[12px] text-dim">{Math.floor(pct)}%</span>
           </div>
           <div className="mt-2 min-h-[64px] space-y-[1px] border-t border-line pt-1.5">
             {hops.map((h, i) => (
-              <div key={i} className="anim-msgin text-[12px] text-dim">
+              <div key={i} className="anim-msgin text-[10px] text-dim">
                 <span className="text-phosdim">&gt; </span>
                 {h}
                 {i === hops.length - 1 && <span className="ml-1 inline-block h-[8px] w-[5px] translate-y-[1px] animate-blink bg-phosdim" />}
               </div>
             ))}
           </div>
-          <div className="mt-1 flex justify-between text-[10px] uppercase tracking-[0.2em] text-faint">
+          <div className="mt-1 flex justify-between text-[8px] uppercase tracking-[0.2em] text-faint">
             <span>{t("trace.inject")}</span>
             <span className="animate-softpulse text-amber">{t("trace.dontclose")}</span>
           </div>
@@ -142,7 +142,7 @@ export default function WorldMap({
       className="h-full"
       bodyClassName="relative bg-well"
       right={
-        <div className="flex items-center gap-3 text-[10.5px] uppercase tracking-[0.18em] text-faint">
+        <div className="flex items-center gap-3 text-[8.5px] uppercase tracking-[0.18em] text-faint">
           <span className="hidden sm:inline">{t("world.feed")}</span>
           <span className="shrink-0 tabular-nums text-dim">{t("world.sessions", { n: connectedCount })}</span>
         </div>
@@ -202,7 +202,7 @@ export default function WorldMap({
           >
             <div className="flex flex-col items-center">
               <span className="block h-[9px] w-[9px] rotate-45 border border-viole bg-viole/20" />
-              <span className="mt-[4px] whitespace-nowrap text-[9.5px] tracking-[0.2em] text-viole">
+              <span className="mt-[4px] whitespace-nowrap text-[7.5px] tracking-[0.2em] text-viole">
                 {UPLINK.code} · {t("world.uplink")}
               </span>
             </div>
@@ -226,7 +226,7 @@ export default function WorldMap({
                 style={{ left: `${lonToX(r.lon) * 100}%`, top: `${latToY(r.lat) * 100}%`, transform: "translate(-50%,-50%)" }}
                 title={`${r.code} // ${regionContinent(lang, r.id, r.continent)}`}
               >
-                <span className="relative block h-[38px] w-[34px]">
+                <span className="relative block h-[34px] w-[34px]">
                   <Brackets color={active ? "#cfa04b" : locked ? "#59604f" : "#8fb56d"} size={10} />
                   <span className={cn("absolute inset-0 m-auto h-[11px] w-[11px] border", active && "animate-softpulse")}
                     style={{
@@ -242,24 +242,24 @@ export default function WorldMap({
                     <span className="absolute inset-0 m-auto h-[3px] w-[3px] animate-softpulse bg-phosbrite" />
                   )}
                   {locked && (
-                    <span className="absolute inset-0 m-auto text-center text-[11px] leading-[34px] text-faint">×</span>
+                    <span className="absolute inset-0 m-auto text-center text-[9px] leading-[34px] text-faint">×</span>
                   )}
                 </span>
                 <span className="absolute left-full top-1/2 ml-1 -translate-y-1/2 whitespace-nowrap text-left">
                   <span
                     className={cn(
-                      "block text-[12px] font-bold tracking-[0.18em] transition-colors",
+                      "block text-[10px] font-bold tracking-[0.18em] transition-colors",
                       locked ? "text-dim" : "text-phosbrite group-hover:bg-phos group-hover:text-ink"
                     )}
                   >
                     &nbsp;{r.code}&nbsp;
                   </span>
-                  <span className="block text-[9.5px] tracking-[0.2em] text-dim">
+                  <span className="block text-[7.5px] tracking-[0.2em] text-dim">
                     {regionContinent(lang, r.id, r.continent)}
                   </span>
                   <span
                     className={cn(
-                      "block text-[9px] tracking-[0.14em] transition-opacity",
+                      "block text-[7px] tracking-[0.14em] transition-opacity",
                       locked ? "text-oxide/80 opacity-100" : "text-faint opacity-0 group-hover:opacity-100"
                     )}
                   >
@@ -281,17 +281,17 @@ export default function WorldMap({
               title={`${p.code} · ${t(`dead.${p.code}`)}`}
             >
               <span className="block h-[10px] w-[10px] rotate-45 border border-faint/70 transition-colors group-hover:border-oxide" />
-              <span className="absolute left-full top-1/2 ml-1.5 -translate-y-1/2 whitespace-nowrap text-[9px] tracking-[0.18em] text-faint transition-colors group-hover:text-dim">
+              <span className="absolute left-full top-1/2 ml-1.5 -translate-y-1/2 whitespace-nowrap text-[7px] tracking-[0.18em] text-faint transition-colors group-hover:text-dim">
                 {p.code} · {t("world.offline")}
               </span>
             </button>
           ))}
 
           {/* frame labels */}
-          <span className="pointer-events-none absolute left-[6px] top-[5px] text-[9.5px] tracking-[0.22em] text-faint">
+          <span className="pointer-events-none absolute left-[6px] top-[5px] text-[7.5px] tracking-[0.22em] text-faint">
             {t("world.fig")}
           </span>
-          <span className="pointer-events-none absolute bottom-[5px] right-[6px] text-[9.5px] tracking-[0.22em] text-faint">
+          <span className="pointer-events-none absolute bottom-[5px] right-[6px] text-[7.5px] tracking-[0.22em] text-faint">
             {t("world.reach", { r: REGIONS.length, d: DEAD_POINTS.length })}
           </span>
         </div>

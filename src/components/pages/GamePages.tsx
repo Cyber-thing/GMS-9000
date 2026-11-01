@@ -37,17 +37,17 @@ export function CodexPage() {
       <div className="flex min-h-0 flex-1 flex-col">
         <button
           onClick={() => setOpen(null)}
-          className="flex shrink-0 items-center gap-1.5 border-b border-line bg-panel2 px-2 py-[5px] text-[10.5px] font-bold uppercase tracking-[0.16em] text-dim hover:text-phos"
+          className="flex shrink-0 items-center gap-1.5 border-b border-line bg-panel2 px-2 py-[5px] text-[8.5px] font-bold uppercase tracking-[0.16em] text-dim hover:text-phos"
         >
           <ArrowLeft size={10} /> {t("cx.cat." + entry.cat)}
         </button>
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="pixel text-[24px] leading-none text-phosbrite">
+            <h3 className="pixel text-[22px] leading-none text-phosbrite">
               {lang === "ru" ? entry.titleRu : entry.title}
             </h3>
             <span
-              className="shrink-0 border px-1.5 py-[2px] text-[9.5px] font-bold tracking-[0.14em]"
+              className="shrink-0 border px-1.5 py-[2px] text-[7.5px] font-bold tracking-[0.14em]"
               style={{
                 color: stt === "UPDATED" ? "#cfa04b" : stt === "DISCOVERED" ? "#8fb56d" : "#59604f",
                 borderColor: stt === "UNKNOWN" ? "#39422d" : "currentColor",
@@ -57,19 +57,19 @@ export function CodexPage() {
             </span>
           </div>
           {fac && (
-            <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-faint">
+            <div className="mt-1 text-[8px] uppercase tracking-[0.16em] text-faint">
               {t("cx.src")}: {lang === "ru" ? fac.nameRu : fac.name}
             </div>
           )}
           <div className="mt-2 border-t border-line pt-2">
             {stt === "UNKNOWN" ? (
-              <p className="text-[12px] leading-relaxed text-faint">
+              <p className="text-[10px] leading-relaxed text-faint">
                 ▒▒▒▒ ▒▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒▒▒▒ ▒▒▒▒ ▒▒▒▒▒▒▒▒▒ ▒▒▒▒▒
                 <br />
                 <span className="mt-2 block text-amberdim">{t("cx.classified")}</span>
               </p>
             ) : (
-              <p className="text-[13px] leading-relaxed text-fog/90">
+              <p className="text-[11px] leading-relaxed text-fog/90">
                 {lang === "ru" ? entry.bodyRu : entry.body}
               </p>
             )}
@@ -88,14 +88,14 @@ export function CodexPage() {
             key={c}
             onClick={() => setCat(c)}
             className={cn(
-              "shrink-0 border-r border-line px-2 py-[6px] text-[9.5px] font-bold uppercase tracking-[0.1em] transition-colors",
+              "shrink-0 border-r border-line px-2 py-[6px] text-[7.5px] font-bold uppercase tracking-[0.1em] transition-colors",
               c === cat ? "bg-phos/12 text-phosbrite shadow-[inset_0_-2px_0_#8fb56d]" : "text-faint hover:text-dim"
             )}
           >
             {t(`cx.cat.${c}`)}
           </button>
         ))}
-        <span className="ml-auto shrink-0 px-2 py-[6px] text-[9.5px] tracking-[0.14em] text-faint">
+        <span className="ml-auto shrink-0 px-2 py-[6px] text-[7.5px] tracking-[0.14em] text-faint">
           {t("cx.known", { a: known, b: CODEX.length })}
         </span>
       </div>
@@ -120,14 +120,14 @@ export function CodexPage() {
               />
               <span
                 className={cn(
-                  "min-w-0 flex-1 truncate text-[12.5px]",
+                  "min-w-0 flex-1 truncate text-[10.5px]",
                   stt === "UNKNOWN" ? "text-faint" : "text-fog"
                 )}
               >
                 {stt === "UNKNOWN" ? "████████ ███████" : lang === "ru" ? e.titleRu : e.title}
               </span>
               {unseen && (
-                <span className="shrink-0 bg-amber px-[3px] text-[9px] font-bold text-ink">{t("tab.new")}</span>
+                <span className="shrink-0 bg-amber px-[3px] text-[7px] font-bold text-ink">{t("tab.new")}</span>
               )}
             </button>
           );
@@ -136,12 +136,12 @@ export function CodexPage() {
         {/* update log */}
         {g.codexLog.length > 0 && (
           <div className="border-t border-line2 p-2.5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-faint">{t("cx.log")}</div>
+            <div className="text-[8px] uppercase tracking-[0.2em] text-faint">{t("cx.log")}</div>
             <div className="mt-1 space-y-[2px]">
               {[...g.codexLog].reverse().slice(0, 8).map((l, i) => {
                 const e = codexById(l.id);
                 return (
-                  <div key={i} className="flex items-baseline gap-1.5 text-[11.5px]">
+                  <div key={i} className="flex items-baseline gap-1.5 text-[9.5px]">
                     <span className="tabular-nums text-faint">{l.t}</span>
                     <span style={{ color: l.updated ? "#cfa04b" : "#8fb56d" }}>{l.updated ? "~" : "+"}</span>
                     <span className="truncate text-dim">{e ? (lang === "ru" ? e.titleRu : e.title) : l.id}</span>
@@ -220,15 +220,15 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
           <button onClick={() => setOpen(null)} className="text-dim hover:text-phos">
             <ArrowLeft size={11} />
           </button>
-          <span className="text-[12px] font-bold tracking-[0.1em] text-phosbrite">{c.nick}</span>
-          <span className="truncate text-[9.5px] uppercase tracking-[0.14em] text-faint">
+          <span className="text-[10px] font-bold tracking-[0.1em] text-phosbrite">{c.nick}</span>
+          <span className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
             {lang === "ru" ? c.roleRu : c.role} · {fac ? (lang === "ru" ? fac.nameRu : fac.name) : ""}
           </span>
           {hasLiveJob && (
             <button
               onClick={jumpToOffer}
               title={t("co.jumpTip")}
-              className="ml-auto flex shrink-0 items-center gap-1 border border-amberdim bg-amber/10 px-1.5 py-[2px] text-[9.5px] font-bold uppercase tracking-[0.12em] text-amber transition-colors hover:bg-amber hover:text-ink"
+              className="ml-auto flex shrink-0 items-center gap-1 border border-amberdim bg-amber/10 px-1.5 py-[2px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-amber transition-colors hover:bg-amber hover:text-ink"
             >
               <ArrowDownToLine size={8} /> {t("co.jump")}
             </button>
@@ -245,23 +245,23 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
               (m.action === "offer" || m.action === "deliver");
             return (
               <div key={m.id} ref={liveJob ? offerRef : undefined} className="anim-msgin mb-1.5">
-                <div className="flex items-baseline gap-1.5 text-[12.5px] leading-snug">
+                <div className="flex items-baseline gap-1.5 text-[10.5px] leading-snug">
                   <span className="shrink-0 tabular-nums text-faint">{m.t}</span>
                   <span className={cn("shrink-0 font-bold", mine ? "text-amber" : "text-steel")}>
                     {mine ? t("co.you") : c.nick}
                   </span>
                 </div>
-                <p className={cn("pl-1 text-[12.5px] leading-snug", mine ? "text-[#ddd3ae]" : "text-fog/90")}>
+                <p className={cn("pl-1 text-[10.5px] leading-snug", mine ? "text-[#ddd3ae]" : "text-fog/90")}>
                   {(lang === "ru" ? m.textRu : m.textEn) ?? m.text}
                 </p>
 
                 {/* contract card */}
                 {ct && m.action === "offer" && (
                   <div className="mt-1 border border-line2 bg-well p-2">
-                    <div className="text-[12px] font-bold tracking-[0.1em] text-phosbrite">
+                    <div className="text-[10px] font-bold tracking-[0.1em] text-phosbrite">
                       {lang === "ru" ? ct.titleRu : ct.title}
                     </div>
-                    <div className="mt-1 space-y-[2px] text-[11px] text-dim">
+                    <div className="mt-1 space-y-[2px] text-[9px] text-dim">
                       <div>
                         {t("co.target")}: <span className="text-fog">{ALL_NODES.find((n) => n.id === ct.target)?.code}</span>
                       </div>
@@ -272,7 +272,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                       )}
                       <div>
                         <span
-                          className="border px-1 text-[9.5px] font-bold uppercase tracking-[0.1em]"
+                          className="border px-1 text-[7.5px] font-bold uppercase tracking-[0.1em]"
                           style={
                             ct.kind === "SABOTAGE"
                               ? { color: "#e0634a", borderColor: "#c25b4666" }
@@ -296,7 +296,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                       <button
                         onClick={() => acceptContract(ct.id)}
                         className={cn(
-                          "mt-1.5 w-full border border-phosdim bg-phos/10 py-[5px] text-[11px] font-bold uppercase tracking-[0.14em] text-phosbrite transition-colors hover:bg-phos hover:text-ink",
+                          "mt-1.5 w-full border border-phosdim bg-phos/10 py-[5px] text-[9px] font-bold uppercase tracking-[0.14em] text-phosbrite transition-colors hover:bg-phos hover:text-ink",
                           isHl("offer") && "tut-ring"
                         )}
                       >
@@ -311,7 +311,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                   <button
                     onClick={() => deliverContract(ct.id)}
                     className={cn(
-                      "mt-1 flex w-full items-center justify-center gap-1.5 border border-amberdim bg-amber/10 py-[6px] text-[11px] font-bold uppercase tracking-[0.14em] text-amber transition-colors hover:bg-amber hover:text-ink",
+                      "mt-1 flex w-full items-center justify-center gap-1.5 border border-amberdim bg-amber/10 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-amber transition-colors hover:bg-amber hover:text-ink",
                       isHl("deliver") && "tut-ring"
                     )}
                   >
@@ -326,7 +326,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                       <button
                         key={ch.id}
                         onClick={() => pickChoice(m.id, ch.id)}
-                        className="border border-phosdim/70 bg-phos/8 px-2 py-[6px] text-left text-[11.5px] font-bold uppercase tracking-[0.1em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
+                        className="border border-phosdim/70 bg-phos/8 px-2 py-[6px] text-left text-[9.5px] font-bold uppercase tracking-[0.1em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
                       >
                         ▸ {lang === "ru" ? ch.ru : ch.en}
                       </button>
@@ -335,7 +335,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                 )}
 
                 {ct && m.action === "done" && (
-                  <div className="mt-1 flex items-center gap-1.5 border border-phosdim/40 bg-phos/5 px-2 py-[4px] text-[11px] font-bold uppercase tracking-[0.14em] text-phos">
+                  <div className="mt-1 flex items-center gap-1.5 border border-phosdim/40 bg-phos/5 px-2 py-[4px] text-[9px] font-bold uppercase tracking-[0.14em] text-phos">
                     <CheckCircle2 size={10} /> {t("cs.COMPLETED")}
                   </div>
                 )}
@@ -345,16 +345,16 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
 
           {threadBlocked && (
             <div className="anim-msgin mt-2 border border-oxide bg-oxide/12 px-2.5 py-2 text-center">
-              <div className="text-[13px] font-bold uppercase tracking-[0.2em] text-oxide">
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-oxide">
                 {t("co.blocked")}
               </div>
-              <div className="mt-[2px] text-[10.5px] uppercase tracking-[0.12em] text-oxide/70">
+              <div className="mt-[2px] text-[8.5px] uppercase tracking-[0.12em] text-oxide/70">
                 {t("co.blockedBody")}
               </div>
             </div>
           )}
           {!threadBlocked && threadClosed && (
-            <div className="mt-2 border border-line2 bg-panel2 py-[6px] text-center text-[11px] font-bold uppercase tracking-[0.18em] text-faint">
+            <div className="mt-2 border border-line2 bg-panel2 py-[6px] text-center text-[9px] font-bold uppercase tracking-[0.18em] text-faint">
               ✓ {t("co.finished")}
             </div>
           )}
@@ -365,7 +365,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      {unlocked.length === 0 && <p className="p-3 text-[12px] text-faint">{t("co.none")}</p>}
+      {unlocked.length === 0 && <p className="p-3 text-[10px] text-faint">{t("co.none")}</p>}
       {unlocked.map((c) => {
         const thread = g.threads[c.id] ?? [];
         const last = thread[thread.length - 1];
@@ -401,29 +401,29 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
             <UserRound size={13} className="mt-[2px] shrink-0 text-steel" />
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[13px] font-bold tracking-[0.08em] text-phosbrite">{c.nick}</span>
-                <span className="truncate text-[9.5px] uppercase tracking-[0.14em] text-faint">
+                <span className="text-[11px] font-bold tracking-[0.08em] text-phosbrite">{c.nick}</span>
+                <span className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
                   {fac ? (lang === "ru" ? fac.nameRu : fac.name) : ""}
                 </span>
               </div>
               {last && (
-                <p className="mt-[1px] truncate text-[11.5px] text-dim">
+                <p className="mt-[1px] truncate text-[9.5px] text-dim">
                   {(lang === "ru" ? last.textRu : last.textEn) ?? last.text}
                 </p>
               )}
               <span className="mt-[3px] flex items-center gap-1.5">
                 {unread && (
-                  <span className="animate-softpulse bg-amber px-[5px] py-[1px] text-[11px] font-bold uppercase tracking-[0.16em] text-ink">
+                  <span className="animate-softpulse bg-amber px-[5px] py-[1px] text-[9px] font-bold uppercase tracking-[0.16em] text-ink">
                     {t("tab.new")}
                   </span>
                 )}
                 {blocked && (
-                  <span className="border border-oxide px-[4px] text-[9.5px] font-bold uppercase tracking-[0.12em] text-oxide">
+                  <span className="border border-oxide px-[4px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-oxide">
                     {t("co.blocked")}
                   </span>
                 )}
                 {!unread && !blocked && activeCt.length > 0 && (
-                  <span className="bg-viole/20 px-[4px] text-[9.5px] font-bold uppercase tracking-[0.12em] text-viole">
+                  <span className="bg-viole/20 px-[4px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-viole">
                     {t(`cs.${g.contracts[activeCt[0].id].state}`)}
                   </span>
                 )}
@@ -436,8 +436,8 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
       {locked.map((c) => (
         <div key={c.id} className="flex items-center gap-2 border-b border-line/60 px-2.5 py-[7px] opacity-50">
           <FileLock2 size={12} className="shrink-0 text-faint" />
-          <span className="flex-1 text-[12px] text-faint">████████</span>
-          <span className="text-[10px] uppercase tracking-[0.12em] text-faint">
+          <span className="flex-1 text-[10px] text-faint">████████</span>
+          <span className="text-[8px] uppercase tracking-[0.12em] text-faint">
             {t("co.locked", { n: c.repReq })}
           </span>
         </div>
@@ -453,7 +453,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="border-b border-line">
-      <div className="flex items-center gap-1.5 bg-soot px-2.5 py-[5px] text-[10px] font-bold uppercase tracking-[0.2em] text-dim">
+      <div className="flex items-center gap-1.5 bg-soot px-2.5 py-[5px] text-[8px] font-bold uppercase tracking-[0.2em] text-dim">
         {icon}
         {title}
       </div>
@@ -465,8 +465,8 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 function Row({ k, v, vc }: { k: string; v: React.ReactNode; vc?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-2 py-[2px]">
-      <span className="text-[11px] uppercase tracking-[0.14em] text-faint">{k}</span>
-      <span className="text-[13px] tabular-nums" style={vc ? { color: vc } : undefined}>
+      <span className="text-[9px] uppercase tracking-[0.14em] text-faint">{k}</span>
+      <span className="text-[11px] tabular-nums" style={vc ? { color: vc } : undefined}>
         {v}
       </span>
     </div>
@@ -496,16 +496,16 @@ export function StatusPage({ operator }: { operator: string }) {
 
       <div className="grid grid-cols-2 border-b border-line">
         <div className="border-r border-line px-2.5 py-2">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-faint">
+          <div className="flex items-center gap-1.5 text-[8px] uppercase tracking-[0.18em] text-faint">
             <CircleDollarSign size={10} /> {t("sp.credits")}
           </div>
-          <div className="pixel mt-[2px] text-[26px] leading-none text-amber">{g.credits}</div>
+          <div className="pixel mt-[2px] text-[24px] leading-none text-amber">{g.credits}</div>
         </div>
         <div className="px-2.5 py-2">
-          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-faint">
+          <div className="flex items-center gap-1.5 text-[8px] uppercase tracking-[0.18em] text-faint">
             <Star size={10} /> {t("sp.rep")}
           </div>
-          <div className="pixel mt-[2px] text-[26px] leading-none text-phosbrite">{g.rep}</div>
+          <div className="pixel mt-[2px] text-[24px] leading-none text-phosbrite">{g.rep}</div>
         </div>
       </div>
 
@@ -516,8 +516,8 @@ export function StatusPage({ operator }: { operator: string }) {
           return (
             <div key={f.id} className="py-[3px]">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="truncate text-[12px] text-fog">{lang === "ru" ? f.nameRu : f.name}</span>
-                <span className="shrink-0 text-[11.5px] tabular-nums" style={{ color: relColor(v) }}>
+                <span className="truncate text-[10px] text-fog">{lang === "ru" ? f.nameRu : f.name}</span>
+                <span className="shrink-0 text-[9.5px] tabular-nums" style={{ color: relColor(v) }}>
                   {v > 0 ? "+" : ""}
                   {v} · {relLabel(v)}
                 </span>
@@ -535,20 +535,20 @@ export function StatusPage({ operator }: { operator: string }) {
 
       <Section title={t("sp.scripts")} icon={<Zap size={10} />}>
         {g.market.scripts.length === 0 ? (
-          <p className="text-[12px] text-faint">{t("sp.noScripts")}</p>
+          <p className="text-[10px] text-faint">{t("sp.noScripts")}</p>
         ) : (
           <div className="space-y-1">
             {SCRIPTS.filter((sc) => g.market.scripts.includes(sc.id)).map((sc) => (
               <div key={sc.id} className="border border-viole/40 bg-viole/5 px-2 py-[5px]">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-[12px] text-viole">
+                  <span className="truncate text-[10px] text-viole">
                     {lang === "ru" ? sc.nameRu : sc.name}
                   </span>
-                  <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-faint">
+                  <span className="shrink-0 text-[8px] uppercase tracking-[0.12em] text-faint">
                     {t("bm.cd", { n: sc.cooldown })}
                   </span>
                 </div>
-                <p className="mt-[2px] text-[11px] leading-snug text-faint">
+                <p className="mt-[2px] text-[9px] leading-snug text-faint">
                   {lang === "ru" ? sc.descRu : sc.desc}
                 </p>
               </div>
@@ -569,7 +569,7 @@ export function StatusPage({ operator }: { operator: string }) {
 
       <Section title={t("sp.storage")} icon={<Database size={10} />}>
         {g.files.length === 0 ? (
-          <p className="text-[12px] text-faint">{t("sp.empty")}</p>
+          <p className="text-[10px] text-faint">{t("sp.empty")}</p>
         ) : (
           <div className="space-y-[3px]">
             {g.files.map((id) => {
@@ -579,12 +579,12 @@ export function StatusPage({ operator }: { operator: string }) {
                 <div key={id} className="flex items-center gap-2 border border-line bg-well px-2 py-[4px]">
                   <Database size={9} className="shrink-0 text-steel" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[12px] text-fog">{lang === "ru" ? f.nameRu : f.name}</div>
-                    <div className="truncate text-[9.5px] uppercase tracking-[0.12em] text-faint">
+                    <div className="truncate text-[10px] text-fog">{lang === "ru" ? f.nameRu : f.name}</div>
+                    <div className="truncate text-[7.5px] uppercase tracking-[0.12em] text-faint">
                       {t(`dcat.${f.cat}`)}
                     </div>
                   </div>
-                  <span className="shrink-0 text-[11px] tabular-nums text-amberdim">{f.value}cr</span>
+                  <span className="shrink-0 text-[9px] tabular-nums text-amberdim">{f.value}cr</span>
                 </div>
               );
             })}
@@ -600,14 +600,14 @@ export function StatusPage({ operator }: { operator: string }) {
           return (
             <div key={u.id} className="border border-line bg-well p-2">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-[12px] font-bold tracking-[0.08em] text-phosbrite">
+                <span className="text-[10px] font-bold tracking-[0.08em] text-phosbrite">
                   {lang === "ru" ? u.nameRu : u.name}
                 </span>
-                <span className="shrink-0 text-[12px] tabular-nums text-amber">{u.credits}cr</span>
+                <span className="shrink-0 text-[10px] tabular-nums text-amber">{u.credits}cr</span>
               </div>
-              <p className="mt-1 text-[11.5px] leading-snug text-dim">{lang === "ru" ? u.descRu : u.desc}</p>
+              <p className="mt-1 text-[9.5px] leading-snug text-dim">{lang === "ru" ? u.descRu : u.desc}</p>
               {owned ? (
-                <div className="mt-1.5 border border-phosdim/50 bg-phos/10 py-[5px] text-center text-[11px] font-bold uppercase tracking-[0.16em] text-phos">
+                <div className="mt-1.5 border border-phosdim/50 bg-phos/10 py-[5px] text-center text-[9px] font-bold uppercase tracking-[0.16em] text-phos">
                   ✓ {t("sp.owned")}
                 </div>
               ) : (
@@ -615,7 +615,7 @@ export function StatusPage({ operator }: { operator: string }) {
                   onClick={() => buyUpgrade(u.id)}
                   disabled={!repOk || !crOk}
                   className={cn(
-                    "mt-1.5 w-full border py-[5px] text-[11px] font-bold uppercase tracking-[0.16em] transition-colors",
+                    "mt-1.5 w-full border py-[5px] text-[9px] font-bold uppercase tracking-[0.16em] transition-colors",
                     repOk && crOk
                       ? "border-amberdim bg-amber/10 text-amber hover:bg-amber hover:text-ink"
                       : "cursor-not-allowed border-line text-faint"

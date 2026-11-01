@@ -71,13 +71,13 @@ export default function LoginGate({
       <div className="anim-msgin relative my-auto w-full max-w-[520px]">
         <div className="border border-line2 bg-panel shadow-[0_0_80px_rgba(143,181,109,0.06),inset_0_0_0_1px_rgba(0,0,0,0.6)]">
           {/* header */}
-          <div className="flex h-[34px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+          <div className="flex h-[30px] items-center gap-2 border-b border-line2 bg-header px-2.5">
             <StatusDot color="#8fb56d" pulse />
-            <span className="truncate text-[11px] font-bold uppercase tracking-[0.26em] text-dim">
+            <span className="truncate text-[9px] font-bold uppercase tracking-[0.26em] text-dim">
               {t("login.title")}
             </span>
             <span className="mx-1 h-px flex-1 bg-line" />
-            <span className="shrink-0 text-[10px] tracking-[0.2em] text-faint">{t("login.guest")}</span>
+            <span className="shrink-0 text-[8px] tracking-[0.2em] text-faint">{t("login.guest")}</span>
           </div>
 
           <div className="px-5 py-4 sm:px-7 sm:py-5">
@@ -87,19 +87,19 @@ export default function LoginGate({
                 <ScanEye size={24} strokeWidth={1.6} />
               </div>
               <div className="min-w-0">
-                <div className="pixel text-[42px] leading-[0.9] tracking-[0.04em] text-phosbrite txt-glow-green">
+                <div className="pixel text-[38px] leading-[0.9] tracking-[0.04em] text-phosbrite txt-glow-green">
                   GNS-9000
                 </div>
-                <div className="mt-[2px] truncate text-[10.5px] uppercase tracking-[0.3em] text-faint">
+                <div className="mt-[2px] truncate text-[8.5px] uppercase tracking-[0.3em] text-faint">
                   {t("login.sub")}
                 </div>
               </div>
             </div>
 
             {/* boot log */}
-            <div className="mt-4 min-h-[96px] border-y border-line py-2">
+            <div className="mt-4 min-h-[86px] border-y border-line py-2">
               {BOOT_KEYS.slice(0, booted).map((k, i) => (
-                <div key={k} className="anim-msgin text-[12px] leading-[1.7] text-dim">
+                <div key={k} className="anim-msgin text-[10px] leading-[1.7] text-dim">
                   <span className="text-faint">&gt; </span>
                   {t(k)}
                   {i === booted - 1 && booted < BOOT_KEYS.length && (
@@ -118,7 +118,7 @@ export default function LoginGate({
               >
                 {/* language select */}
                 <div className="mt-3.5">
-                  <label className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.26em] text-faint">
+                  <label className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.26em] text-faint">
                     <Globe2 size={10} /> {t("login.lang")}
                   </label>
                   <div className="mt-1.5 grid grid-cols-2 gap-1.5">
@@ -145,14 +145,14 @@ export default function LoginGate({
                             />
                             <span
                               className={cn(
-                                "text-[13px] font-bold tracking-[0.16em]",
+                                "text-[11px] font-bold tracking-[0.16em]",
                                 active ? "text-phosbrite" : "text-dim"
                               )}
                             >
                               {l.label}
                             </span>
                           </span>
-                          <span className="mt-[2px] block pl-[13px] text-[9.5px] tracking-[0.18em] text-faint">
+                          <span className="mt-[2px] block pl-[13px] text-[7.5px] tracking-[0.18em] text-faint">
                             {l.sub}
                           </span>
                         </button>
@@ -163,7 +163,7 @@ export default function LoginGate({
 
                 {/* handle */}
                 <div className="mt-3.5">
-                  <label className="block text-[11px] uppercase tracking-[0.26em] text-faint">
+                  <label className="block text-[9px] uppercase tracking-[0.26em] text-faint">
                     {t("login.handle")}
                   </label>
                   <div className="mt-1.5 flex items-center gap-2 border border-line3 bg-well px-2.5">
@@ -178,7 +178,7 @@ export default function LoginGate({
                       onChange={(e) => setHandle(e.target.value.replace(/[^\w.\-]/g, ""))}
                       onKeyDown={(e) => e.key === "Enter" && submit(false)}
                       placeholder={t("login.ph")}
-                      className="h-[38px] w-full bg-transparent text-[15px] font-semibold uppercase tracking-[0.12em] text-phosbrite placeholder:text-[11px] placeholder:tracking-[0.18em] placeholder:text-faint"
+                      className="h-[34px] w-full bg-transparent text-[13px] font-semibold uppercase tracking-[0.12em] text-phosbrite placeholder:text-[9px] placeholder:tracking-[0.18em] placeholder:text-faint"
                     />
                     <span className="h-[13px] w-[7px] shrink-0 animate-blink bg-phosdim" />
                   </div>
@@ -187,13 +187,13 @@ export default function LoginGate({
                 <div className="mt-3 flex flex-col gap-1.5 sm:flex-row">
                   <button
                     onClick={() => submit(false)}
-                    className="flex-1 border border-phosdim bg-phos/15 px-4 py-[9px] text-[12px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink hover:shadow-[0_0_18px_rgba(143,181,109,0.3)]"
+                    className="flex-1 border border-phosdim bg-phos/15 px-4 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink hover:shadow-[0_0_18px_rgba(143,181,109,0.3)]"
                   >
                     {t("login.jack")}
                   </button>
                   <button
                     onClick={() => submit(true)}
-                    className="flex-1 border border-line3 px-4 py-[9px] text-[12px] font-bold uppercase tracking-[0.2em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
+                    className="flex-1 border border-line3 px-4 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
                   >
                     {t("login.unknown")}
                   </button>
@@ -201,12 +201,12 @@ export default function LoginGate({
               </div>
             ) : (
               <div className="mt-4 border border-phosdim/50 bg-phos/5 px-3 py-3">
-                <div className="text-[12px] leading-[1.8] text-phosbrite">
+                <div className="text-[10px] leading-[1.8] text-phosbrite">
                   <span className="text-phosdim">&gt; </span>
                   {t("login.auth", { h: handle ? handle.toUpperCase() : "UNKNOWN" })}
                 </div>
                 <div
-                  className="anim-msgin text-[12px] leading-[1.8] text-phosbrite"
+                  className="anim-msgin text-[10px] leading-[1.8] text-phosbrite"
                   style={{ animationDelay: "0.45s", opacity: 0 }}
                 >
                   <span className="text-phosdim">&gt; </span>
@@ -218,20 +218,20 @@ export default function LoginGate({
             {/* warning */}
             <div className="mt-4 flex items-start gap-2 border border-amberdim/40 bg-amber/5 px-2.5 py-2">
               <ShieldAlert size={12} className="mt-[1px] shrink-0 text-amber" />
-              <p className="text-[10.5px] uppercase leading-relaxed tracking-[0.1em] text-amberdim">
+              <p className="text-[8.5px] uppercase leading-relaxed tracking-[0.1em] text-amberdim">
                 {t("login.notice")}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 border-t border-line2 bg-soot px-3 py-[5px] text-[10px] uppercase tracking-[0.16em] text-faint">
+          <div className="flex items-center gap-3 border-t border-line2 bg-soot px-3 py-[5px] text-[8px] uppercase tracking-[0.16em] text-faint">
             <span>{t("login.f1")}</span>
             <span className="hidden sm:inline">{t("login.f2")}</span>
             <span className="ml-auto">{t("login.f3")}</span>
           </div>
         </div>
 
-        <p className="mt-2 text-center text-[10px] uppercase tracking-[0.24em] text-faint">
+        <p className="mt-2 text-center text-[8px] uppercase tracking-[0.24em] text-faint">
           {t("login.foot")}
         </p>
 
@@ -244,10 +244,10 @@ export default function LoginGate({
             >
               <Trash2 size={11} className="shrink-0 text-faint transition-colors group-hover:text-oxide" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-bold uppercase tracking-[0.18em] text-dim transition-colors group-hover:text-oxide">
+                <span className="block text-[9px] font-bold uppercase tracking-[0.18em] text-dim transition-colors group-hover:text-oxide">
                   {t("wipe.label")}
                 </span>
-                <span className="block truncate text-[9.5px] uppercase tracking-[0.14em] text-faint">
+                <span className="block truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
                   {t("wipe.hint")}
                 </span>
               </span>
@@ -256,20 +256,20 @@ export default function LoginGate({
             <div className="anim-msgin px-2.5 py-2">
               <div className="flex items-start gap-2">
                 <TriangleAlert size={12} className="mt-[1px] shrink-0 animate-softpulse text-oxide" />
-                <p className="text-[10.5px] uppercase leading-relaxed tracking-[0.12em] text-oxide">
+                <p className="text-[8.5px] uppercase leading-relaxed tracking-[0.12em] text-oxide">
                   {t("wipe.warn")}
                 </p>
               </div>
               <div className="mt-1.5 flex gap-1.5">
                 <button
                   onClick={wipeAll}
-                  className="flex-1 border border-oxide bg-oxide/15 px-2 py-[6px] text-[11px] font-bold uppercase tracking-[0.14em] text-oxide transition-colors hover:bg-oxide hover:text-ink"
+                  className="flex-1 border border-oxide bg-oxide/15 px-2 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-oxide transition-colors hover:bg-oxide hover:text-ink"
                 >
                   {t("wipe.confirm")}
                 </button>
                 <button
                   onClick={() => setArmed(false)}
-                  className="border border-line3 px-3 py-[6px] text-[11px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
+                  className="border border-line3 px-3 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-fog"
                 >
                   {t("wipe.cancel")}
                 </button>

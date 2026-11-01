@@ -8,7 +8,7 @@ import {
   type Cell, type RoutingBoard, type RoutingTier, type Side,
 } from "../game/routing";
 
-const TILE = 64;
+const TILE = 58;
 const GAP = 6;
 
 /* ------------------------------------------------------------------ */
@@ -142,21 +142,21 @@ export default function RoutingGame({
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[94vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* title */}
-        <div className="flex h-[32px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
+        <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color={done ? "#8fb56d" : "#7f95a8"} pulse={!done} />
-          <span className="truncate text-[11px] font-bold uppercase tracking-[0.2em] text-dim">
+          <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
             {t("rt.title")} :: {nodeCode}
           </span>
           <button
             onClick={onAbort}
-            className="ml-auto flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
+            className="ml-auto flex shrink-0 items-center gap-1 border border-line3 px-1.5 py-[1px] text-[8px] font-bold uppercase tracking-[0.12em] text-dim transition-colors hover:border-oxide hover:bg-oxide hover:text-ink"
           >
             <Unplug size={9} /> {t("bg.abort")}
           </button>
         </div>
 
         {/* hint strip */}
-        <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[10px] uppercase tracking-[0.14em]">
+        <div className="flex h-[24px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em]">
           <span className="truncate text-faint">{t("rt.hint")}</span>
           <span className="ml-auto shrink-0" style={{ color: solved ? "#8fb56d" : "#77806b" }}>
             {solved ? t("rt.ready") : t("rt.broken")}
@@ -202,8 +202,8 @@ export default function RoutingGame({
             {done && (
               <div className="absolute inset-0 flex items-center justify-center bg-ink/75">
                 <div className="anim-msgin border border-phosdim bg-phos/12 px-5 py-3 text-center">
-                  <div className="pixel text-[30px] leading-none text-phosbrite">{t("rt.linked")}</div>
-                  <div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-dim">{t("rt.linkedSub")}</div>
+                  <div className="pixel text-[28px] leading-none text-phosbrite">{t("rt.linked")}</div>
+                  <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-dim">{t("rt.linkedSub")}</div>
                 </div>
               </div>
             )}
@@ -212,14 +212,14 @@ export default function RoutingGame({
 
         {/* run bar */}
         <div className="flex shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5 py-[6px]">
-          <span className="text-[10px] uppercase tracking-[0.14em] text-faint">
+          <span className="text-[8px] uppercase tracking-[0.14em] text-faint">
             {t("rt.inlet")} → {t("rt.outlet")}
           </span>
           <button
             onClick={run}
             disabled={running || done}
             className={cn(
-              "ml-auto flex items-center gap-1.5 border px-4 py-[6px] text-[11.5px] font-bold uppercase tracking-[0.18em] transition-colors",
+              "ml-auto flex items-center gap-1.5 border px-4 py-[6px] text-[9.5px] font-bold uppercase tracking-[0.18em] transition-colors",
               running || done
                 ? "cursor-not-allowed border-line text-faint"
                 : "border-phosdim bg-phos/12 text-phosbrite hover:bg-phos hover:text-ink"
