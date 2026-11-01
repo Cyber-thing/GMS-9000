@@ -28,6 +28,7 @@ export function shapeClass(glyph: string) {
   switch (glyph) {
     case "circle": return "rounded-full";
     case "diamond": return "rotate-45";
+    case "trapezoid": return "[clip-path:polygon(22%_0,78%_0,100%_100%,0_100%)]";
     case "hex": return "[clip-path:polygon(25%_0,75%_0,100%_50%,75%_100%,25%_100%,0_50%)]";
     case "tri": return "[clip-path:polygon(50%_0,100%_100%,0_100%)]";
     case "pent": return "[clip-path:polygon(50%_0,100%_38%,81%_100%,19%_100%,0_38%)]";
@@ -589,7 +590,7 @@ export default function NetworkMap({
                   {(
                     [
                       ["ACCESS", "circle"],
-                      ["RELAY", "square"],
+                      ["RELAY", "trapezoid"],
                       ["DATA SERVER", "box"],
                       ["CORPORATE", "hex"],
                       ["PRIVATE", "diamond"],

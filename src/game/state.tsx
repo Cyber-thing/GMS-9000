@@ -4,6 +4,12 @@ import {
 import { store, stampNow } from "../lib/util";
 import { ALL_NODES } from "../data/regions";
 import {
+  OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_DELIVER, OP17_FORK,
+  OP17_TOLD, OP17_DISBELIEF, SABLE_PUNISH, SABLE_REWARD, SABLE_OFFER,
+  ARCHIVE_PAY, ARCHIVE_REL,
+  type Beat,
+} from "./questArchive";
+import {
   CFG, CODEX, CONTACTS, CONTRACTS, NEIGHBOURS, NODE_META, UPGRADES,
   codexById, contactById, contractById, factionById, filesOfNode, resolveFile, scriptById,
 } from "./data";
@@ -39,6 +45,7 @@ const freshState = (): GameState => {
     market: { unlocked: false, scripts: [] },
     sabotaged: [],
     burned: [],
+    flags: {},
     stats: { hacks: 0, contracts: 0, files: 0, nodes: 0, sold: 0, sabotage: 0, failed: 0 },
     unread: { CHAT: 0, CODEX: 0, CONTACTS: 0, STATUS: 0 },
   };
@@ -96,6 +103,11 @@ interface Ctx {
   recover: () => void;
   failBreach: (nodeId: string, repLoss: number) => void;
   sabotage: (nodeId: string) => boolean;
+  pickChoice: (msgId: number, choiceId: string) => void;
+  sableArrives: () => void;
+  openArchiveJob: () => void;
+  setFlag: (k: string, v?: string | boolean) => void;
+  pushBeat: (b: Beat) => void;
   openMarket: () => boolean;
   buyScript: (id: string) => boolean;
   sellFile: (id: string) => { credits: number; betrayed?: string } | null;
@@ -129,11 +141,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       market: { ...base.market, ...(saved.market ?? {}) },
       sabotaged: saved.sabotaged ?? [],
       burned: saved.burned ?? [],
+      flags: saved.flags ?? {},
       contracts,
       recovering: false,   // the 4.2s timer is gone after a reload
     };
   });
   const [notifs, setNotifs] = useState<Notif[]>([]);
+  const gRef = useRef<GameState>(null as unknown as GameState);
   const [lastHack, setLastHack] = useState<HackResult | null>(null);
   const langRef = useRef<"en" | "ru">("en");
   /** the tab the operator is currently looking at — never badge it */
@@ -142,6 +156,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const timers = useRef<number[]>([]);
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  gRef.current = g;
   useEffect(() => void store.set("game", g), [g]);
 
   const ru = () => langRef.current === "ru";
@@ -207,6 +222,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const BUSY: string[] = ["AVAILABLE", "ACCEPTED", "TARGET ACCESSED", "DATA ACQUIRED", "SABOTAGED", "DELIVERED"];
 
     for (const ct of CONTRACTS) {
+      if (ct.scripted) continue;                                         // driven by its own dialogue
       if (g.contracts[ct.id]) continue;                                  // already offered
       if (ct.market ? !g.market.unlocked : false) continue;              // channel closed
       if (!g.contacts.includes(ct.contact)) continue;                    // contact unknown
@@ -376,6 +392,159 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g, canHack, notify]
   );
 
+  /* ================= scripted quest: LOCKED OUT ================= */
+
+  const pushBeat = useCallback((b: Beat) => {
+    const who = b.from === "OP" ? "op17" : b.from;
+    setG((s) => ({
+      ...s,
+      threads: {
+        ...s.threads,
+        [who]: [
+          ...(s.threads[who] ?? []),
+          {
+            id: nid.current++,
+            from: b.from === "OP" ? "OP" : b.from,
+            text: ru() ? b.line.ru : b.line.en,
+            textEn: b.line.en,
+            textRu: b.line.ru,
+            t: stampNow(),
+            choices: b.choices,
+          },
+        ],
+      },
+    }));
+    if (b.from !== "OP") {
+      notify("NEW CONTACT MESSAGE", contactById(who)?.nick ?? who, "CONTACTS");
+    }
+  }, [notify]);
+
+  const setFlag = useCallback((k: string, v: string | boolean = true) => {
+    setG((s) => (s.flags[k] === v ? s : { ...s, flags: { ...s.flags, [k]: v } }));
+  }, []);
+
+  /** opens the archive job once the tutorial contract is settled */
+  const openArchiveJob = useCallback(() => {
+    if (g.flags.arc_intro) return;
+    setFlag("arc_intro");
+    setG((s) => ({
+      ...s,
+      contacts: s.contacts.includes("op17") ? s.contacts : [...s.contacts, "op17"],
+      contracts: { ...s.contracts, ct_archive: { state: "AVAILABLE" } },
+    }));
+    OP17_INTRO.forEach(pushBeat);
+  }, [g.flags.arc_intro, setFlag, pushBeat]);
+
+  /** sable introduces himself once his call is over: the contact appears and
+      his standing offer for the list lands in the thread */
+  const sableArrives = useCallback(() => {
+    if (g.flags.sable_met) return;
+    setFlag("sable_met");
+    setG((s) => ({
+      ...s,
+      contacts: s.contacts.includes("sablec") ? s.contacts : [...s.contacts, "sablec"],
+    }));
+    pushBeat(SABLE_OFFER);
+  }, [g.flags.sable_met, setFlag, pushBeat]);
+
+  /** the operator answers a scripted question */
+  const pickChoice = useCallback(
+    (msgId: number, choiceId: string) => {
+      /* stamp the chosen option so the buttons collapse */
+      let label = "";
+      setG((s) => {
+        const threads = { ...s.threads };
+        Object.keys(threads).forEach((k) => {
+          threads[k] = threads[k].map((m) => {
+            if (m.id !== msgId) return m;
+            const c = m.choices?.find((x) => x.id === choiceId);
+            label = c ? (ru() ? c.ru : c.en) : "";
+            return { ...m, picked: choiceId };
+          });
+        });
+        return { ...s, threads };
+      });
+
+      const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
+
+      if (choiceId === "listen") {
+        pushBeat({ id: "a1", from: "OP", line: { en: "I am listening.", ru: "Я слушаю." } });
+        later(() => OP17_BRIEF.forEach(pushBeat), 700);
+        return;
+      }
+
+      if (choiceId === "accept") {
+        pushBeat({ id: "a2", from: "OP", line: { en: "Taking the contract.", ru: "Принимаю контракт." } });
+        setG((s) => ({ ...s, contracts: { ...s.contracts, ct_archive: { state: "ACCEPTED", accepted: true } } }));
+        later(() => OP17_ACCEPTED.forEach(pushBeat), 800);
+        return;
+      }
+
+      if (choiceId === "tell") {
+        /* without the file he has nothing to look at — and he trusts the company */
+        const stillHasIt = gRef.current.files.includes("f_termlist");
+
+        if (!stillHasIt) {
+          setFlag("arc_told", "empty");
+          OP17_DISBELIEF.forEach((b, i) => later(() => pushBeat(b), i * 1100));
+          setG((s) => ({
+            ...s,
+            relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.emptyCivic },
+          }));
+          return;
+        }
+
+        setFlag("arc_told", "op17");
+        OP17_TOLD.forEach((b, i) => later(() => pushBeat(b), i * 900));
+        setG((s) => ({
+          ...s,
+          relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.toldCivic,
+                       intercell: (s.relations.intercell ?? 0) + ARCHIVE_REL.toldIntercell },
+          /* handing it over spends the copy */
+          burned: s.burned.includes("f_termlist") ? s.burned : [...s.burned, "f_termlist"],
+          threads: {
+            ...s.threads,
+            sablec: (s.threads.sablec ?? []).map((m) =>
+              m.choices && !m.picked ? { ...m, picked: "void" } : m
+            ),
+          },
+        }));
+        later(() => pushBeat(SABLE_PUNISH), 2600);
+        return;
+      }
+
+      if (choiceId === "hide") {
+        setFlag("arc_told", "hidden");
+        /* sable has already made his offer when he called — nudge it back up */
+        later(() => {
+          const open = (gRef.current.threads.sablec ?? []).some((m) => m.choices && !m.picked);
+          if (!open) pushBeat(SABLE_OFFER);
+          notify("NEW CONTACT MESSAGE", "sable", "CONTACTS");
+        }, 900);
+        return;
+      }
+
+      if (choiceId === "sendsable") {
+        setFlag("arc_told", "sable");
+        pushBeat({ id: "a3", from: "OP", line: { en: "Sending the list.", ru: "Отправляю список." } });
+        setG((s) => ({
+          ...s,
+          credits: s.credits + ARCHIVE_PAY.sable,
+          rep: s.rep + ARCHIVE_PAY.repSable,
+          relations: { ...s.relations, intercell: (s.relations.intercell ?? 0) + ARCHIVE_PAY.relSable },
+          /* the copy goes to him: it leaves storage and is spent */
+          files: s.files.filter((x) => x !== "f_termlist"),
+          burned: s.burned.includes("f_termlist") ? s.burned : [...s.burned, "f_termlist"],
+        }));
+        later(() => pushBeat(SABLE_REWARD), 1100);
+        notify("CONTRACT COMPLETED", `+${ARCHIVE_PAY.sable}cr`, "CONTACTS");
+        return;
+      }
+      void label;
+    },
+    [pushBeat, setFlag, notify]
+  );
+
   /* ---------------- files ---------------- */
 
   const download = useCallback(
@@ -389,6 +558,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
         stats: { ...s.stats, files: s.stats.files + 1 },
       }));
       notify("DATA ACQUIRED", `${ru() ? f.nameRu : f.name} → DATA STORED`, "STATUS");
+
+      /* a note that carries a WARDEN PASS key announces it plainly */
+      const unlocks = Object.values(NODE_META).find((m) => m.passwordFrom === fileId);
+      if (unlocks?.password) {
+        const n = ALL_NODES.find((x) => x.id === unlocks.id);
+        notify("KEY RECOVERED", `${n?.code ?? unlocks.id} — ${unlocks.password}`, "CODEX");
+        setG((s) => ({ ...s, flags: { ...s.flags, [`key_${unlocks.id}`]: unlocks.password! } }));
+      }
 
       CONTRACTS.forEach((ct) => {
         const pr = g.contracts[ct.id];
@@ -470,6 +647,38 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!pr || !ready) return;
 
       setG((s) => ({ ...s, contracts: { ...s.contracts, [id]: { state: "DELIVERED" } } }));
+
+      /* hand-written jobs play their own closing scene */
+      if (ct.scripted && id === "ct_archive") {
+        OP17_DELIVER.forEach((b, i) =>
+          timers.current.push(window.setTimeout(() => pushBeat(b), i * 1000))
+        );
+        timers.current.push(
+          window.setTimeout(() => {
+            setG((s) => ({
+              ...s,
+              contracts: { ...s.contracts, [id]: { state: "COMPLETED" } },
+              credits: s.credits + ct.credits,
+              rep: s.rep + ct.rep,
+              relations: { ...s.relations, [ct.client]: (s.relations[ct.client] ?? 0) + ct.relation },
+              stats: { ...s.stats, contracts: s.stats.contracts + 1 },
+            }));
+            notify("CONTRACT COMPLETED", ru() ? ct.titleRu : ct.title, "CONTACTS");
+            notify("REP INCREASED", `+${ct.rep} REP`, "STATUS");
+            /* only ask about the list if the operator actually took it */
+            setG((s) => {
+              /* offer the fork to anyone who saw the list, held or sold */
+              const sawIt = s.files.includes("f_termlist") || s.burned.includes("f_termlist");
+              if (sawIt && !s.flags.arc_told) {
+                timers.current.push(window.setTimeout(() => pushBeat(OP17_FORK), 900));
+              }
+              return s;
+            });
+          }, 2100)
+        );
+        return;
+      }
+
       say(ct.contact,
         ct.kind === "SABOTAGE" ? "done. the host is dark." : `transferring ${ct.file?.toUpperCase()}`,
         ct.kind === "SABOTAGE" ? "готово. узел погашен." : `передаю ${ct.file?.toUpperCase()}`,
@@ -503,7 +712,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }, 1400);
       timers.current.push(t);
     },
-    [g.contracts, g.files, say, notify]
+    [g.contracts, g.files, say, notify, pushBeat]
   );
 
   /* ---------------- identity reset ---------------- */
@@ -715,12 +924,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     () => ({
       g, notifs, lastHack, nodeState, canHack, hack, download,
       acceptContract, deliverContract, recover, failBreach,
-      sabotage, openMarket, buyScript, sellFile, fenceValue, buyUpgrade,
+      sabotage, pickChoice, sableArrives, openArchiveJob, setFlag, pushBeat,
+      openMarket, buyScript, sellFile, fenceValue, buyUpgrade,
       markTab, markCodexSeen, reset,
       lang: langRef.current, setLangRef,
     }),
     [g, notifs, lastHack, nodeState, canHack, hack, download, acceptContract,
-     deliverContract, recover, failBreach, sabotage, openMarket, buyScript, sellFile, fenceValue,
+     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, setFlag, pushBeat,
+     openMarket, buyScript, sellFile, fenceValue,
      buyUpgrade, markTab, markCodexSeen, reset, setLangRef]
   );
 

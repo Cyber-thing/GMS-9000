@@ -8,6 +8,7 @@ import { useT } from "../i18n";
 import { useGame } from "../game/state";
 import { CFG, NODE_META, factionById, filesOfNode } from "../game/data";
 import { usesVault } from "../game/vault";
+import { usesRouting } from "../game/routing";
 import { useTut } from "../game/tutorial";
 
 export const NODE_STATE_COLOR: Record<string, string> = {
@@ -48,6 +49,7 @@ export default function NodeDossier({
   onDownload,
   onEnterVault,
   onSabotage,
+  onOpenArchive,
 }: {
   node: NetNode | null;
   sectorName?: string;
@@ -59,6 +61,7 @@ export default function NodeDossier({
   onDownload: (nodeId: string, fileId: string) => void;
   onEnterVault: (nodeId: string) => void;
   onSabotage: (nodeId: string) => void;
+  onOpenArchive: (nodeId: string) => void;
 }) {
   const { t, lang } = useT();
   const { g, nodeState, canHack } = useGame();
@@ -87,6 +90,8 @@ export default function NodeDossier({
   const files = filesOfNode(node.id);
   const vault = usesVault(node.id);
   const corp = node.type === "CORPORATE";
+  const sealed = !!meta.password;
+  const routing = usesRouting(node.type, meta.warden);
   const wrecked = g.sabotaged.includes(node.id);
   const reward = Math.round(
     (meta.rep + meta.warden * CFG.repPerWarden) * (breached ? CFG.repeatMult : 1)
@@ -137,6 +142,13 @@ export default function NodeDossier({
             </div>
             <div className="blocksbar mt-1.5 text-[16px] text-amber">{blockBar(hackPct, 18)}</div>
           </div>
+        ) : sealed && st === "COMPROMISED" ? (
+          <button
+            onClick={() => onOpenArchive(node.id)}
+            className="mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink"
+          >
+            <FolderOpen size={11} /> {t("dos.archive")}
+          </button>
         ) : vault && st === "COMPROMISED" ? (
           <button
             onClick={() => onEnterVault(node.id)}
@@ -167,7 +179,11 @@ export default function NodeDossier({
             {chk.ok
               ? breached
                 ? t("dos.hackRepeat")
-                : t("dos.hack")
+                : sealed
+                  ? t("dos.sealed")
+                  : routing
+                    ? t("dos.routing")
+                    : t("dos.hack")
               : chk.reason === "LOCKED"
                 ? t("dos.lockedBtn")
                 : chk.reason === "RESTRICTED"
@@ -272,7 +288,7 @@ export default function NodeDossier({
           </div>
         )}
 
-        {st === "COMPROMISED" && !vault && (
+        {st === "COMPROMISED" && !vault && !sealed && (
           <div className="mt-2.5 border-t border-line pt-2">
             <div className="flex items-center gap-1.5 text-[8.5px] uppercase tracking-[0.18em] text-faint">
               <HardDriveDownload size={10} /> {t("dos.files")}

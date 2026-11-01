@@ -677,6 +677,71 @@ export const DICT: Record<string, Entry> = {
   "nf.SCRIPT ACQUIRED": { en: "SCRIPT ACQUIRED", ru: "СКРИПТ ПОЛУЧЕН" },
   "nf.BLACK MARKET ONLINE": { en: "BLACK MARKET ONLINE", ru: "ЧЁРНЫЙ РЫНОК ОТКРЫТ" },
   "nf.SABOTAGE COMPLETE": { en: "SABOTAGE COMPLETE", ru: "ДИВЕРСИЯ ВЫПОЛНЕНА" },
+
+  /* ---- hacker exchange ---- */
+  "ex.title": { en: "HACKER EXCHANGE — REGISTRY", ru: "БАЗА ДАННЫХ ХАКЕРОВ" },
+  "ex.indexing": { en: "indexing handles …", ru: "индексация позывных …" },
+  "ex.listed": { en: "entry written", ru: "запись внесена" },
+  "ex.you": { en: "YOU", ru: "ВЫ" },
+  "ex.statusLabel": { en: "status", ru: "статус" },
+  "ex.rookie": { en: "ROOKIE", ru: "НОВИЧОК" },
+
+  /* ---- routing mini-game ---- */
+  "rt.title": { en: "NETWORK ROUTING", ru: "СЕТЕВАЯ МАРШРУТИЗАЦИЯ" },
+  "rt.hint": {
+    en: "click a segment to rotate it — close the line from inlet to outlet",
+    ru: "нажимайте на сегмент, чтобы повернуть — замкните линию от входа до выхода",
+  },
+  "rt.ready": { en: "CIRCUIT CLOSED", ru: "ЦЕПЬ ЗАМКНУТА" },
+  "rt.broken": { en: "CIRCUIT BROKEN", ru: "ЦЕПЬ РАЗОРВАНА" },
+  "rt.run": { en: "RUN", ru: "ЗАПУСК" },
+  "rt.running": { en: "SIGNAL …", ru: "СИГНАЛ …" },
+  "rt.inlet": { en: "inlet", ru: "вход" },
+  "rt.outlet": { en: "outlet", ru: "выход" },
+  "rt.linked": { en: "ROUTE OPEN", ru: "МАРШРУТ ОТКРЫТ" },
+  "rt.linkedSub": { en: "relay under control", ru: "ретранслятор под контролем" },
+  "t.rtStart": { en: "GENIUS :: routing layer exposed on {code}", ru: "GENIUS :: вскрыт слой маршрутизации {code}" },
+  "t.rtWin": { en: "route committed :: {code} relays for you now", ru: "маршрут записан :: {code} теперь ретранслирует вам" },
+  "dos.routing": { en: "connect · reroute relay", ru: "подключиться · перенастроить ретранслятор" },
+
+  /* ---- WARDEN PASS ---- */
+  "wp.banner": { en: "WARDEN PASS", ru: "СИСТЕМА ЗАЩИТЫ WARDEN PASS" },
+  "wp.sub": { en: "host sealed · key required", ru: "узел запечатан · требуется ключ" },
+  "wp.prompt": { en: "access key", ru: "ключ доступа" },
+  "wp.ph": { en: "TYPE THE KEY", ru: "ВВЕДИТЕ КЛЮЧ" },
+  "wp.submit": { en: "UNLOCK", ru: "ОТКРЫТЬ" },
+  "wp.checking": { en: "verifying …", ru: "проверка …" },
+  "wp.denied": { en: "ACCESS DENIED", ru: "ДОСТУП ЗАКРЫТ" },
+  "wp.granted": { en: "ACCESS GRANTED", ru: "ДОСТУП ОТКРЫТ" },
+  "wp.tries": { en: "{n} attempts logged", ru: "попыток в журнале: {n}" },
+  "wp.foot": {
+    en: "the key is never stored on the host it protects",
+    ru: "ключ никогда не хранится на узле, который он защищает",
+  },
+  "t.wpDenied": { en: "WARDEN PASS :: key rejected on {code}", ru: "WARDEN PASS :: ключ отклонён на {code}" },
+  "t.wpOk": { en: "WARDEN PASS :: key accepted, {code} open", ru: "WARDEN PASS :: ключ принят, {code} открыт" },
+  "t.wpFound": { en: "KEY RECOVERED :: {code} — {key}", ru: "НАЙДЕН ПАРОЛЬ :: {code} — {key}" },
+  "kb.copy": { en: "copy the key", ru: "скопировать ключ" },
+  "kb.dismiss": { en: "dismiss", ru: "скрыть" },
+  "nf.KEY RECOVERED": { en: "KEY RECOVERED", ru: "НАЙДЕН ПАРОЛЬ" },
+  "dos.sealed": { en: "connect · WARDEN PASS", ru: "подключиться · WARDEN PASS" },
+
+  /* ---- archive ---- */
+  "arc.title": { en: "PERSONNEL ARCHIVE", ru: "КАДРОВЫЙ АРХИВ" },
+  "arc.scanBtn": { en: "SCAN AND RESTORE ACCESS", ru: "ПРОСКАНИРОВАТЬ И ВОССТАНОВИТЬ ДОСТУП" },
+  "arc.scanning": { en: "scanning spools …", ru: "сканирование катушек …" },
+  "arc.sealed": { en: "sealed record found", ru: "обнаружена закрытая запись" },
+  "arc.termTitle": {
+    en: "CONFIDENTIAL. Staff termination order for the next 30 years.",
+    ru: "Конфиденциально. Очередность увольнения сотрудников на ближайшие 30 лет.",
+  },
+  "arc.save": { en: "SAVE THE LIST", ru: "СОХРАНИТЬ СПИСОК" },
+  "arc.saved": { en: "copied to DATA STORAGE", ru: "сохранено в ХРАНИЛИЩЕ ДАННЫХ" },
+  "arc.restored": { en: "access restored — report back to the client", ru: "доступ восстановлен — доложите заказчику" },
+  "arc.logScan": { en: "archive scan running …", ru: "идёт сканирование архива …" },
+  "arc.logRestore": { en: "archive access restored on {code}", ru: "доступ к архиву восстановлен на {code}" },
+  "arc.logTake": { en: "sealed record copied :: termination schedule", ru: "закрытая запись скопирована :: график увольнений" },
+  "dos.archive": { en: "open archive", ru: "открыть архив" },
 };
 
 /* ================================================================== */

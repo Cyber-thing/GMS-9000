@@ -10,6 +10,25 @@ import { useTut } from "../game/tutorial";
 
 const SCAN_MS = 1500;
 
+/* Anything a document puts in quotes is a literal the operator must type:
+   render it bold and lit so it cannot be missed in a wall of text. */
+function highlightKeys(line: string) {
+  const parts = line.split(/"([^"]+)"/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <strong
+        key={i}
+        className="px-[3px] font-bold tracking-[0.1em] text-phosbrite"
+        style={{ background: "rgba(143,181,109,0.16)", textShadow: "0 0 8px rgba(143,181,109,0.5)" }}
+      >
+        {part}
+      </strong>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 export default function DataVault({
   nodeId,
   nodeCode,
@@ -302,8 +321,14 @@ export default function DataVault({
               </div>
               <div className="mt-2 border-t border-line pt-2">
                 {reader.body.map((line, i) => (
-                  <p key={i} className={cn("text-[10.5px] leading-relaxed", i === 0 ? "text-fog/90" : "mt-1.5 text-faint")}>
-                    {line}
+                  <p
+                    key={i}
+                    className={cn(
+                      "whitespace-pre-line text-[10.5px] leading-relaxed",
+                      i === 0 ? "text-fog/90" : "mt-1.5 text-faint"
+                    )}
+                  >
+                    {highlightKeys(line)}
                   </p>
                 ))}
               </div>

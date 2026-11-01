@@ -50,6 +50,8 @@ export interface TutStep {
   choice?: boolean;
   /** last line — ends the call */
   final?: boolean;
+  /** plays the hacker-exchange listing animation behind the call */
+  listing?: boolean;
 }
 
 export const TUT_STEPS: TutStep[] = [
@@ -156,6 +158,17 @@ export const TUT_STEPS: TutStep[] = [
     waitFor: "deliver:ct_payroll",
   },
   {
+    id: "rep",
+    en: "And keep an eye on your reputation — in here it is all we have. I am putting your contact on the exchange now. People will start writing with jobs. Do not expect much.",
+    ru: "Не забывай следить за своей репутацией хакера — это всё для нас. Я сейчас закину твой контакт на биржу, тебе начнут писать по заказам, но многого не жди.",
+  },
+  {
+    id: "listing",
+    en: "There. You are one of us now. Good luck, rookie.",
+    ru: "Ну вот, теперь ты среди нас. Удачи, новичок.",
+    listing: true,
+  },
+  {
     id: "anon",
     en: "One more thing — do not forget your anonymity, or they will find you like they found that idiot. Burn your identity at least every five runs.",
     ru: "И да, не забывай об анонимности, или тебя найдут как того идиота. Сбрасывай личность хотя-бы каждые 5 раз.",
@@ -180,12 +193,68 @@ export const DECLINE_STEP: TutStep = {
 export const CALLER = { nick: "Ghost_404" };
 
 /* ------------------------------------------------------------------ */
+/* story calls — scripted monologues that reuse the call window        */
+/* ------------------------------------------------------------------ */
+
+export type Avatar = "skull" | "cage";
+
+export interface CallScript {
+  id: string;
+  nick: string;
+  avatar: Avatar;
+  lines: { en: string; ru: string }[];
+}
+
+export const CALL_SCRIPTS: Record<string, CallScript> = {
+  sable1: {
+    id: "sable1",
+    nick: "sable",
+    avatar: "cage",
+    lines: [
+      {
+        en: "Very careless of you, taking data that is not yours. But I respect it. You are new here — I will forgive you this once.",
+        ru: "Очень опрометчиво с твоей стороны брать данные, которые тебе не принадлежат. Но я это уважаю. Ты здесь новенький, я прощу тебя на этот раз.",
+      },
+      {
+        en: "You see, the company needs optimisation. Optimisation means cutting costs. And nobody wants to dismiss staff who might cause trouble, or who might still be useful.",
+        ru: "Понимаешь ли. Компании нужна оптимизация. Для этого нужно сокращение расходов. И никто не хочет увольнять сотрудников, которые могут доставить проблемы, или которые могут быть полезны.",
+      },
+      {
+        en: "We scheduled the dismissals years ahead for a reason. We make sure that by the time their date comes, these people cannot cause trouble. No money to sue. No family to fight for. All that is left to them is to spare the world their existence.",
+        ru: "Мы распланировали увольнения на ближайшие годы не просто так. Мы заботимся о том, что к моменту увольнения эти люди не доставят проблем. У них не будет денег, чтобы подать в суд, у них не будет семьи, ради которой они будут что-то делать. Всё что им останется это избавить мир от своего существования.",
+      },
+      { en: "And everyone wins.", ru: "И все в выигрыше." },
+      {
+        en: "Anyway. Go ahead and give that idiot his archive back. Collect your fee.",
+        ru: "В общем. Можешь вернуть доступ к архиву этому идиоту и получить свою плату.",
+      },
+      {
+        en: "But he most certainly does not need to see the sealed data you took. It would not do him any good.",
+        ru: "Но ему совершенно точно не нужно видеть закрытые данные, которые ты взял. Это ему не на пользу.",
+      },
+      { en: "Nor you.", ru: "И тебе не на пользу." },
+      {
+        en: "Send it to me and I will pay double.",
+        ru: "Отправь их мне и я заплачу в 2 раза больше.",
+      },
+      { en: "And everyone wins.", ru: "И все в выигрыше." },
+    ],
+  },
+};
+
+/* ------------------------------------------------------------------ */
 
 type Phase = "idle" | "ringing" | "talking" | "over";
 
 interface Ctx {
   phase: Phase;
   step: TutStep | null;
+  /** active story call, if any */
+  call: { script: CallScript; idx: number } | null;
+  playCall: (id: string) => void;
+  callNext: () => void;
+  callAnswer: () => void;
+  callRinging: boolean;
   hl: TutHighlight | null;
   hls: TutHighlight[];
   isHl: (h: TutHighlight) => boolean;
@@ -213,6 +282,8 @@ const loadTut = (): TutSave =>
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const saved = loadTut();
   /* a call that was ringing when the tab closed resumes as ringing */
+  const [call, setCall] = useState<{ script: CallScript; idx: number } | null>(null);
+  const [callRinging, setCallRinging] = useState(false);
   const [phase, setPhase] = useState<Phase>(saved.phase === "over" ? "over" : saved.phase);
   const [idx, setIdx] = useState(saved.idx);
   const [declined, setDeclined] = useState(saved.declined);
@@ -264,9 +335,27 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     if (cur?.waitFor === e) setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
   }, [phase, declined]);
 
+  const playCall = useCallback((id: string) => {
+    const script = CALL_SCRIPTS[id];
+    if (!script) return;
+    setCall({ script, idx: 0 });
+    setCallRinging(true);
+  }, []);
+
+  const callAnswer = useCallback(() => setCallRinging(false), []);
+
+  const callNext = useCallback(() => {
+    setCall((c) => {
+      if (!c) return c;
+      if (c.idx + 1 >= c.script.lines.length) return null;
+      return { ...c, idx: c.idx + 1 };
+    });
+  }, []);
+
   const value = useMemo<Ctx>(
     () => ({
       phase, step, active,
+      call, playCall, callNext, callAnswer, callRinging,
       hl: phase === "talking" && step ? step.highlight?.[0] ?? null : null,
       hls: phase === "talking" && step ? step.highlight ?? [] : [],
       isHl: (h: TutHighlight) =>
@@ -274,7 +363,8 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
       gating: phase === "talking" && !!step?.highlight?.length,
       answer, next, choose, fire, satisfy, end, start,
     }),
-    [phase, step, active, answer, next, choose, fire, satisfy, end, start]
+    [phase, step, active, call, playCall, callNext, callAnswer, callRinging,
+     answer, next, choose, fire, satisfy, end, start]
   );
 
   return <TutCtx.Provider value={value}>{children}</TutCtx.Provider>;

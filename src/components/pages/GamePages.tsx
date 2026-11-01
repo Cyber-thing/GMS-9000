@@ -162,7 +162,7 @@ export function CodexPage() {
 
 export function ContactsPage() {
   const { t, lang } = useT();
-  const { g, acceptContract, deliverContract } = useGame();
+  const { g, acceptContract, deliverContract, pickChoice } = useGame();
   const { isHl, gating, fire } = useTut();
   const [open, setOpen] = useState<string | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -296,6 +296,21 @@ export function ContactsPage() {
                   >
                     <Upload size={10} /> {ct.kind === "SABOTAGE" ? t("co.confirm") : t("co.deliver")}
                   </button>
+                )}
+
+                {/* scripted reply buttons */}
+                {m.choices && !m.picked && (
+                  <div className="mt-1 flex flex-col gap-1">
+                    {m.choices.map((ch) => (
+                      <button
+                        key={ch.id}
+                        onClick={() => pickChoice(m.id, ch.id)}
+                        className="border border-phosdim/70 bg-phos/8 px-2 py-[6px] text-left text-[9.5px] font-bold uppercase tracking-[0.1em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
+                      >
+                        ▸ {lang === "ru" ? ch.ru : ch.en}
+                      </button>
+                    ))}
+                  </div>
                 )}
 
                 {ct && m.action === "done" && (

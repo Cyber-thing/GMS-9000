@@ -12,6 +12,12 @@ import BreachGame from "./components/BreachGame";
 import DataVault from "./components/DataVault";
 import BlackMarket from "./components/BlackMarket";
 import Splash from "./components/Splash";
+import RoutingGame from "./components/RoutingGame";
+import WardenPass from "./components/WardenPass";
+import ArchiveWindow from "./components/ArchiveWindow";
+import HackerExchange from "./components/HackerExchange";
+import KeyBanner from "./components/KeyBanner";
+import { ROUTING_TIERS, usesRouting } from "./game/routing";
 import TutorialCall from "./components/TutorialCall";
 import { tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
 import { useColumns } from "./hooks/useColumns";
@@ -56,6 +62,7 @@ const NOTIF_TONE: Record<NotifKind, TermLine["tone"]> = {
   "SCRIPT ACQUIRED": "ok",
   "BLACK MARKET ONLINE": "warn",
   "SABOTAGE COMPLETE": "ok",
+  "KEY RECOVERED": "ok",
 };
 
 /* ------------------------------------------------------------------ */
@@ -76,7 +83,10 @@ const GREET_RE = /\b(hi+|hello+|hey[ay]*|yo\b|sup\b|greetings?|hola|allo|hallo|Ð
 export default function App() {
   const { t, lang } = useT();
   const game = useGame();
-  const { g, notifs, hack, download, canHack, failBreach, sabotage, markTab, nodeState } = game;
+  const {
+    g, notifs, hack, download, canHack, failBreach, sabotage, markTab, nodeState,
+    openArchiveJob, setFlag, sableArrives,
+  } = game;
   const tut = useTut();
   const tutFire = tut.fire;
   /* A region is gated only when it holds none of the current targets;
@@ -134,6 +144,9 @@ export default function App() {
   /** data server whose file system is open */
   const [vaultId, setVaultId] = useState<string | null>(null);
   const [marketOpen, setMarketOpen] = useState(false);
+  const [routingId, setRoutingId] = useState<string | null>(null);
+  const [passId, setPassId] = useState<string | null>(null);
+  const [archiveId, setArchiveId] = useState<string | null>(null);
 
   /* ---------- console output ---------- */
   const [termLines, setTermLines] = useState<TermLine[]>([]);
@@ -414,6 +427,20 @@ export default function App() {
         return;
       }
 
+      /* RELAY hosts run the routing puzzle */
+      const metaR = NODE_META[id];
+      if (usesRouting(n.type, metaR.warden)) {
+        setRoutingId(id);
+        print(t("t.rtStart", { code: n.code }), "ok");
+        return;
+      }
+
+      /* WARDEN PASS sealed hosts want a literal key */
+      if (metaR.password && g.nodeStates[id] !== "COMPROMISED") {
+        setPassId(id);
+        return;
+      }
+
       const meta = NODE_META[id];
       setHackingId(id);
       setHackPct(0);
@@ -516,6 +543,49 @@ export default function App() {
     if (tutStepId === "contacts" && tab === "CONTACTS") tutSatisfy("tab:CONTACTS");
   }, [tutStepId, g.files, g.nodeStates, selectedNode, inRegion, tab, tutSatisfy]);
 
+  /* ---------- routing puzzle ---------- */
+  const routingWin = useCallback(() => {
+    const id = routingId;
+    setRoutingId(null);
+    if (!id) return;
+    const n = ALL_NODES.find((x) => x.id === id);
+    if (n) print(t("t.rtWin", { code: n.code }), "ok");
+    completeHack(id);
+  }, [routingId, completeHack, print, t]);
+
+  /* ---------- WARDEN PASS ---------- */
+  const passOk = useCallback(() => {
+    const id = passId;
+    setPassId(null);
+    if (!id) return;
+    const n = ALL_NODES.find((x) => x.id === id);
+    if (n) print(t("t.wpOk", { code: n.code }), "ok");
+    completeHack(id);
+    /* the archive opens straight after the seal falls */
+    later(() => setArchiveId(id), 400);
+  }, [passId, completeHack, print, t, later]);
+
+  /* ---------- archive ---------- */
+  const archiveTake = useCallback(() => {
+    download("f_termlist");
+    print(t("arc.logTake"), "warn");
+    pushEvent(t("arc.logTake"), "bad");
+    /* sable notices immediately */
+    later(() => tut.playCall("sable1"), 1400);
+  }, [download, print, pushEvent, later, tut]);
+
+  const archiveClose = useCallback(() => {
+    const id = archiveId;
+    setArchiveId(null);
+    if (!id) return;
+    /* restoring the access is the job itself */
+    if (!g.files.includes("f_access_restored")) {
+      download("f_access_restored");
+      const n = ALL_NODES.find((x) => x.id === id);
+      if (n) print(t("arc.logRestore", { code: n.code }), "ok");
+    }
+  }, [archiveId, g.files, download, print, t]);
+
   /* ---------- sabotage ---------- */
   const runSabotage = useCallback(
     (id: string) => {
@@ -526,6 +596,31 @@ export default function App() {
     },
     [sabotage, print, pushEvent, t]
   );
+
+  /* ---------- sable: the call ends, the contact opens ---------- */
+  const callId = tut.call?.script.id ?? null;
+  const prevCall = useRef<string | null>(null);
+  useEffect(() => {
+    if (prevCall.current === "sable1" && callId === null) sableArrives();
+    prevCall.current = callId;
+  }, [callId, sableArrives]);
+
+  /* ---------- tutorial: exchange listing, then the first real job ---------- */
+  const [exchange, setExchange] = useState(false);
+  const tutStep = tut.step?.id;
+  useEffect(() => {
+    if (tut.phase === "talking" && tutStep === "listing" && !g.flags.listed) {
+      setFlag("listed");
+      setExchange(true);
+    }
+  }, [tut.phase, tutStep, g.flags.listed, setFlag]);
+
+  /* operator_17 writes once the call is over */
+  useEffect(() => {
+    if (tut.phase !== "over" || !g.flags.listed || g.flags.arc_intro) return;
+    const h = window.setTimeout(() => openArchiveJob(), 2500);
+    timeouts.current.push(h);
+  }, [tut.phase, g.flags.listed, g.flags.arc_intro, openArchiveJob]);
 
   /* recovery feedback */
   const wasRecovering = useRef(false);
@@ -591,6 +686,9 @@ export default function App() {
     }
     setAskLogout(false);
     setMarketOpen(false);
+    setRoutingId(null);
+    setPassId(null);
+    setArchiveId(null);
     setVaultId(null);
     setBreachId(null);
     setHackingId(null);
@@ -735,6 +833,7 @@ export default function App() {
               onDownload={runDownload}
               onEnterVault={openVault}
               onSabotage={runSabotage}
+              onOpenArchive={(id) => setArchiveId(id)}
             />
           </div>
           <div className="flex min-h-[190px] w-full flex-col md:w-1/3 lg:w-full lg:min-h-0 lg:flex-1">
@@ -846,6 +945,8 @@ export default function App() {
         />
       )}
 
+      <KeyBanner />
+
       <TutorialCall />
 
       <div className={cn(tut.gating && "tut-gated")}>
@@ -888,6 +989,58 @@ export default function App() {
           />
         );
       })()}
+
+      {routingId && (() => {
+        const n = ALL_NODES.find((x) => x.id === routingId);
+        const tr = ROUTING_TIERS[NODE_META[routingId].warden];
+        if (!n || !tr) return null;
+        return (
+          <RoutingGame
+            key={routingId}
+            nodeCode={n.code}
+            tier={tr}
+            onWin={routingWin}
+            onAbort={() => setRoutingId(null)}
+          />
+        );
+      })()}
+
+      {passId && (() => {
+        const n = ALL_NODES.find((x) => x.id === passId);
+        const pw = NODE_META[passId].password;
+        if (!n || !pw) return null;
+        return (
+          <WardenPass
+            key={passId}
+            nodeCode={n.code}
+            expected={pw}
+            onPass={passOk}
+            onClose={() => {
+              print(t("t.wpDenied", { code: n.code }), "err");
+              setPassId(null);
+            }}
+          />
+        );
+      })()}
+
+      {archiveId && (() => {
+        const n = ALL_NODES.find((x) => x.id === archiveId);
+        if (!n) return null;
+        return (
+          <ArchiveWindow
+            key={archiveId}
+            nodeCode={n.code}
+            alreadyTaken={g.files.includes("f_termlist")}
+            onTake={archiveTake}
+            onClose={archiveClose}
+            onLog={(k, params) => print(t(k, params), "dim")}
+          />
+        );
+      })()}
+
+      {exchange && (
+        <HackerExchange operator={operator} onDone={() => setExchange(false)} />
+      )}
 
       {askLogout && (
         <ConfirmDialog

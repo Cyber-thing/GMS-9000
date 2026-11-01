@@ -49,6 +49,10 @@ export interface NodeMeta {
   files: string[];
   codex: string[];      // codex ids revealed on first successful hack
   intel?: string;       // short intel line written into the codex entry
+  /** WARDEN PASS gate: the literal key the operator must type */
+  password?: string;
+  /** file that reveals the key once scanned */
+  passwordFrom?: string;
 }
 
 export interface DataFile {
@@ -90,6 +94,8 @@ export interface ContractDef {
   repReq: number;
   /** offered through the black market instead of CONTACTS */
   market?: boolean;
+  /** driven by a hand-written dialogue instead of the generic flow */
+  scripted?: boolean;
   /** only offered once this region has been licensed */
   regionReq?: string;
   /** only offered after this contract has been completed */
@@ -120,6 +126,8 @@ export interface ContactDef {
   repReq: number;
   intro: string;
   introRu: string;
+  /** no automatic greeting — the contact only speaks through scripts */
+  silent?: boolean;
 }
 
 export interface RegionUpgrade {
@@ -152,7 +160,8 @@ export type NotifKind =
   | "DATA SOLD"
   | "SCRIPT ACQUIRED"
   | "BLACK MARKET ONLINE"
-  | "SABOTAGE COMPLETE";
+  | "SABOTAGE COMPLETE"
+  | "KEY RECOVERED";
 
 export type TabId = "CHAT" | "CODEX" | "CONTACTS" | "STATUS";
 
@@ -197,6 +206,8 @@ export interface GameState {
   sabotaged: string[];                    // node ids knocked out
   /** files whose market value is spent: sold once or handed to a client */
   burned: string[];
+  /** scripted-quest bookkeeping */
+  flags: Record<string, string | boolean>;
   stats: {
     hacks: number; contracts: number; files: number; nodes: number;
     sold: number; sabotage: number; failed: number;
@@ -215,7 +226,8 @@ export interface ThreadMsg {
   t: string;
   contract?: string;
   action?: "offer" | "deliver" | "done";
-  /** small-talk awaiting a yes/no — stores the prompt id once answered */
-  ask?: string;
-  answered?: "yes" | "no";
+  /** scripted reply buttons; picking one advances the conversation */
+  choices?: { id: string; en: string; ru: string }[];
+  /** chosen option id once the operator has answered */
+  picked?: string;
 }

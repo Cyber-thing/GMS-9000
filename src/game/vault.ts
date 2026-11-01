@@ -226,6 +226,10 @@ const FALLBACK: Theme = {
 /* ------------------------------------------------------------------ */
 
 const PAYLOAD_TEXT: Record<string, [string, string]> = {
+  f_wardenpass: [
+    "DO NOT KEEP THIS ON THE SERVER!\nThe corporates decided to sponsor us — they gave us access to WARDEN PASS. No idea why; maybe they are covering up a mess of their own. Remember to circulate the temporary key to staff: \"CORE1MAX32\". There is other data on this server worth lifting, same as we did before.",
+    "НЕ ХРАНИТЬ НА СЕРВЕРЕ!\nКорпораты решили проспонсировать нас, дали нам доступ к WARDEN PASS. Не знаю зачем им это, может решили скрыть какие-то свои косяки. Нужно не забыть разослать сотрудникам временный пароль \"CORE1MAX32\". Также на сервере есть и другие данные которые можно украсть, как мы делали ранее.",
+  ],
   f_icx_payroll: [
     "Q4 payroll routing. Nine salary lines terminate at a holding company with no staff and no address. The transfer schedule matches Slayer Incorporated's procurement calendar to the day.",
     "Маршруты зарплат за Q4. Девять строк уходят в холдинг без сотрудников и без адреса. График переводов день в день совпадает с закупочным календарём Slayer Incorporated.",

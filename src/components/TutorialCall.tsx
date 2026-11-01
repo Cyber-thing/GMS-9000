@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, PhoneCall, PhoneOff, Skull } from "lucide-react";
+import { ChevronDown, ChevronUp, Grid2x2, PhoneCall, PhoneOff, Skull } from "lucide-react";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
 import { CALLER, useTut } from "../game/tutorial";
@@ -46,20 +46,26 @@ function Typed({ text, onDone }: { text: string; onDone: () => void }) {
 
 /* ------------------------------------------------------------------ */
 
-function Portrait({ size = 34 }: { size?: number }) {
+function Portrait({ size = 34, avatar = "skull" }: { size?: number; avatar?: "skull" | "cage" }) {
+  const cage = avatar === "cage";
   return (
     <span
-      className="flex shrink-0 items-center justify-center border border-amberdim bg-amber/10"
+      className={cn(
+        "flex shrink-0 items-center justify-center border",
+        cage ? "border-viole bg-viole/10" : "border-amberdim bg-amber/10"
+      )}
       style={{ width: size, height: size }}
     >
-      <Skull size={size * 0.56} className="text-amber" />
+      {cage
+        ? <Grid2x2 size={size * 0.56} className="text-viole" />
+        : <Skull size={size * 0.56} className="text-amber" />}
     </span>
   );
 }
 
 export default function TutorialCall() {
   const { t, lang } = useT();
-  const { phase, step, answer, next, choose, end } = useTut();
+  const { phase, step, answer, next, choose, end, call, callNext, callAnswer, callRinging } = useTut();
   const [typed, setTyped] = useState(false);
   const [skip, setSkip] = useState(false);
   const [folded, setFolded] = useState(false);
@@ -69,6 +75,80 @@ export default function TutorialCall() {
     setSkip(false);
     setFolded(false); // a new line always unfolds the panel
   }, [step?.id]);
+
+  /* ---------------- story call ---------------- */
+  if (call) {
+    const line = lang === "ru" ? call.script.lines[call.idx].ru : call.script.lines[call.idx].en;
+    const last = call.idx + 1 >= call.script.lines.length;
+
+    if (callRinging) {
+      return (
+        <div className="fixed inset-0 z-[112] flex items-center justify-center bg-ink/85 p-4 backdrop-blur-[2px]">
+          <div className="anim-call-glow anim-msgin w-[min(320px,94%)] border border-viole bg-panel">
+            <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
+              <span className="h-[6px] w-[6px] animate-softpulse bg-viole" />
+              <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-viole">
+                {t("tut.incoming")}
+              </span>
+            </div>
+            <div className="flex flex-col items-center px-4 py-5">
+              <span className="anim-ring-shake text-viole"><PhoneCall size={34} strokeWidth={1.6} /></span>
+              <div className="mt-3 flex items-center gap-2">
+                <Portrait size={30} avatar={call.script.avatar} />
+                <span className="pixel text-[24px] leading-none text-fog">{call.script.nick}</span>
+              </div>
+              <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-faint">{t("tut.unlisted")}</div>
+              <button
+                onClick={callAnswer}
+                className="mt-4 flex w-full items-center justify-center gap-2 border border-viole bg-viole/15 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-viole transition-all hover:bg-viole hover:text-ink"
+              >
+                <PhoneCall size={12} /> {t("tut.answer")}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="pointer-events-none fixed inset-x-0 bottom-[76px] z-[110] flex justify-center px-2">
+        <div
+          className="anim-msgin pointer-events-auto w-[min(620px,100%)] border-2 border-viole bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(143,134,184,0.2)]"
+          onClick={() => setSkip(true)}
+        >
+          <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
+            <span className="h-[5px] w-[5px] animate-softpulse bg-viole" />
+            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-viole">{call.script.nick}</span>
+            <span className="text-[7.5px] uppercase tracking-[0.18em] text-faint">· {t("tut.live")}</span>
+            <span className="ml-auto text-[7.5px] tabular-nums text-faint">
+              {call.idx + 1}/{call.script.lines.length}
+            </span>
+          </div>
+          <div className="flex gap-2.5 px-2.5 py-2.5">
+            <Portrait avatar={call.script.avatar} />
+            <div className="min-w-0 flex-1">
+              <p className="min-h-[32px] text-[11px] leading-relaxed text-fog/95">
+                {skip ? line : <Typed key={call.idx} text={line} onDone={() => setTyped(true)} />}
+              </p>
+              {(skip || typed) && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setSkip(false); setTyped(false); callNext(); }}
+                  className={cn(
+                    "mt-1.5 border px-3 py-[5px] text-[8.5px] font-bold uppercase tracking-[0.16em] transition-colors",
+                    last
+                      ? "border-viole bg-viole/15 text-viole hover:bg-viole hover:text-ink"
+                      : "border-line3 text-dim hover:bg-panel2 hover:text-fog"
+                  )}
+                >
+                  {last ? t("tut.end") : t("tut.next")}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ---------------- incoming call ---------------- */
   if (phase === "ringing") {

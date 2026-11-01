@@ -13,6 +13,8 @@ function shapeCls(g: string) {
     ? "rounded-full"
     : g === "diamond"
       ? "rotate-45"
+      : g === "trapezoid"
+        ? "[clip-path:polygon(22%_0,78%_0,100%_100%,0_100%)]"
       : g === "hex"
         ? "[clip-path:polygon(25%_0,75%_0,100%_50%,75%_100%,25%_100%,0_50%)]"
         : g === "tri"

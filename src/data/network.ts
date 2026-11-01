@@ -52,7 +52,7 @@ export const MAP_H = 760;
 
 export const TYPE_GLYPH: Record<NodeType, string> = {
   ACCESS: "circle",
-  RELAY: "square",
+  RELAY: "trapezoid",
   "DATA SERVER": "box",
   CORPORATE: "hex",
   PRIVATE: "diamond",

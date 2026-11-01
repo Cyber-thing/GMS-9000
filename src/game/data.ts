@@ -100,12 +100,17 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   w1p_res: { owner: "civic", cls: "GOVERNMENT", warden: 2, rep: 10, files: ["f_seismic"] },
 
   /* ---- Northline ---- */
+  w1n_rly: { owner: "civic", cls: "PUBLIC", warden: 1, rep: 10 },
   w1n_dsv: {
     owner: "civic", cls: "GOVERNMENT", warden: 2, rep: 12,
-    files: ["f_meters"], codex: ["f_civic"],
+    files: ["f_meters", "f_wardenpass"], codex: ["f_civic"],
     intel: "Meter archives show an unbilled draw routed into Midland Exchange.",
   },
-  w1n_arc: { owner: "civic", cls: "GOVERNMENT", warden: 3, rep: 14, files: ["f_taparchive"], codex: ["c_lilith"] },
+  /* password-gated archive: the key lives in the note on DSV-N03 */
+  w1n_arc: {
+    owner: "civic", cls: "GOVERNMENT", warden: 2, rep: 16,
+    files: [], password: "CORE1MAX32", passwordFrom: "f_wardenpass",
+  },
 
   /* ---- Midland Exchange (conflict zone) ---- */
   w1m_sec: {
@@ -177,6 +182,8 @@ export const NODE_META: Record<string, NodeMeta> = (() => {
       files: o.files ?? [],
       codex: o.codex ?? [],
       intel: o.intel,
+      password: o.password,
+      passwordFrom: o.passwordFrom,
     };
   });
   return out;
@@ -220,6 +227,9 @@ export const FILES: DataFile[] = [
   F("f_scav_list", "SCAV-DROP-LIST", "SCAV-СПИСОК-ТОЧЕК", "INTEL", "w1p_prv", "scavenger", 260),
   F("f_seismic", "SEISMIC-LOGS-88", "СЕЙСМОЖУРНАЛ-88", "INTEL", "w1p_res", "civic", 140),
   F("f_meters", "NORTHLINE-METERS", "NORTHLINE-СЧЁТЧИКИ", "CORPORATE DATA", "w1n_dsv", "civic", 300),
+  F("f_wardenpass", "STAFF-NOTE-DONOTKEEP", "СЛУЖЕБНАЯ-ЗАПИСКА", "INTEL", "w1n_dsv", "civic", 180),
+  F("f_termlist", "TERMINATION-SCHEDULE-30Y", "ГРАФИК-УВОЛЬНЕНИЙ-30Л", "CLASSIFIED DATA", "w1n_arc", "intercell", 1400),
+  F("f_access_restored", "ARCHIVE-ACCESS-KEY", "КЛЮЧ-ДОСТУПА-АРХИВА", "CORPORATE DATA", "w1n_arc", "civic", 60),
   F("f_taparchive", "TAPE-ARCHIVE-93", "ЛЕНТ-АРХИВ-93", "CLASSIFIED DATA", "w1n_arc", "civic", 480),
   F("f_warden_keyset", "WARDEN-KEYSET", "WARDEN-НАБОР-КЛЮЧЕЙ", "CLASSIFIED DATA", "w1m_sec", "slayer", 900),
   F("f_grain", "GRAIN-FUTURES", "ЗЕРНОВЫЕ-ФЬЮЧЕРСЫ", "CORPORATE DATA", "w1m_dsv", "slayer", 280),
@@ -245,6 +255,8 @@ export const fileById = (id: string) => FILES.find((f) => f.id === id);
 export function genericFileFor(nodeId: string): DataFile | null {
   const m = NODE_META[nodeId];
   if (!m || m.files.length) return null;
+  /* hosts with a bespoke flow (archive, password gate) hand out their own data */
+  if (m.password) return null;
   if (m.cls === "PUBLIC" || m.cls === "PRIVATE") return null;
   const n = ALL_NODES.find((x) => x.id === nodeId)!;
   const cat: DataFile["cat"] = m.cls === "GOVERNMENT" ? "CLASSIFIED DATA" : "CORPORATE DATA";
@@ -377,29 +389,21 @@ export const codexById = (id: string) => CODEX.find((c) => c.id === id);
 
 export const CONTACTS: ContactDef[] = [
   {
-    id: "sablec", nick: "sable", faction: "broken", role: "insider", roleRu: "инсайдер", repReq: 165,
-    intro: "you have been reading my name in other people's files. let us skip the part where you pretend otherwise.",
-    introRu: "ты читал моё имя в чужих файлах. давай пропустим ту часть, где ты делаешь вид, что это не так.",
-  },
-  {
     id: "ghost", nick: "Ghost_404", faction: "broken", role: "go-between", roleRu: "посредник", repReq: 0,
     intro: "you are on the wire. good. i have work that pays better than lurking.",
     introRu: "ты в сети. хорошо. у меня есть работа, которая платит лучше, чем просто сидеть и смотреть.",
   },
   {
-    id: "op17", nick: "operator_17", faction: "civic", role: "grid operator", roleRu: "оператор сети", repReq: 22,
-    intro: "i log everything, including this. that said — the authority needs a quiet audit.",
-    introRu: "я журналирую всё, включая это. и всё же — управлению нужна тихая проверка.",
+    id: "op17", nick: "operator_17", faction: "civic", role: "grid operator", roleRu: "оператор сети", repReq: 0,
+    intro: "",
+    introRu: "",
+    silent: true,
   },
   {
-    id: "lilith", nick: "lilith_x", faction: "indep", role: "archive diver", roleRu: "ныряльщица архивов", repReq: 88,
-    intro: "heard you can reach places. i want a keyset, not a conversation.",
-    introRu: "слышала, ты достаёшь до мест. мне нужен набор ключей, а не беседа.",
-  },
-  {
-    id: "count", nick: "tallyman", faction: "scavenger", role: "broker", roleRu: "брокер", repReq: 115,
-    intro: "the kingdom buys spools. the deeper the source, the fatter the transfer.",
-    introRu: "королевство покупает катушки. чем глубже источник, тем жирнее перевод.",
+    id: "sablec", nick: "sable", faction: "intercell", role: "unknown", roleRu: "неизвестно", repReq: 9999,
+    intro: "",
+    introRu: "",
+    silent: true,
   },
 ];
 
@@ -407,7 +411,6 @@ export const contactById = (id: string) => CONTACTS.find((c) => c.id === id);
 
 
 export const CONTRACTS: ContractDef[] = [
-  /* ============ DATA — corporate & civic clients ============ */
   {
     id: "ct_payroll", kind: "DATA", contact: "ghost", client: "broken",
     title: "PAYROLL SHADOW", titleRu: "ТЕНЬ ЗАРПЛАТ",
@@ -416,70 +419,12 @@ export const CONTRACTS: ContractDef[] = [
     target: "w1p_dsv", file: "f_icx_payroll", credits: 450, rep: 14, relation: 8, repReq: 0,
   },
   {
-    id: "ct_meters", kind: "DATA", contact: "op17", client: "civic",
-    title: "QUIET AUDIT", titleRu: "ТИХАЯ ПРОВЕРКА",
-    brief: "Northline reports a draw we never billed. Get inside the records host and find the meter archive yourself — I cannot be seen requesting it.",
-    briefRu: "Northline показывает потребление, которое мы не выставляли. Зайди в учётный хост и найди архив счётчиков сам — меня не должны видеть в запросе.",
-    target: "w1n_dsv", file: "f_meters", credits: 320, rep: 10, relation: 10, repReq: 26,
-  },
-  {
-    id: "ct_mirror", kind: "DATA", contact: "op17", client: "civic",
-    title: "SETTLEMENT GAP", titleRu: "РАЗРЫВ В РАСЧЁТАХ",
-    brief: "Agogee's financial mirror runs a batch at 0200 that never reconciles at 0400. Pull the mirror file. The authority wants to know where the difference sleeps.",
-    briefRu: "Финансовое зеркало Agogee гоняет пакет в 02:00, который не сходится в 04:00. Достань файл зеркала. Управление хочет знать, где ночует разница.",
-    target: "w1e_dsv", file: "f_fin_mirror", credits: 540, rep: 16, relation: 9, afterReq: "ct_meters", repReq: 62,
-  },
-  {
-    id: "ct_grain", kind: "DATA", contact: "lilith", client: "indep",
-    title: "AHEAD OF HARVEST", titleRu: "РАНЬШЕ УРОЖАЯ",
-    brief: "Slayer's commodity host opens positions minutes before the public reports. Bring me the ledger and I will know who is whispering to them.",
-    briefRu: "Сырьевой хост Slayer открывает позиции за минуты до публикации отчётов. Принеси мне реестр, и я узнаю, кто им нашёптывает.",
-    target: "w1m_dsv", file: "f_grain", credits: 600, rep: 18, relation: 10, repReq: 95,
-  },
-  {
-    id: "ct_keyset", kind: "DATA", contact: "lilith", client: "indep",
-    title: "WARDEN KEYSET", titleRu: "НАБОР КЛЮЧЕЙ WARDEN",
-    brief: "Slayer keeps an unregistered WARDEN tier in the Midland Exchange. Bring me the keyset. Do not read it on the way.",
-    briefRu: "Slayer держит незарегистрированный уровень WARDEN в Midland Exchange. Принеси набор ключей. По дороге не читай.",
-    target: "w1m_sec", file: "f_warden_keyset", credits: 900, rep: 24, relation: 12, afterReq: "ct_grain", repReq: 150,
-  },
-  {
-    id: "ct_mission", kind: "DATA", contact: "count", client: "scavenger",
-    title: "OLDER THAN THE WIRE", titleRu: "СТАРШЕ ПРОВОДА",
-    brief: "The Amazon Circuit archive holds mission tapes from before the backbone. The kingdom pays well for impossible dates.",
-    briefRu: "В архиве Amazon Circuit лежат миссионерские ленты старше магистрали. Королевство хорошо платит за невозможные даты.",
-    target: "wlz_arc", file: "f_mission", credits: 1100, rep: 28, relation: 10,
-    repReq: 120, market: true, regionReq: "wetlow",
-  },
-
-  /* ============ SABOTAGE — corporate hosts ============ */
-  {
-    id: "sb_tower", kind: "SABOTAGE", contact: "ghost", client: "broken",
-    title: "DARK THE TOWER", titleRu: "ПОГАСИТЬ БАШНЮ",
-    brief: "Agogee's east tower logs every operator in the Atlantic grid. Get inside the corporate host and burn its logging stack. No files, no copies — just make it stop.",
-    briefRu: "Восточная башня Agogee журналирует каждого оператора атлантической сети. Проберись в корпоративный хост и выжги его стек журналирования. Никаких файлов и копий — просто пусть замолчит.",
-    target: "w1e_crp", credits: 700, rep: 20, relation: 12, afterReq: "ct_payroll", repReq: 44,
-  },
-  {
-    id: "sb_meridian", kind: "SABOTAGE", contact: "op17", client: "civic",
-    title: "UNSCHEDULED OUTAGE", titleRu: "ВНЕПЛАНОВОЕ ОТКЛЮЧЕНИЕ",
-    brief: "The Harbor Authority host on the Atlantic Shelf has been mirroring our southern meter traffic into its own ledger for a month. Officially we have no opinion about that. Unofficially — take the host down.",
-    briefRu: "Хост портового управления на атлантическом шельфе месяц зеркалит наш южный трафик счётчиков в свой реестр. Официально у нас нет мнения на этот счёт. Неофициально — погаси этот узел.",
-    target: "wls_crp", credits: 620, rep: 18, relation: 11, afterReq: "ct_mirror", repReq: 78, regionReq: "wetlow",
-  },
-  {
-    id: "sb_port", kind: "SABOTAGE", contact: "count", client: "scavenger",
-    title: "CRATE AMNESIA", titleRu: "АМНЕЗИЯ ЯЩИКОВ",
-    brief: "Takamuri's freight desk indexes every crate that moves west, including one the kingdom would rather it forgot. Do not steal the index — burn it.",
-    briefRu: "Грузовой отдел Takamuri индексирует каждый ящик, идущий на запад, включая один, о котором королевству лучше бы забыли. Индекс не воруй — сожги его.",
-    target: "w1p_crp2", credits: 840, rep: 22, relation: 12, afterReq: "ct_mission", repReq: 135, market: true,
-  },
-  {
-    id: "sb_helix", kind: "SABOTAGE", contact: "sablec", client: "broken",
-    title: "CUT THE SUBSIDIARY", titleRu: "ОТРЕЗАТЬ ДОЧКУ",
-    brief: "You read the memo. Now end the arrangement. Intercell's clearing host in the Midland Exchange routes those shell transfers — it goes dark tonight, and the Connection remembers who did it.",
-    briefRu: "Записку ты читал. Теперь прекрати эту схему. Клиринговый хост Intercell в Midland Exchange гоняет переводы через подставную контору — сегодня он погаснет, и Connection запомнит, кто это сделал.",
-    target: "w1m_crp", credits: 1300, rep: 32, relation: 15, repReq: 185, market: true,
+    id: "ct_archive", kind: "DATA", contact: "op17", client: "civic",
+    title: "LOCKED OUT", titleRu: "ПОТЕРЯННЫЙ ДОСТУП",
+    brief: "One of our people lost access to the archive on a corporate terminal. Restore it.",
+    briefRu: "Один из наших сотрудников потерял доступ к архиву на корпоративном терминале. Нужно восстановить доступ.",
+    target: "w1n_arc", file: "f_access_restored", credits: 200, rep: 12, relation: 10, repReq: 0,
+    scripted: true,
   },
 ];
 
