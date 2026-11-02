@@ -1,7 +1,7 @@
 /* ==================================================================
-   "LOCKED OUT" — operator_17's archive job.
-   A hand-written conversation: each beat is pushed when its trigger
-   fires, and the operator answers through choice buttons.
+   “LOCKED OUT”：operator_17 的档案任务。
+   一段手写的对话：每个节拍在其触发条件
+   满足时推送，操作员通过选择按钮作答。
    ================================================================== */
 
 export interface Line {
@@ -11,19 +11,19 @@ export interface Line {
 
 export interface Beat {
   id: string;
-  /** any contact id, or "OP" for the operator's own reply */
+  /** 任意联系人 id，或 "OP" 表示操作员自己的回复 */
   from: string;
   line: Line;
-  /** reply buttons rendered under this message */
+  /** 渲染在此消息下方的回复按钮 */
   choices?: { id: string; en: string; ru: string }[];
-  /** attaches the contract card / hand-over button to this line */
+  /** 将合同卡片 / 移交按钮附加到这一行 */
   contract?: string;
   action?: "offer" | "deliver" | "done";
 }
 
 export const L = (en: string, ru: string): Line => ({ en, ru });
 
-/* ---------------- operator_17 opening ---------------- */
+/* ---------------- operator_17 开场 ---------------- */
 
 export const OP17_INTRO: Beat[] = [
   {
@@ -60,7 +60,7 @@ export const OP17_ACCEPTED: Beat[] = [
   },
 ];
 
-/** the access key is in hand — he asks for it */
+/** 已拿到访问密钥：他来索要 */
 export const OP17_READY: Beat[] = [
   {
     id: "q3b",
@@ -74,7 +74,7 @@ export const OP17_READY: Beat[] = [
   },
 ];
 
-/* ---------------- hand the access back ---------------- */
+/* ---------------- 交还访问权限 ---------------- */
 
 export const OP17_DELIVER: Beat[] = [
   {
@@ -92,7 +92,7 @@ export const OP17_DELIVER: Beat[] = [
   },
 ];
 
-/* the fork: does the operator mention what else was in there? */
+/* 分支：操作员会不会提到里面还有别的东西？ */
 export const OP17_FORK: Beat = {
   id: "q6",
   from: "op17",
@@ -104,10 +104,10 @@ export const OP17_FORK: Beat = {
 };
 
 export const ARCHIVE_REL = {
-  /** telling him with the file in hand */
+  /** 手里有文件时告诉他 */
   toldCivic: 18,
   toldIntercell: -30,
-  /** telling him with nothing to show */
+  /** 拿不出东西时告诉他 */
   emptyCivic: -8,
 };
 
@@ -127,7 +127,7 @@ export const OP17_TOLD: Beat[] = [
   },
 ];
 
-/** told him, but the file is already gone — he refuses to believe it */
+/** 告诉了他，但文件已经没了：他不肯相信 */
 export const OP17_DISBELIEF: Beat[] = [
   {
     id: "q12",
@@ -172,11 +172,11 @@ export const SABLE_OFFER: Beat = {
   choices: [{ id: "sendsable", en: "Send the list to sable", ru: "Отправить список sable" }],
 };
 
-/* ---------------- payouts ---------------- */
+/* ---------------- 报酬 ---------------- */
 
 export const ARCHIVE_PAY = {
-  base: 200,        // operator_17, access restored
-  sable: 400,       // sable, for the list
+  base: 200,        // operator_17，访问权限已恢复
+  sable: 400,       // sable，为了那份列表
   repBase: 12,
   repSable: 8,
   relOp17Told: 18,
@@ -186,7 +186,7 @@ export const ARCHIVE_PAY = {
 };
 
 /* ==================================================================
-   FREDDY — two small jobs that open as conversations.
+   FREDDY：两个以对话形式展开的小任务。
    ================================================================== */
 
 export const FREDDY_IMPLANT: Beat[] = [
@@ -226,7 +226,7 @@ export const FREDDY_IMPLANT_4: Beat[] = [
   },
 ];
 
-/** the memo is in hand — offer to pass it on */
+/** 已拿到备忘录：主动提出转交 */
 export const FREDDY_IMPLANT_HOLD: Beat[] = [
   {
     id: "fi5", from: "freddy",
@@ -264,7 +264,7 @@ export const FREDDY_IMPLANT_DONE: Beat[] = [
 ];
 
 /* ==================================================================
-   m4rla — an unrelated job that happens to run in parallel.
+   m4rla：一个碰巧并行运行的无关任务。
    ================================================================== */
 
 export const MARLA_PROJ: Beat[] = [
@@ -307,7 +307,7 @@ export const MARLA_PROJ_READY: Beat[] = [
   },
 ];
 
-/** she reacts when the host was already breached before she asked */
+/** 当主机在她开口之前就已被入侵时，她会作出反应 */
 export const MARLA_PROJ_ALREADY: Beat[] = [
   {
     id: "mp5", from: "marla",
@@ -328,7 +328,7 @@ export const MARLA_PROJ_DONE: Beat[] = [
   },
 ];
 
-/* ---------------- operator_17 refuses a seller ---------------- */
+/* ---------------- operator_17 拒绝一个卖家 ---------------- */
 
 export const OP17_SOLD_REFUSAL: Beat[] = [
   {

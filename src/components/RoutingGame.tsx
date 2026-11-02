@@ -24,7 +24,7 @@ function Segment({
   const col = flowing ? "#b3d98d" : lit ? "#8fb56d" : terminal ? "#7f95a8" : "#56624a";
   const c = TILE / 2;
 
-  /* a stub from the centre toward each open side */
+  /* 从中心向每个开放侧延伸的短线 */
   const stub = (s: Side) => {
     const to: Record<Side, [number, number]> = {
       0: [c, 0], 1: [TILE, c], 2: [c, TILE], 3: [0, c],
@@ -45,7 +45,7 @@ function Segment({
       )}
       style={{ width: TILE, height: TILE }}
     >
-      {/* chassis */}
+      {/* 机箱 */}
       <span
         className="absolute inset-0 border transition-colors"
         style={{
@@ -56,7 +56,7 @@ function Segment({
           boxShadow: flowing ? "0 0 14px rgba(143,181,109,0.35)" : "none",
         }}
       />
-      {/* corner notches */}
+      {/* 角部缺口 */}
       {[["left-0 top-0", "border-l border-t"], ["right-0 top-0", "border-r border-t"],
         ["left-0 bottom-0", "border-l border-b"], ["right-0 bottom-0", "border-r border-b"]].map(([pos, b]) => (
         <span key={pos} className={cn("pointer-events-none absolute h-[5px] w-[5px]", pos, b)}
@@ -117,7 +117,7 @@ export default function RoutingGame({
     setRunning(true);
     setFront(0);
     if (!solved) {
-      /* the pulse dies where the circuit breaks */
+      /* 脉冲在电路断开处消失 */
       timers.current.push(window.setTimeout(() => setRunning(false), 900));
       return;
     }
@@ -141,7 +141,7 @@ export default function RoutingGame({
   return (
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[94vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
-        {/* title */}
+        {/* 标题 */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color={done ? "#8fb56d" : "#7f95a8"} pulse={!done} />
           <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
@@ -155,7 +155,7 @@ export default function RoutingGame({
           </button>
         </div>
 
-        {/* hint strip */}
+        {/* 提示条 */}
         <div className="flex h-[24px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em]">
           <span className="truncate text-faint">{t("rt.hint")}</span>
           <span className="ml-auto shrink-0" style={{ color: solved ? "#8fb56d" : "#77806b" }}>
@@ -163,7 +163,7 @@ export default function RoutingGame({
           </span>
         </div>
 
-        {/* board */}
+        {/* 棋盘 */}
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-well p-3">
           <div
             className="relative"
@@ -175,7 +175,7 @@ export default function RoutingGame({
               gap: GAP,
             }}
           >
-            {/* empty sockets */}
+            {/* 空插槽 */}
             {Array.from({ length: tier.cols * tier.rows }, (_, i) => (
               <span
                 key={`s${i}`}
@@ -210,7 +210,7 @@ export default function RoutingGame({
           </div>
         </div>
 
-        {/* run bar */}
+        {/* 运行栏 */}
         <div className="flex shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5 py-[6px]">
           <span className="text-[8px] uppercase tracking-[0.14em] text-faint">
             {t("rt.inlet")} → {t("rt.outlet")}

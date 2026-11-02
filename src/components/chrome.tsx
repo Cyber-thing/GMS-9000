@@ -3,7 +3,7 @@ import { cn } from "../utils/cn";
 
 
 /* ---------------------------------------------------------------- */
-/* status colors — single source of truth                            */
+/* 状态颜色：唯一的事实来源                            */
 /* ---------------------------------------------------------------- */
 
 export const STATUS_COLOR: Record<string, string> = {
@@ -30,7 +30,7 @@ export function StatusDot({ color, pulse = false, className }: { color: string; 
 }
 
 /* ---------------------------------------------------------------- */
-/* corner brackets — targeting-frame highlight                       */
+/* 角括号：瞄准框高亮                       */
 /* ---------------------------------------------------------------- */
 
 export function Brackets({ color = "#8fb56d", size = 7 }: { color?: string; size?: number }) {
@@ -47,7 +47,7 @@ export function Brackets({ color = "#8fb56d", size = 7 }: { color?: string; size
 }
 
 /* ---------------------------------------------------------------- */
-/* panel — the standard window chrome of the console                 */
+/* 面板：控制台的标准窗口外框                 */
 /* ---------------------------------------------------------------- */
 
 export function Panel({
@@ -86,7 +86,7 @@ export function Panel({
 }
 
 /* ---------------------------------------------------------------- */
-/* misc small text atoms                                             */
+/* 其他小型文本元素                                             */
 /* ---------------------------------------------------------------- */
 
 export function KV({ k, v, vc }: { k: string; v: ReactNode; vc?: string }) {

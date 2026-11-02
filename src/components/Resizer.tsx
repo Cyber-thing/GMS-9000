@@ -1,8 +1,8 @@
 import { cn } from "../utils/cn";
 
 /**
- * Vertical drag handle between two columns.
- * Drag to resize · double-click to restore the default width.
+ * 两列之间的垂直拖动手柄。
+ * 拖动以调整大小 · 双击恢复默认宽度。
  */
 export default function Resizer({
   side,
@@ -37,14 +37,14 @@ export default function Resizer({
         className
       )}
     >
-      {/* hit area is the full 7px; the rail is the thin visible line */}
+      {/* 热区为完整的 7px；导轨是细的可见线 */}
       <span
         className={cn(
           "pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors",
           active ? "bg-phos" : "bg-line group-hover:bg-line3 group-focus:bg-phosdim"
         )}
       />
-      {/* grip dots */}
+      {/* 握持点 */}
       <span
         className={cn(
           "pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-[3px] transition-opacity",
@@ -59,7 +59,7 @@ export default function Resizer({
           />
         ))}
       </span>
-      {/* live width glow while dragging */}
+      {/* 拖动时实时显示的宽度光晕 */}
       {active && (
         <span className="pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 bg-phos/25" />
       )}

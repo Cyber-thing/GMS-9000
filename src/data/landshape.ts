@@ -1,15 +1,15 @@
 import type { LandGrid } from "./world";
 
 /* ================================================================== */
-/* Turns the coarse land bitmap into continuous coastline outlines.    */
-/* Cell edges that border water are chained into closed rings, then    */
-/* the staircase corners are rounded off, so the continents read as    */
-/* solid shapes instead of a mosaic of squares.                        */
+/* 将粗糙的陆地位图转换为连续的海岸线轮廓。    */
+/* 与水域相邻的格子边缘被串联成闭合的环，然后    */
+/* 将阶梯状的拐角磨圆，使大陆看起来    */
+/* 是实心形状，而不是方块拼成的马赛克。                        */
 /* ================================================================== */
 
 export type Pt = [number, number];
 
-/** walks cell borders and chains them into closed rings (land on the right) */
+/** 沿着格子边界行走并将其串联成闭合的环（陆地在右侧） */
 export function traceRings(grid: LandGrid): Pt[][] {
   const { cols, rows, land } = grid;
   const isLand = (c: number, r: number) =>
@@ -57,7 +57,7 @@ export function traceRings(grid: LandGrid): Pt[][] {
   return rings;
 }
 
-/** removes points that sit on a straight run, leaving only real corners */
+/** 移除位于直线段上的点，只保留真正的拐角 */
 function corners(ring: Pt[]): Pt[] {
   const n = ring.length;
   const out: Pt[] = [];
@@ -71,7 +71,7 @@ function corners(ring: Pt[]): Pt[] {
   return out.length > 2 ? out : ring;
 }
 
-/** Chaikin corner cutting — turns the staircase into an organic coastline */
+/** Chaikin 切角：把阶梯状变成有机的海岸线 */
 function chaikin(ring: Pt[], iterations: number): Pt[] {
   let cur = ring;
   for (let it = 0; it < iterations; it++) {
@@ -88,7 +88,7 @@ function chaikin(ring: Pt[], iterations: number): Pt[] {
   return cur;
 }
 
-/** closed quadratic spline through the midpoints of a polygon */
+/** 穿过多边形各边中点的闭合二次样条 */
 function splinePath(ring: Pt[]): string {
   const n = ring.length;
   if (n < 3) return "";
@@ -106,16 +106,16 @@ function splinePath(ring: Pt[]): string {
 }
 
 export interface LandShape {
-  /** filled silhouette of every landmass, holes included */
+  /** 所有陆块的填充轮廓，包含孔洞 */
   path: string;
-  /** how many separate rings were traced */
+  /** 追踪到的独立环的数量 */
   rings: number;
 }
 
 /**
- * Builds the continent silhouette for a grid scaled into a `w x h` box.
- * `smooth` is the number of corner-cutting passes: 0 keeps hard pixel edges,
- * 2-3 produce a natural looking coastline.
+ * 为缩放到 `w x h` 方框中的网格构建大陆轮廓。
+ * `smooth` 是切角处理的遍数：0 保留硬像素边缘，
+ * 2-3 可生成自然的海岸线。
  */
 export function landShape(grid: LandGrid, w: number, h: number, smooth = 2): LandShape {
   const sx = w / grid.cols;

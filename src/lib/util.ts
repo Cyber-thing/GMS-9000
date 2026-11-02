@@ -34,12 +34,12 @@ export const store = {
     try {
       localStorage.setItem("netgrid." + key, JSON.stringify(value));
     } catch {
-      /* no-op */
+      /* 空操作 */
     }
   },
   /**
-   * Erase persisted game data. UI preferences (language, CRT, column widths)
-   * are kept by default — they are settings, not progress.
+   * 清除持久化的游戏数据。默认保留界面偏好（语言、CRT、列宽），
+   * 因为它们是设置，不是进度。
    */
   wipe(keep: string[] = ["lang", "fx", "col.left", "col.right"]) {
     try {
@@ -51,7 +51,7 @@ export const store = {
       }
       doomed.forEach((k) => localStorage.removeItem(k));
     } catch {
-      /* no-op */
+      /* 空操作 */
     }
   },
 };

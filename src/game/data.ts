@@ -13,28 +13,28 @@ import type {
 } from "./types";
 
 /* ================================================================== */
-/* tunables                                                            */
+/* 可调参数                                                            */
 /* ================================================================== */
 
 export const CFG = {
-  opsLimit: 5,            // successful hacks before GENIUS recovery
-  recoveryMs: 4200,       // recovery duration
-  repeatMult: 0,          // repeat intrusions pay no REP at all
+  opsLimit: 5,            // GENIUS 恢复之前的成功入侵次数
+  recoveryMs: 4200,       // 恢复时长
+  repeatMult: 0,          // 重复入侵完全不给 REP
   repPerWarden: 6,        // REP = rep + warden * repPerWarden
-  relHitPerWarden: -3,    // owner relation hit per warden level
-  relRepeatMult: 0.4,     // relation hit multiplier on repeats
+  relHitPerWarden: -3,    // 每个 warden 等级对所有者关系造成的打击
+  relRepeatMult: 0.4,     // 重复入侵时的关系打击倍率
   startCredits: 250,
   startRep: 0,
-  marketPrice: 1500,       // credits to open the black market
-  sellBonusQuest: 1.9,     // multiplier when fencing contracted data
-  sellRelHit: -14,         // relation damage with the data owner
-  betrayRelHit: -25,       // relation damage with a betrayed client
-  betrayCrewGain: 12,      // relation gain with the underworld
-  resellMult: 0.07,        // a fenced file is worthless the second time round
+  marketPrice: 1500,       // 开启黑市所需的点数
+  sellBonusQuest: 1.9,     // 倒卖已签约数据时的倍率
+  sellRelHit: -14,         // 与数据所有者的关系损害
+  betrayRelHit: -25,       // 与被背叛客户的关系损害
+  betrayCrewGain: 12,      // 与地下世界的关系提升
+  resellMult: 0.07,        // 已被倒卖的文件第二次就一文不值
 };
 
 /* ================================================================== */
-/* factions                                                            */
+/* 派系                                                            */
 /* ================================================================== */
 
 export const FACTIONS: Faction[] = [
@@ -53,7 +53,7 @@ export const FACTIONS: Faction[] = [
 export const factionById = (id: string) => FACTIONS.find((f) => f.id === id);
 
 /* ================================================================== */
-/* node metadata                                                       */
+/* 节点元数据                                                       */
 /* ================================================================== */
 
 const CLASS_BY_TYPE: Record<string, NodeClass> = {
@@ -67,7 +67,7 @@ const CLASS_BY_TYPE: Record<string, NodeClass> = {
   SECURITY: "CORPORATE",
 };
 
-/* owner by sector — keeps the world politically coherent */
+/* 按区域划分所有者：保持世界在政治上自洽 */
 const SECTOR_OWNER: Record<string, string> = {
   w1_arct: "civic",
   w1_north: "civic",
@@ -83,13 +83,13 @@ const SECTOR_OWNER: Record<string, string> = {
   wl_cape: "indep",
 };
 
-/* hand-authored metadata for story-relevant nodes */
+/* 为与剧情相关的节点手工编写的元数据 */
 const OVERRIDES: Record<string, Partial<NodeMeta>> = {
-  /* ---- WEST1 starting foothold ---- */
+  /* ---- WEST1 起始据点 ---- */
   w1p_acc: { owner: "civic", cls: "PUBLIC", warden: 1, rep: 6, start: true, codex: ["n_warden", "l_pacific"] },
   w1n_acc: { owner: "civic", cls: "PUBLIC", warden: 1, rep: 6, start: true, codex: ["l_northline"] },
 
-  /* ---- Intercell: Pacific Exchange ---- */
+  /* ---- Intercell：太平洋交易所 ---- */
   w1p_dsv: {
     owner: "intercell", cls: "CORPORATE", warden: 3, rep: 18,
     files: ["f_icx_payroll", "f_icx_memo"],
@@ -106,13 +106,13 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     files: ["f_meters", "f_wardenpass"], codex: ["f_civic"],
     intel: "Meter archives show an unbilled draw routed into Midland Exchange.",
   },
-  /* password-gated archive: the key lives in the note on DSV-N03 */
+  /* 密码保护的档案：密钥在 DSV-N03 的便笺里 */
   w1n_arc: {
     owner: "civic", cls: "GOVERNMENT", warden: 2, rep: 16,
     files: [], password: "CORE1MAX32", passwordFrom: "f_wardenpass",
   },
 
-  /* ---- Midland Exchange (conflict zone) ---- */
+  /* ---- Midland Exchange（冲突区） ---- */
   w1m_sec: {
     owner: "slayer", cls: "CORPORATE", warden: 5, rep: 32, restricted: true,
     req: { rep: 45 },
@@ -129,7 +129,7 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   },
   w1m_prv: { owner: "scavenger", cls: "UNDERGROUND", warden: 2, rep: 14, files: ["f_cbgate"], codex: ["c_koma"] },
 
-  /* ---- Agogee: Atlantic ---- */
+  /* ---- Agogee：大西洋 ---- */
   w1e_crp: {
     owner: "agogee", cls: "CORPORATE", warden: 4, rep: 24,
     req: { rep: 25 },
@@ -139,7 +139,7 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   w1e_sec: { owner: "agogee", cls: "CORPORATE", warden: 4, rep: 20, files: ["f_watchlog"], codex: ["n_warden"] },
   w1e_dsv: { owner: "agogee", cls: "CORPORATE", warden: 3, rep: 16, files: ["f_fin_mirror"] },
 
-  /* ---- Fusion: Gulf Relay ---- */
+  /* ---- Fusion：海湾中继 ---- */
   w1g_acc: { owner: "fusion", cls: "PUBLIC", warden: 2, rep: 12, req: { rep: 100 } },
   w1g_dsv: {
     owner: "fusion", cls: "CORPORATE", warden: 3, rep: 16,
@@ -148,7 +148,7 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   },
   w1g_prv2: { owner: "civic", cls: "GOVERNMENT", warden: 5, rep: 30, restricted: true, req: { rep: 70 }, files: ["f_range"] },
 
-  /* ---- Arctic ---- */
+  /* ---- 北极 ---- */
   w1a_rly: { owner: "indep", cls: "UNDERGROUND", warden: 3, rep: 18, files: ["f_echo"], codex: ["f_broken", "c_ghost"], intel: "The 61-second beacon is a dead-drop used by The Broken Connection." },
   w1a_res: { owner: "civic", cls: "GOVERNMENT", warden: 2, rep: 12, files: ["f_aurora"] },
 
@@ -166,7 +166,7 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   wld_res: { owner: "civic", cls: "GOVERNMENT", warden: 3, rep: 14, files: ["f_skydump"] },
 };
 
-/* deterministic hash for generated stats */
+/* 为生成的属性做确定性哈希 */
 const hash = (s: string) => {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
@@ -199,7 +199,7 @@ export const NODE_META: Record<string, NodeMeta> = (() => {
   return out;
 })();
 
-/** REP needed before a sector's hosts answer at all */
+/** 区域内主机开始响应所需的 REP */
 export const SECTOR_REP: Record<string, number> = {
   w1_pac: 0,
   w1_north: 0,
@@ -215,18 +215,18 @@ export const SECTOR_REP: Record<string, number> = {
   wl_cape: 200,
 };
 
-/* which region each node belongs to */
+/* 每个节点所属的区域 */
 export const NODE_REGION: Record<string, string> = (() => {
   const map: Record<string, string> = {};
   Object.entries(REGION_DATA).forEach(([rid, rd]) => rd.nodes.forEach((n) => (map[n.id] = rid)));
   return map;
 })();
 
-/** DATA SERVER hosts of a region — these light up once an ACCESS node falls */
+/** 某区域的 DATA SERVER 主机：一旦某个 ACCESS 节点失守，它们就会亮起 */
 export const dataServersOf = (regionId: string): string[] =>
   (REGION_DATA[regionId]?.nodes ?? []).filter((n) => n.type === "DATA SERVER").map((n) => n.id);
 
-/* adjacency from the existing link graph — hacking opens neighbours */
+/* 由现有链路图得出的邻接关系：入侵会开放邻居节点 */
 export const NEIGHBOURS: Record<string, string[]> = (() => {
   const map: Record<string, string[]> = {};
   Object.values(REGION_DATA).forEach((rd) => {
@@ -239,7 +239,7 @@ export const NEIGHBOURS: Record<string, string[]> = (() => {
 })();
 
 /* ================================================================== */
-/* data files                                                          */
+/* 数据文件                                                          */
 /* ================================================================== */
 
 const F = (
@@ -277,11 +277,11 @@ export const FILES: DataFile[] = [
 
 export const fileById = (id: string) => FILES.find((f) => f.id === id);
 
-/* generated filler file for any other corporate/gov node */
+/* 为其他任何企业/政府节点生成的填充文件 */
 export function genericFileFor(nodeId: string): DataFile | null {
   const m = NODE_META[nodeId];
   if (!m || m.files.length) return null;
-  /* hosts with a bespoke flow (archive, password gate) hand out their own data */
+  /* 拥有专属流程的主机（档案、密码门）会提供自己的数据 */
   if (m.password) return null;
   if (m.cls === "PUBLIC" || m.cls === "PRIVATE") return null;
   const n = ALL_NODES.find((x) => x.id === nodeId)!;
@@ -410,7 +410,7 @@ export const CODEX: CodexEntry[] = [
 export const codexById = (id: string) => CODEX.find((c) => c.id === id);
 
 /* ================================================================== */
-/* contacts & contracts                                                */
+/* 联系人与合同                                                */
 /* ================================================================== */
 
 export const CONTACTS: ContactDef[] = [
@@ -483,7 +483,7 @@ export const CONTRACTS: ContractDef[] = [
 export const contractById = (id: string) => CONTRACTS.find((c) => c.id === id);
 
 /* ================================================================== */
-/* region upgrades                                                     */
+/* 区域升级                                                     */
 /* ================================================================== */
 
 export const SCRIPTS: ScriptDef[] = [

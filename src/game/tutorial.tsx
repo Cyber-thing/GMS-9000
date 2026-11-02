@@ -4,9 +4,9 @@ import {
 import { store } from "../lib/util";
 
 /* ================================================================== */
-/* TUTORIAL — a scripted call from Ghost_404 on the first session.     */
-/* Steps either wait for a game event or for the operator to click     */
-/* through. Each step may spotlight one interface element.             */
+/* TUTORIAL：首次会话中来自 Ghost_404 的脚本化通话。     */
+/* 各步骤要么等待游戏事件，要么等待操作员点击     */
+/* 继续。每个步骤可以聚光一个界面元素。             */
 /* ================================================================== */
 
 export type TutEvent =
@@ -24,7 +24,7 @@ export type TutEvent =
   | "thread:ghost"
   | "anonymity";
 
-/** spotlight keys read by the UI components */
+/** 由 UI 组件读取的聚光键 */
 export type TutHighlight =
   | "sidepanel"
   | "tab:CONTACTS"
@@ -44,15 +44,15 @@ export interface TutStep {
   en: string;
   ru: string;
   highlight?: TutHighlight[];
-  /** advances automatically when this event fires; otherwise click to continue */
+  /** 该事件触发时自动前进；否则点击继续 */
   waitFor?: TutEvent;
-  /** renders the yes / no fork */
+  /** 渲染是 / 否 分支 */
   choice?: boolean;
-  /** last line — ends the call */
+  /** 最后一行：结束通话 */
   final?: boolean;
-  /** plays the hacker-exchange listing animation behind the call */
+  /** 在通话背后播放黑客交易所列表动画 */
   listing?: boolean;
-  /** nothing but the call window is clickable on this beat */
+  /** 在这个节拍中，只有通话窗口可以点击 */
   lockAll?: boolean;
 }
 
@@ -155,9 +155,9 @@ export const TUT_STEPS: TutStep[] = [
     id: "send",
     en: "I can see you have the file. Good. Throw it over to me — and do not you dare fence it on the black market before I get it.",
     ru: "Вижу файл у тебя. Отлично. Бросай его мне. И не вздумай продать его на чёрном рынке до того как пришлёшь мне!",
-    /* still inside the volume: light the way out, the CONTACTS tab to get
-       back to, and the transfer button itself — otherwise leaving the tab
-       during this beat would strand the operator */
+    /* 仍在卷标内：点亮出路、要返回的 CONTACTS 标签页，
+       以及转账按钮本身，否则在此节拍中离开标签页
+       会让操作员陷入困境 */
     highlight: ["vault:close", "tab:CONTACTS", "thread:ghost", "deliver"],
     waitFor: "deliver:ct_payroll",
   },
@@ -202,12 +202,12 @@ export const DECLINE_STEPS: TutStep[] = [
   },
 ];
 
-/** kept for callers that still expect a single step */
+/** 为仍期望单个步骤的调用方保留 */
 export const DECLINE_STEP = DECLINE_STEPS[0];
 
 export const CALLER = { nick: "Ghost_404" };
 
-/** Ghost comments when the operator scans the memo that is not his target. */
+/** 当操作员扫描那份并非他目标的备忘录时，Ghost 会发表评论。 */
 export const MEMO_ASIDE = {
   before: {
     en: "That is not what I need. Looks like something you could sell, though.",
@@ -220,7 +220,7 @@ export const MEMO_ASIDE = {
 };
 
 /* ------------------------------------------------------------------ */
-/* story calls — scripted monologues that reuse the call window        */
+/* 剧情通话：复用通话窗口的脚本化独白        */
 /* ------------------------------------------------------------------ */
 
 export type Avatar = "skull" | "cage";
@@ -276,9 +276,9 @@ type Phase = "idle" | "ringing" | "talking" | "over";
 interface Ctx {
   phase: Phase;
   step: TutStep | null;
-  /** active story call, if any */
+  /** 当前的剧情通话（如果有） */
   call: { script: CallScript; idx: number } | null;
-  /** transient line shown in place of the current beat */
+  /** 代替当前节拍显示的临时台词 */
   aside: string | null;
   sayAside: (text: string) => void;
   playCall: (id: string) => void;
@@ -288,9 +288,9 @@ interface Ctx {
   hl: TutHighlight | null;
   hls: TutHighlight[];
   isHl: (h: TutHighlight) => boolean;
-  /** true while the scripted call is running */
+  /** 脚本化通话进行期间为 true */
   active: boolean;
-  /** true when everything except the spotlight must be dimmed and inert */
+  /** 当除聚光元素外的一切都必须变暗且不可交互时为 true */
   gating: boolean;
   answer: () => void;
   next: () => void;
@@ -312,7 +312,7 @@ const loadTut = (): TutSave =>
 
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const saved = loadTut();
-  /* a call that was ringing when the tab closed resumes as ringing */
+  /* 标签页关闭时正在响铃的通话，恢复后仍为响铃状态 */
   const [call, setCall] = useState<{ script: CallScript; idx: number } | null>(null);
   const [callRinging, setCallRinging] = useState(false);
   const [aside, setAside] = useState<string | null>(null);
@@ -324,7 +324,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const idxRef = useRef(saved.idx);
   idxRef.current = idx;
 
-  /* keep the script position across reloads */
+  /* 在重新加载之间保持脚本位置 */
   useEffect(() => {
     if (phase === "over") store.set("tut.state", { phase: "over", idx: 0, declined: false });
     else store.set("tut.state", { phase, idx, declined });
@@ -358,21 +358,21 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     else setDeclined(true);
   }, []);
 
-  /** game events push the script forward when the current step waits for them */
+  /** 当当前步骤在等待游戏事件时，由游戏事件推动脚本前进 */
   const fire = useCallback((e: TutEvent) => {
     if (phase !== "talking" || declined) return;
     const cur = TUT_STEPS[idxRef.current];
     if (cur?.waitFor === e) setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
   }, [phase, declined]);
 
-  /** jump straight to a given step id — used to repair a reloaded session */
+  /** 直接跳转到指定的步骤 id：用于修复重新加载的会话 */
   const seekTo = useCallback((stepId: string) => {
     const i = TUT_STEPS.findIndex((x) => x.id === stepId);
     if (i >= 0) setIdx((cur) => (i > cur ? i : cur));
   }, []);
 
-  /** satisfy a step whose objective is already true when it is reached
-      (e.g. the payload was picked up before the script asked for it) */
+  /** 当到达某一步骤时，若其目标已经成立，则视为满足
+      （例如在脚本要求之前就已拾取了载荷） */
   const satisfy = useCallback((e: TutEvent) => {
     if (phase !== "talking" || declined) return;
     const cur = TUT_STEPS[idxRef.current];
@@ -426,5 +426,5 @@ export function useTut() {
   return c;
 }
 
-/** convenience: ring class for a spotlighted element */
+/** 便捷函数：聚光元素的光环样式类 */
 export const ring = (on: boolean) => (on ? "tut-ring" : "");

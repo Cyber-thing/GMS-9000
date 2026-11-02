@@ -28,32 +28,32 @@ export interface Faction {
   codex?: string;
 }
 
-/* access requirement for a node */
+/* 节点的访问要求 */
 export interface Requirement {
   rep?: number;
-  node?: string;        // must have compromised this node
-  file?: string;        // must hold this file
-  contract?: string;    // must have completed this contract
-  upgrade?: string;     // must own this upgrade
+  node?: string;        // 必须已入侵此节点
+  file?: string;        // 必须持有此文件
+  contract?: string;    // 必须已完成此合同
+  upgrade?: string;     // 必须拥有此升级
 }
 
 export interface NodeMeta {
   id: string;
   cls: NodeClass;
-  owner: string;        // faction id
+  owner: string;        // 派系 id
   warden: number;       // 1..5
-  rep: number;          // base REP reward
-  start?: boolean;      // available from the beginning
-  restricted?: boolean; // shown as RESTRICTED until requirement met
+  rep: number;          // 基础 REP 奖励
+  start?: boolean;      // 从一开始就可用
+  restricted?: boolean; // 在满足要求前显示为 RESTRICTED
   req?: Requirement;
   files: string[];
-  codex: string[];      // codex ids revealed on first successful hack
-  intel?: string;       // short intel line written into the codex entry
-  /** WARDEN PASS gate: the literal key the operator must type */
+  codex: string[];      // 首次成功入侵时揭示的 codex id
+  intel?: string;       // 写入 codex 条目的简短情报行
+  /** WARDEN PASS 门：操作员必须输入的字面密钥 */
   password?: string;
-  /** file that reveals the key once scanned */
+  /** 扫描后会揭示密钥的文件 */
   passwordFrom?: string;
-  /** SABOTAGE is only offered once this contract is live */
+  /** 只有在该合同进行中时才提供 SABOTAGE */
   sabotageGate?: string;
 }
 
@@ -62,9 +62,9 @@ export interface DataFile {
   name: string;
   nameRu: string;
   cat: DataCat;
-  source: string;       // node id
-  owner: string;        // faction id
-  value: number;        // credits worth on the black market
+  source: string;       // 节点 id
+  owner: string;        // 派系 id
+  value: number;        // 在黑市上的点数价值
 }
 
 export interface CodexEntry {
@@ -75,36 +75,36 @@ export interface CodexEntry {
   body: string;
   bodyRu: string;
   faction?: string;
-  start?: boolean;      // known from the start
+  start?: boolean;      // 从一开始就已知
 }
 
 export interface ContractDef {
   id: string;
   kind: ContractKind;
   contact: string;
-  client: string;       // faction id
+  client: string;       // 派系 id
   title: string;
   titleRu: string;
   brief: string;
   briefRu: string;
-  target: string;       // node id
-  /** required file id — DATA contracts only */
+  target: string;       // 节点 id
+  /** 所需的文件 id：仅限 DATA 合同 */
   file?: string;
   credits: number;
   rep: number;
-  relation: number;     // relation delta with the client
+  relation: number;     // 与客户的关系变化量
   repReq: number;
-  /** offered through the black market instead of CONTACTS */
+  /** 通过黑市而非 CONTACTS 提供 */
   market?: boolean;
-  /** driven by a hand-written dialogue instead of the generic flow */
+  /** 由手写对话而非通用流程驱动 */
   scripted?: boolean;
-  /** only offered once this region has been licensed */
+  /** 仅在此区域获得许可后才提供 */
   regionReq?: string;
-  /** only offered after this contract has been completed */
+  /** 仅在此合同完成后才提供 */
   afterReq?: string;
 }
 
-/* ---------------- black market ---------------- */
+/* ---------------- 黑市 ---------------- */
 
 export interface ScriptDef {
   id: string;
@@ -113,9 +113,9 @@ export interface ScriptDef {
   desc: string;
   descRu: string;
   price: number;
-  /** cooldown in seconds */
+  /** 冷却时间，单位为秒 */
   cooldown: number;
-  /** freeze duration, seconds (freeze script only) */
+  /** 冻结时长，单位为秒（仅冻结脚本） */
   freeze?: number;
 }
 
@@ -128,7 +128,7 @@ export interface ContactDef {
   repReq: number;
   intro: string;
   introRu: string;
-  /** no automatic greeting — the contact only speaks through scripts */
+  /** 没有自动问候：该联系人只通过脚本发言 */
   silent?: boolean;
 }
 
@@ -143,7 +143,7 @@ export interface RegionUpgrade {
   repReq: number;
 }
 
-/* ---------------- notifications ---------------- */
+/* ---------------- 通知 ---------------- */
 
 export type NotifKind =
   | "NEW CODEX ENTRY"
@@ -175,7 +175,7 @@ export interface Notif {
   t: string;
 }
 
-/* ---------------- persisted game state ---------------- */
+/* ---------------- 持久化的游戏状态 ---------------- */
 
 export interface ContractProgress {
   state: ContractState;
@@ -192,27 +192,27 @@ export interface GameState {
   credits: number;
   relations: Record<string, number>;
   nodeStates: Record<string, NodeState>;
-  hackCount: Record<string, number>;     // per node
-  ops: number;                            // successful ops since last recovery
+  hackCount: Record<string, number>;     // 按节点
+  ops: number;                            // 自上次恢复以来的成功操作次数
   recovering: boolean;
   codex: Record<string, CodexState>;
   codexSeen: Record<string, boolean>;
   codexLog: { id: string; t: string; updated: boolean }[];
-  files: string[];                        // owned file ids
+  files: string[];                        // 已拥有的文件 id
   contracts: Record<string, ContractProgress>;
-  contacts: string[];                     // unlocked contact ids
+  contacts: string[];                     // 已解锁的联系人 id
   threads: Record<string, ThreadMsg[]>;
   upgrades: string[];
-  regions: string[];                      // unlocked region ids
+  regions: string[];                      // 已解锁的区域 id
   market: MarketState;
-  sabotaged: string[];                    // node ids knocked out
-  /** hosts still visibly smoking — cleared by the next identity reset */
+  sabotaged: string[];                    // 被击溃的节点 id
+  /** 仍明显冒烟的主机：下一次身份重置时清除 */
   burning: string[];
-  /** files whose market value is spent: sold once or handed to a client */
+  /** 市场价值已耗尽的文件：已卖出一次或已交给客户 */
   burned: string[];
-  /** scripted-quest bookkeeping */
+  /** 脚本化任务的记账数据 */
   flags: Record<string, string | boolean>;
-  /** how many messages of each thread the operator has actually seen */
+  /** 操作员实际看过每个线程的多少条消息 */
   threadRead: Record<string, number>;
   stats: {
     hacks: number; contracts: number; files: number; nodes: number;
@@ -223,17 +223,17 @@ export interface GameState {
 
 export interface ThreadMsg {
   id: number;
-  from: string;   // contact id or "OP"
-  /** rendered when no language variant is stored (legacy saves) */
+  from: string;   // 联系人 id 或 "OP"
+  /** 未存储语言变体时渲染的内容（旧存档） */
   text: string;
-  /** language variants — kept so switching EN/RU re-renders old messages */
+  /** 语言变体：保留它们，使切换 EN/RU 时能重新渲染旧消息 */
   textEn?: string;
   textRu?: string;
   t: string;
   contract?: string;
   action?: "offer" | "deliver" | "done";
-  /** scripted reply buttons; picking one advances the conversation */
+  /** 脚本化回复按钮；选择其中一个会推进对话 */
   choices?: { id: string; en: string; ru: string }[];
-  /** chosen option id once the operator has answered */
+  /** 操作员作答后选中的选项 id */
   picked?: string;
 }

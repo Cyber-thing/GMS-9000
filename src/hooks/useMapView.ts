@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /* ================================================================== */
-/* Zoom + pan for the regional map.                                    */
-/* Wheel zooms toward the cursor, drag pans, and the view is clamped   */
-/* so the board can never be thrown off screen.                        */
+/* 区域地图的缩放 + 平移。                                    */
+/* 滚轮朝光标方向缩放，拖动平移，并且视图受到限制，   */
+/* 因此棋盘永远不会被拖出屏幕。                        */
 /* ================================================================== */
 
 export const ZOOM = { min: 1, max: 3.2, step: 1.18 };
@@ -19,15 +19,15 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 export function useMapView(enabled = true) {
   const [view, setView] = useState<MapView>({ scale: 1, x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  /** set while the pointer actually travelled — used to swallow the click */
+  /** 指针实际移动期间设置：用于吞掉点击 */
   const movedRef = useRef(false);
   const viewRef = useRef(view);
   viewRef.current = view;
 
-  /** the element the transform is applied to (its untransformed box) */
+  /** 应用变换的元素（其未变换的盒子） */
   const frameRef = useRef<HTMLDivElement>(null);
 
-  /** keep the board inside the frame at any zoom level */
+  /** 在任意缩放级别下保持棋盘位于框内 */
   const clampOffset = useCallback((v: MapView): MapView => {
     const el = frameRef.current;
     if (!el) return v;
@@ -40,7 +40,7 @@ export function useMapView(enabled = true) {
 
   const reset = useCallback(() => setView({ scale: 1, x: 0, y: 0 }), []);
 
-  /** zoom a step, keeping the frame centre (used by the +/- buttons) */
+  /** 按步长缩放，保持框中心不变（用于 +/- 按钮） */
   const zoomBy = useCallback(
     (factor: number) => {
       setView((v) => {
@@ -52,7 +52,7 @@ export function useMapView(enabled = true) {
     [clampOffset]
   );
 
-  /* ---- wheel zoom anchored at the cursor ---- */
+  /* ---- 以光标为锚点的滚轮缩放 ---- */
   useEffect(() => {
     const el = frameRef.current;
     if (!el || !enabled) return;
@@ -60,7 +60,7 @@ export function useMapView(enabled = true) {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const r = el.getBoundingClientRect();
-      /* cursor position relative to the frame centre */
+      /* 光标相对于框中心的位置 */
       const cx = e.clientX - (r.left + r.width / 2);
       const cy = e.clientY - (r.top + r.height / 2);
 
@@ -69,7 +69,7 @@ export function useMapView(enabled = true) {
         const scale = clamp(v.scale * factor, ZOOM.min, ZOOM.max);
         if (scale === v.scale) return v;
         const k = scale / v.scale;
-        /* keep the point under the cursor pinned */
+        /* 保持光标下方的点固定 */
         return clampOffset({ scale, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k });
       });
     };
@@ -78,7 +78,7 @@ export function useMapView(enabled = true) {
     return () => el.removeEventListener("wheel", onWheel);
   }, [enabled, clampOffset]);
 
-  /* ---- drag to pan ---- */
+  /* ---- 拖动平移 ---- */
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (!enabled) return;
@@ -102,7 +102,7 @@ export function useMapView(enabled = true) {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
         window.removeEventListener("pointercancel", onUp);
-        /* let the click handler run first, then clear the guard */
+        /* 先让点击处理程序运行，再清除保护标志 */
         setTimeout(() => (movedRef.current = false), 0);
       };
       window.addEventListener("pointermove", onMove);
@@ -112,10 +112,10 @@ export function useMapView(enabled = true) {
     [enabled, clampOffset]
   );
 
-  /** true when the gesture was a pan — callers use it to ignore the click */
+  /** 当手势是平移时为 true：调用方用它来忽略点击 */
   const consumedDrag = useCallback(() => movedRef.current, []);
 
-  /* re-clamp if the frame is resized while zoomed in */
+  /* 如果在放大状态下调整了框的大小，则重新限制范围 */
   useEffect(() => {
     const el = frameRef.current;
     if (!el) return;

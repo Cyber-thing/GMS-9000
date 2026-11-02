@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useT } from "../i18n";
 
-/* block-letter GNS-9000 built from box-drawing glyphs */
+/* 由制表符字形构成的块状字母 GNS-9000 */
 const ASCII = String.raw`
   ██████╗ ███╗   ██╗███████╗       █████╗  ██████╗  ██████╗  ██████╗ 
  ██╔════╝ ████╗  ██║██╔════╝      ██╔══██╗██╔═████╗██╔═████╗██╔═████╗
@@ -32,7 +32,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
     setTimeout(onDone, 260);
   };
 
-  /* any key / click continues once the logo has landed */
+  /* 徽标落定后，按任意键或点击即可继续 */
   useEffect(() => {
     if (stage < 3) return;
     const k = () => leave();
@@ -55,7 +55,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
       )}
       onClick={leave}
     >
-      {/* faint backdrop grid */}
+      {/* 淡淡的背景网格 */}
       <div
         className="pointer-events-none fixed inset-0 opacity-40"
         style={{
@@ -66,7 +66,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
       />
 
       <div className="relative w-full max-w-[760px] text-center">
-        {/* presents */}
+        {/* 呈现 */}
         <div
           className={cnx(
             "text-[11px] uppercase tracking-[0.42em] text-amber transition-all duration-500 sm:text-[13px]",
@@ -77,7 +77,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
           {t("sp.presents")}
         </div>
 
-        {/* ascii logo */}
+        {/* ASCII 徽标 */}
         <pre
           aria-label="GNS-9000"
           className={cnx(
@@ -90,7 +90,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
           {ASCII}
         </pre>
 
-        {/* rule + tagline */}
+        {/* 分隔线 + 标语 */}
         <div
           className={cnx(
             "mx-auto mt-4 flex max-w-[520px] items-center gap-2 transition-opacity duration-500",
@@ -110,7 +110,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
           {t("sp.tag")}
         </p>
 
-        {/* prompt */}
+        {/* 提示符 */}
         <p
           className={cnx(
             "mt-8 text-[9px] uppercase tracking-[0.3em] text-faint transition-opacity duration-500",
@@ -125,7 +125,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
   );
 }
 
-/* tiny local classnames helper to keep this screen dependency-free */
+/* 小型本地 classnames 辅助函数，使此界面不依赖外部库 */
 function cnx(...parts: (string | false | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }

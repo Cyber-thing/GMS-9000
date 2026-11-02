@@ -5,16 +5,16 @@ import { useT } from "../i18n";
 import { CALLER, useTut } from "../game/tutorial";
 
 /* ------------------------------------------------------------------
-   layer scale — the call always wins:
-     90  CRT overlay        94  black market      95  confirm dialog
-     96  breach / vault     97  vault reader
-    110  call window       112  incoming ring
+   层级刻度：通话始终优先：
+     90  CRT 叠加层        94  黑市      95  确认对话框
+     96  入侵 / 保险库     97  保险库阅读器
+    110  通话窗口       112  来电振铃
    ------------------------------------------------------------------ */
 const Z_CALL = 110;
 const Z_RING = 112;
 
 /* ------------------------------------------------------------------ */
-/* typewriter: reveals the line character by character, click to skip  */
+/* 打字机效果：逐字显示该行，点击可跳过  */
 /* ------------------------------------------------------------------ */
 
 function Typed({ text, onDone }: { text: string; onDone: () => void }) {
@@ -73,10 +73,10 @@ export default function TutorialCall() {
   useEffect(() => {
     setTyped(false);
     setSkip(false);
-    setFolded(false); // a new line always unfolds the panel
+    setFolded(false); // 新的一行总会展开面板
   }, [step?.id]);
 
-  /* ---------------- story call ---------------- */
+  /* ---------------- 剧情通话 ---------------- */
   if (call) {
     const line = lang === "ru" ? call.script.lines[call.idx].ru : call.script.lines[call.idx].en;
     const last = call.idx + 1 >= call.script.lines.length;
@@ -150,7 +150,7 @@ export default function TutorialCall() {
     );
   }
 
-  /* ---------------- incoming call ---------------- */
+  /* ---------------- 来电 ---------------- */
   if (phase === "ringing") {
     return (
       <div
@@ -189,10 +189,10 @@ export default function TutorialCall() {
     );
   }
 
-  /* ---------------- call in progress ---------------- */
+  /* ---------------- 通话中 ---------------- */
   if (phase !== "talking" || !step) return null;
 
-  /* a passing remark temporarily replaces the scripted line */
+  /* 临时的插话会暂时替换脚本台词 */
   const line = aside ?? (lang === "ru" ? step.ru : step.en);
   const waiting = !!step.waitFor;
 
@@ -205,7 +205,7 @@ export default function TutorialCall() {
         className="anim-msgin pointer-events-auto w-[min(620px,100%)] border-2 border-amberdim bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(207,160,75,0.18)]"
         onClick={() => !folded && setSkip(true)}
       >
-        {/* caller strip */}
+        {/* 来电者条 */}
         <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
           <span className="h-[5px] w-[5px] animate-softpulse bg-amber" />
           <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-amber">
@@ -222,13 +222,13 @@ export default function TutorialCall() {
             {folded ? <ChevronUp size={8} /> : <ChevronDown size={8} />}
             {folded ? t("tut.unfold") : t("tut.fold")}
           </button>
-          {/* no hanging up mid-briefing: the script drives the session */}
+          {/* 简报期间不能挂断：由脚本驱动会话 */}
           <span className="flex items-center gap-1 border border-line px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-faint">
             <PhoneOff size={8} /> {t("tut.locked")}
           </span>
         </div>
 
-        {/* body */}
+        {/* 主体 */}
         {folded ? (
           <div className="flex items-center gap-2 px-2.5 py-[5px]">
             <Portrait size={16} />
@@ -243,7 +243,7 @@ export default function TutorialCall() {
               {skip && !aside ? line : <Typed key={aside ?? step.id} text={line} onDone={() => setTyped(true)} />}
             </p>
 
-            {/* yes / no fork */}
+            {/* 是 / 否 分支 */}
             {step.choice && (skip || typed) && (
               <div className="mt-2 flex gap-1.5">
                 <button
@@ -261,7 +261,7 @@ export default function TutorialCall() {
               </div>
             )}
 
-            {/* continue / waiting */}
+            {/* 继续 / 等待 */}
             {!step.choice && (skip || typed) && (
               waiting ? (
                 <div className="mt-1.5 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.18em] text-amber">

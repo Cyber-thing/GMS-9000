@@ -50,7 +50,7 @@ export default function TopBar({
   const tutAnon = isHl("anonymity");
   const now = useClock();
 
-  /* persistent boot time so uptime survives reloads */
+  /* 持久化的启动时间，使运行时长在重新加载后得以保留 */
   const [boot] = useState(() => {
     const b = store.get<number | null>("boot", null);
     if (b) return b;
@@ -64,7 +64,7 @@ export default function TopBar({
     return () => clearInterval(t);
   }, [boot]);
 
-  /* network activity: fluctuating throughput + bar levels */
+  /* 网络活动：波动的吞吐量 + 条形电平 */
   const [kb, setKb] = useState(4.2);
   const [bars, setBars] = useState<number[]>([3, 5, 2, 6, 4, 7, 3]);
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function TopBar({
     return () => clearInterval(t);
   }, []);
 
-  /* operator handle inline edit */
+  /* 操作员用户名内联编辑 */
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(operator);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -94,7 +94,7 @@ export default function TopBar({
 
   return (
     <div className="relative z-30 flex h-[38px] shrink-0 items-stretch border-b border-line2 bg-header">
-      {/* identity chip — reverse video */}
+      {/* 身份标签：反色显示 */}
       <div className="flex items-center gap-2.5 border-r border-line2 bg-phos px-3 text-ink">
         <ScanEye size={14} strokeWidth={2.2} />
         <div className="leading-none">
@@ -106,7 +106,7 @@ export default function TopBar({
         <span className="ml-1 border border-ink/40 px-1 py-[1px] text-[8px] font-bold tracking-widest">v2.4.1</span>
       </div>
 
-      {/* status fields */}
+      {/* 状态字段 */}
       <div className="flex min-w-0 flex-1 items-center gap-x-4 gap-y-1 overflow-x-auto px-3 md:gap-x-5">
         <Field
           label={t("top.system")}
@@ -150,7 +150,7 @@ export default function TopBar({
         />
       </div>
 
-      {/* activity meter */}
+      {/* 活动计量表 */}
       <div className="hidden items-center gap-2 border-l border-line2 px-3 sm:flex">
         <Activity size={12} className="text-phosdim" />
         <div className="flex h-[14px] items-end gap-[2px]" aria-hidden>
@@ -165,7 +165,7 @@ export default function TopBar({
         <span className="w-[52px] tabular-nums text-[10px] text-dim">{kb.toFixed(1)}kb/s</span>
       </div>
 
-      {/* operator handle */}
+      {/* 操作员用户名 */}
       <div className="flex items-center gap-2 border-l border-line2 px-3">
         <span className="hidden text-[8.5px] uppercase tracking-[0.2em] text-faint md:inline">{t("top.operator")}</span>
         {editing ? (
@@ -205,7 +205,7 @@ export default function TopBar({
         )}
       </div>
 
-      {/* GENIUS operation buffer */}
+      {/* GENIUS 操作缓冲区 */}
       <div className="flex shrink-0 items-center gap-2 border-l border-line2 px-2.5">
         <div className="leading-none">
           <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("genius.title")}</div>
@@ -248,7 +248,7 @@ export default function TopBar({
         )}
       </div>
 
-      {/* language toggle */}
+      {/* 语言切换 */}
       <button
         onClick={() => setLang(lang === "en" ? "ru" : "en")}
         className="flex w-[58px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-phos"
@@ -258,7 +258,7 @@ export default function TopBar({
         {lang === "en" ? "EN" : "RU"}
       </button>
 
-      {/* fx toggle */}
+      {/* 特效切换 */}
       <button
         onClick={onToggleFx}
         className={`flex w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
@@ -270,7 +270,7 @@ export default function TopBar({
         CRT
       </button>
 
-      {/* disconnect */}
+      {/* 断开连接 */}
       <button
         onClick={onLogout}
         title={t("top.logoutTip")}

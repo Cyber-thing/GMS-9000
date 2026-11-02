@@ -6,11 +6,11 @@ export type Lang = "en" | "ru";
 type Entry = { en: string; ru: string };
 
 /* ================================================================== */
-/* UI dictionary                                                       */
+/* 界面词典                                                       */
 /* ================================================================== */
 
 export const DICT: Record<string, Entry> = {
-  /* ---------- brand / top bar ---------- */
+  /* ---------- 品牌 / 顶栏 ---------- */
   "brand.sub": { en: "net operations console", ru: "консоль сетевых операций" },
   "top.system": { en: "System", ru: "Система" },
   "top.network": { en: "Network", ru: "Сеть" },
@@ -29,7 +29,7 @@ export const DICT: Record<string, Entry> = {
   "top.handlePh": { en: "HANDLE", ru: "ПОЗЫВНОЙ" },
   "top.langTip": { en: "switch language", ru: "переключить язык" },
 
-  /* ---------- panel titles ---------- */
+  /* ---------- 面板标题 ---------- */
   "panel.worldnet": { en: "WORLD", ru: "WORLD" },
   "panel.regional": { en: "Regional Map", ru: "Карта региона" },
   "panel.sector": { en: "Sector Data", ru: "Данные сектора" },
@@ -37,12 +37,12 @@ export const DICT: Record<string, Entry> = {
   "panel.events": { en: "Event Log", ru: "Журнал событий" },
   "panel.chat": { en: "Message Subsystem", ru: "Подсистема сообщений" },
 
-  /* ---------- pane switcher ---------- */
+  /* ---------- 面板切换器 ---------- */
   "pane.world": { en: "WORLD", ru: "WORLD" },
   "pane.region": { en: "REGIONAL MAP", ru: "КАРТА РЕГИОНА" },
   "pane.data": { en: "SECTOR / NODE / LOG", ru: "СЕКТОР / УЗЕЛ / ЛОГ" },
 
-  /* ---------- world map ---------- */
+  /* ---------- 世界地图 ---------- */
   "world.feed": { en: "world // mercator-feed 72x36", ru: "world // меркатор 72x36" },
   "world.sessions": { en: "{n} sessions live", ru: "сеансов: {n}" },
   "world.fig": {
@@ -57,7 +57,7 @@ export const DICT: Record<string, Entry> = {
   "world.offline": { en: "OFFLINE", ru: "НЕ В СЕТИ" },
   "world.uplink": { en: "SATELLITE UPLINK", ru: "СПУТНИКОВЫЙ КАНАЛ" },
 
-  /* ---------- route trace ---------- */
+  /* ---------- 路由追踪 ---------- */
   "trace.title": { en: "route handoff in progress", ru: "идёт передача маршрута" },
   "trace.hop1": { en: "hop 1  SAT-0 uplink ........ {ms} ms", ru: "хоп 1  аплинк SAT-0 ....... {ms} мс" },
   "trace.hop2": { en: "hop 2  backbone exchange ... {ms} ms", ru: "хоп 2  узел магистрали .... {ms} мс" },
@@ -66,7 +66,7 @@ export const DICT: Record<string, Entry> = {
   "trace.inject": { en: "injecting packet stream", ru: "внедрение потока пакетов" },
   "trace.dontclose": { en: "do not close terminal", ru: "не закрывайте терминал" },
 
-  /* ---------- region map ---------- */
+  /* ---------- 区域地图 ---------- */
   "map.back": { en: "world", ru: "world" },
   "map.backTip": { en: "return to WORLD", ru: "вернуться в WORLD" },
   "map.zoomIn": { en: "zoom in · wheel up", ru: "приблизить · колесо вверх" },
@@ -80,7 +80,7 @@ export const DICT: Record<string, Entry> = {
   },
   "map.nd": { en: "{n} ND", ru: "{n} УЗ" },
 
-  /* ---------- sector panel ---------- */
+  /* ---------- 区域面板 ---------- */
   "sec.none": { en: "NO SECTOR SELECTED", ru: "СЕКТОР НЕ ВЫБРАН" },
   "sec.hintRegion": {
     en: "select a grid on the regional map to inspect its routing table.",
@@ -95,7 +95,7 @@ export const DICT: Record<string, Entry> = {
   "sec.reach": { en: "Reachable", ru: "Доступно" },
   "sec.integrity": { en: "Integrity", ru: "Целостность" },
 
-  /* ---------- node panel ---------- */
+  /* ---------- 节点面板 ---------- */
   "node.none": { en: "NO NODE TARGETED", ru: "УЗЕЛ НЕ ВЫБРАН" },
   "node.hint": {
     en: "click a node marker on the grid to interrogate it.",
@@ -119,11 +119,11 @@ export const DICT: Record<string, Entry> = {
   "node.noCarrier": { en: "no carrier", ru: "нет несущей" },
   "node.attempt": { en: "attempt link · unverified", ru: "попытка связи · не проверен" },
 
-  /* ---------- event log ---------- */
+  /* ---------- 事件日志 ---------- */
   "ev.entries": { en: "{n} entries", ru: "записей: {n}" },
   "ev.waiting": { en: "awaiting network telemetry…", ru: "ожидание телеметрии сети…" },
 
-  /* ---------- chat ---------- */
+  /* ---------- 聊天 ---------- */
   "chat.on": { en: "{n} ON", ru: "{n} В СЕТИ" },
   "chat.send": { en: "SEND", ru: "СЛАТЬ" },
   "chat.ph": { en: "transmit to {ch}…", ru: "передать в {ch}…" },
@@ -153,7 +153,7 @@ export const DICT: Record<string, Entry> = {
   "topic.CORPORATE": { en: "topic: official traffic · monitored", ru: "тема: официальный трафик · под надзором" },
   "topic.PRIVATE": { en: "topic: low bandwidth · encryption off", ru: "тема: узкий канал · шифрование выкл" },
 
-  /* ---------- terminal bar ---------- */
+  /* ---------- 终端栏 ---------- */
   "term.title": { en: "tty0 · system console", ru: "tty0 · системная консоль" },
   "term.hint": { en: "CTRL+` toggles", ru: "CTRL+` — показать/скрыть" },
   "term.expand": { en: "expand", ru: "развернуть" },
@@ -164,7 +164,7 @@ export const DICT: Record<string, Entry> = {
   "term.line": { en: "tty0 @ 9600,n,8,1", ru: "tty0 @ 9600,n,8,1" },
   "term.rom": { en: "gns-9000 rom 41.7 · no warranty", ru: "gns-9000 пзу 41.7 · без гарантий" },
 
-  /* ---------- login ---------- */
+  /* ---------- 登录 ---------- */
   "login.title": { en: "system login — remote terminal", ru: "вход в систему — удалённый терминал" },
   "login.guest": { en: "tty-guest", ru: "tty-гость" },
   "login.sub": { en: "global network operations system", ru: "система операций глобальной сети" },
@@ -195,7 +195,7 @@ export const DICT: Record<string, Entry> = {
   "login.boot4": { en: "dialing backbone carrier … CONNECT 9600/ARQ", ru: "набор магистрали … CONNECT 9600/ARQ" },
   "login.boot5": { en: "resolving WORLD … region index ready", ru: "поиск WORLD … индекс регионов готов" },
 
-  /* ---------- node types ---------- */
+  /* ---------- 节点类型 ---------- */
   "type.ACCESS": { en: "ACCESS", ru: "ДОСТУП" },
   "type.RELAY": { en: "RELAY", ru: "РЕТРАНСЛЯТОР" },
   "type.DATA SERVER": { en: "DATA SERVER", ru: "СЕРВЕР ДАННЫХ" },
@@ -213,7 +213,7 @@ export const DICT: Record<string, Entry> = {
   "tshort.RESEARCH": { en: "RESEARCH", ru: "НАУЧНЫЙ" },
   "tshort.SECURITY": { en: "SECURITY", ru: "ОХРАНА" },
 
-  /* ---------- statuses ---------- */
+  /* ---------- 状态 ---------- */
   "st.ONLINE": { en: "ONLINE", ru: "В СЕТИ" },
   "st.OFFLINE": { en: "OFFLINE", ru: "НЕ В СЕТИ" },
   "st.RESTRICTED": { en: "RESTRICTED", ru: "ЗАКРЫТ" },
@@ -222,7 +222,7 @@ export const DICT: Record<string, Entry> = {
   "st.CONTESTED": { en: "CONFLICT ZONE", ru: "ЗОНА КОНФЛИКТА" },
   "st.CONNECTED": { en: "CONNECTED", ru: "ПОДКЛЮЧЁН" },
 
-  /* ---------- terminal / event messages ---------- */
+  /* ---------- 终端 / 事件消息 ---------- */
   "t.auth": { en: "operator {op} authenticated :: session opened", ru: "оператор {op} аутентифицирован :: сеанс открыт" },
   "t.init": { en: "initializing network interface …", ru: "инициализация сетевого интерфейса …" },
   "t.carrier": { en: "carrier detect :: WORLD @ 9600 baud", ru: "несущая найдена :: WORLD @ 9600 бод" },
@@ -292,7 +292,7 @@ export const DICT: Record<string, Entry> = {
   "e.handleSet": { en: "operator identified as {op}", ru: "оператор опознан как {op}" },
   "t.langSet": { en: "interface language :: ENGLISH", ru: "язык интерфейса :: РУССКИЙ" },
 
-  /* dead-point notes */
+  /* 死点备注 */
   "dead.EU-LINK": {
     en: "transatlantic trunk severed in this build",
     ru: "трансатлантическая магистраль обрезана в этой сборке",
@@ -309,35 +309,35 @@ export const DICT: Record<string, Entry> = {
   "dead.name.EASTNET": { en: "EASTERN NET", ru: "ВОСТОЧНАЯ СЕТЬ" },
   "dead.name.PAC-CABLE": { en: "TRANS-PACIFIC", ru: "ТРАНСТИХООКЕАНСКИЙ" },
 
-  /* ================= GAME LAYER ================= */
+  /* ================= 游戏层 ================= */
 
-  /* tabs */
+  /* 标签页 */
   "tab.CHAT": { en: "CHAT", ru: "ЧАТ" },
   "tab.CODEX": { en: "CODEX", ru: "КОДЕКС" },
   "tab.CONTACTS": { en: "CONTACTS", ru: "КОНТАКТЫ" },
   "tab.STATUS": { en: "STATUS", ru: "СТАТУС" },
   "tab.new": { en: "NEW", ru: "НОВОЕ" },
 
-  /* node states */
+  /* 节点状态 */
   "nst.LOCKED": { en: "LOCKED", ru: "ЗАБЛОКИРОВАН" },
   "nst.AVAILABLE": { en: "AVAILABLE", ru: "ДОСТУПЕН" },
   "nst.COMPROMISED": { en: "COMPROMISED", ru: "ВЗЛОМАН" },
   "nst.RESTRICTED": { en: "RESTRICTED", ru: "ОГРАНИЧЕН" },
 
-  /* node classes */
+  /* 节点类别 */
   "ncls.CORPORATE": { en: "CORPORATE", ru: "КОРПОРАТИВНЫЙ" },
   "ncls.GOVERNMENT": { en: "GOVERNMENT", ru: "ГОСУДАРСТВЕННЫЙ" },
   "ncls.PRIVATE": { en: "PRIVATE", ru: "ЧАСТНЫЙ" },
   "ncls.PUBLIC": { en: "PUBLIC", ru: "ПУБЛИЧНЫЙ" },
   "ncls.UNDERGROUND": { en: "UNDERGROUND", ru: "ПОДПОЛЬНЫЙ" },
 
-  /* data categories */
+  /* 数据类别 */
   "dcat.CORPORATE DATA": { en: "CORPORATE DATA", ru: "КОРПОРАТИВНЫЕ ДАННЫЕ" },
   "dcat.CLASSIFIED DATA": { en: "CLASSIFIED DATA", ru: "СЕКРЕТНЫЕ ДАННЫЕ" },
   "dcat.PERSONAL DATA": { en: "PERSONAL DATA", ru: "ЛИЧНЫЕ ДАННЫЕ" },
   "dcat.INTEL": { en: "INTEL", ru: "РАЗВЕДДАННЫЕ" },
 
-  /* dossier */
+  /* 档案卷宗 */
   "dos.owner": { en: "Operator", ru: "Владелец" },
   "dos.warden": { en: "WARDEN", ru: "WARDEN" },
   "dos.class": { en: "Class", ru: "Класс" },
@@ -375,7 +375,7 @@ export const DICT: Record<string, Entry> = {
     ru: "сжечь текущую личность — обрубает след и очищает буфер операций",
   },
 
-  /* hack log */
+  /* 入侵日志 */
   "hk.start": { en: "GENIUS :: opening intrusion stack on {code}", ru: "GENIUS :: открываю стек проникновения на {code}" },
   "hk.probe": { en: "probing WARDEN tier {n} …", ru: "зондирование WARDEN уровня {n} …" },
   "hk.bypass": { en: "bypassing signature checks :: {p}%", ru: "обход проверки сигнатур :: {p}%" },
@@ -391,7 +391,7 @@ export const DICT: Record<string, Entry> = {
   "hk.recovered": { en: "identity burned :: new signature, buffer cleared", ru: "личность сожжена :: новая сигнатура, буфер очищен" },
   "hk.recovering": { en: "rotating identity … shredding the trail", ru: "смена личности … затираю след" },
 
-  /* codex page */
+  /* codex 页面 */
   "cx.cat.FACTIONS": { en: "FACTIONS", ru: "ФРАКЦИИ" },
   "cx.cat.CHARACTERS": { en: "CHARACTERS", ru: "ПЕРСОНАЖИ" },
   "cx.cat.LOCATIONS": { en: "LOCATIONS", ru: "ЛОКАЦИИ" },
@@ -406,7 +406,7 @@ export const DICT: Record<string, Entry> = {
   "cx.log": { en: "recent updates", ru: "последние обновления" },
   "cx.src": { en: "related faction", ru: "связанная фракция" },
 
-  /* contacts page */
+  /* 联系人页面 */
   "co.none": { en: "no contacts yet — build REP and they will find you", ru: "контактов нет — набирайте REP, и вас найдут" },
   "co.pick": { en: "select a contact", ru: "выберите контакт" },
   "co.rep": { en: "REP {n}", ru: "REP {n}" },
@@ -441,7 +441,7 @@ export const DICT: Record<string, Entry> = {
   "tut.waiting": { en: "waiting for you…", ru: "ждёт от вас действия…" },
   "co.no": { en: "NO", ru: "НЕТ" },
 
-  /* contract states */
+  /* 合同状态 */
   "cs.AVAILABLE": { en: "AVAILABLE", ru: "ДОСТУПЕН" },
   "cs.ACCEPTED": { en: "ACCEPTED", ru: "ПРИНЯТ" },
   "cs.TARGET ACCESSED": { en: "TARGET ACCESSED", ru: "ЦЕЛЬ ВЗЛОМАНА" },
@@ -449,7 +449,7 @@ export const DICT: Record<string, Entry> = {
   "cs.DELIVERED": { en: "DELIVERED", ru: "ПЕРЕДАНО" },
   "cs.COMPLETED": { en: "COMPLETED", ru: "ЗАВЕРШЁН" },
 
-  /* status page */
+  /* 状态页面 */
   "sp.profile": { en: "PROFILE", ru: "ПРОФИЛЬ" },
   "sp.handle": { en: "handle", ru: "позывной" },
   "sp.uid": { en: "operator id", ru: "идентификатор" },
@@ -475,12 +475,12 @@ export const DICT: Record<string, Entry> = {
   "sp.hostile": { en: "hostile", ru: "враждебно" },
   "sp.friendly": { en: "friendly", ru: "дружественно" },
 
-  /* world map locked region */
+  /* 世界地图锁定区域 */
   "world.locked": { en: "LOCKED · LICENCE REQUIRED", ru: "ЗАКРЫТО · НУЖНА ЛИЦЕНЗИЯ" },
   "world.buyHint": { en: "buy the uplink licence in STATUS → NETWORK UPGRADES", ru: "купите лицензию в СТАТУС → СЕТЕВЫЕ АПГРЕЙДЫ" },
   "t.regionLocked": { en: "route refused :: {code} licence not held", ru: "маршрут отклонён :: нет лицензии на {code}" },
 
-  /* notifications */
+  /* 通知 */
   "nf.NEW CODEX ENTRY": { en: "NEW CODEX ENTRY", ru: "НОВАЯ ЗАПИСЬ КОДЕКСА" },
   "nf.CODEX UPDATED": { en: "CODEX UPDATED", ru: "КОДЕКС ОБНОВЛЁН" },
   "nf.NEW CONTACT MESSAGE": { en: "NEW CONTACT MESSAGE", ru: "НОВОЕ СООБЩЕНИЕ" },
@@ -493,7 +493,7 @@ export const DICT: Record<string, Entry> = {
   "nf.DATA ACQUIRED": { en: "DATA ACQUIRED", ru: "ДАННЫЕ ПОЛУЧЕНЫ" },
   "nf.SYSTEM RECOVERY REQUIRED": { en: "IDENTITY RESET REQUIRED", ru: "ТРЕБУЕТСЯ СБРОС ЛИЧНОСТИ" },
 
-  /* ---- session control ---- */
+  /* ---- 会话控制 ---- */
   "top.logout": { en: "DISCONNECT", ru: "ОТКЛЮЧИТЬСЯ" },
   "top.logoutTip": { en: "disconnect — return to the login terminal", ru: "отключиться — вернуться к терминалу входа" },
   "t.logout": { en: "session closed :: operator {op} disconnected", ru: "сеанс закрыт :: оператор {op} отключился" },
@@ -505,7 +505,7 @@ export const DICT: Record<string, Entry> = {
   "logout.confirm": { en: "DISCONNECT", ru: "ОТКЛЮЧИТЬСЯ" },
   "logout.cancel": { en: "STAY ONLINE", ru: "ОСТАТЬСЯ" },
 
-  /* ---- progress wipe ---- */
+  /* ---- 清除进度 ---- */
   "wipe.label": { en: "WIPE ALL PROGRESS", ru: "УДАЛИТЬ ВЕСЬ ПРОГРЕСС" },
   "wipe.hint": {
     en: "erases handle, REP, credits, CODEX, contracts and node states",
@@ -519,7 +519,7 @@ export const DICT: Record<string, Entry> = {
   },
   "wipe.done": { en: "cold boot :: all operator data erased", ru: "холодный старт :: все данные оператора стёрты" },
 
-  /* ---- breach mini-game ---- */
+  /* ---- 入侵小游戏 ---- */
   "bg.title": { en: "GENIUS BREACH", ru: "ВЗЛОМ GENIUS" },
   "bg.abort": { en: "ABORT", ru: "ПРЕРВАТЬ" },
   "bg.dial1": { en: "ATDT {code} …", ru: "ATDT {code} …" },
@@ -546,7 +546,7 @@ export const DICT: Record<string, Entry> = {
   "bg.lockout": { en: "TRACED", ru: "ОБНАРУЖЕН" },
   "bg.lockoutSub": { en: "warden ejected you · -{n} REP", ru: "warden вышвырнул вас · -{n} REP" },
 
-  /* breach console / notifications */
+  /* 入侵控制台 / 通知 */
   "t.bgStart": { en: "GENIUS :: breach interface opened on {code}", ru: "GENIUS :: открыт интерфейс взлома {code}" },
   "t.bgAbort": { en: "breach aborted :: line dropped by operator", ru: "взлом прерван :: оператор сбросил линию" },
   "t.bgTimeout": { en: "WARDEN LOCKOUT :: trace completed, session ejected", ru: "БЛОКИРОВКА WARDEN :: трассировка завершена, сеанс сброшен" },
@@ -554,7 +554,7 @@ export const DICT: Record<string, Entry> = {
   "nf.WARDEN LOCKOUT": { en: "WARDEN LOCKOUT", ru: "БЛОКИРОВКА WARDEN" },
   "e.bgTimeout": { en: "{code} traced the intrusion — operator ejected", ru: "{code} отследил проникновение — оператор выброшен" },
 
-  /* ---- data vault (file system mini-game) ---- */
+  /* ---- 数据保险库（文件系统小游戏） ---- */
   "dv.title": { en: "FILE SYSTEM", ru: "ФАЙЛОВАЯ СИСТЕМА" },
   "dv.disconnect": { en: "LOG OFF", ru: "ВЫЙТИ" },
   "dv.dirs": { en: "{n} dirs", ru: "каталогов: {n}" },
@@ -590,7 +590,7 @@ export const DICT: Record<string, Entry> = {
   },
   "dos.recovered": { en: "Recovered from this host", ru: "Извлечено с этого узла" },
 
-  /* ---- splash ---- */
+  /* ---- 启动画面 ---- */
   "sp.presents": { en: "CYBERTHING!  presents:", ru: "CYBERTHING!  представляет:" },
   "sp.tag": {
     en: "a modern hacking interface for operators who were never invited",
@@ -613,7 +613,7 @@ export const DICT: Record<string, Entry> = {
   "bg.cooldown": { en: "{n}s", ru: "{n}с" },
   "bg.noScripts": { en: "no scripts installed", ru: "скриптов нет" },
 
-  /* ---- sabotage ---- */
+  /* ---- 破坏 ---- */
   "dos.sabotage": { en: "RUN SABOTAGE", ru: "ЗАПУСТИТЬ ДИВЕРСИЮ" },
   "dos.sabotaged": { en: "HOST DISABLED", ru: "УЗЕЛ ВЫВЕДЕН ИЗ СТРОЯ" },
   "dos.hardened": { en: "HARDENED AFTER SABOTAGE", ru: "УСИЛЕНИЕ ПОСЛЕ ДИВЕРСИИ" },
@@ -629,7 +629,7 @@ export const DICT: Record<string, Entry> = {
   "co.kind.DATA": { en: "DATA RETRIEVAL", ru: "ДОБЫЧА ДАННЫХ" },
   "co.kind.SABOTAGE": { en: "SABOTAGE", ru: "ДИВЕРСИЯ" },
 
-  /* ---- black market ---- */
+  /* ---- 黑市 ---- */
   "bm.title": { en: "BLACK MARKET", ru: "ЧЁРНЫЙ РЫНОК" },
   "bm.open": { en: "BLACK MARKET", ru: "ЧЁРНЫЙ РЫНОК" },
   "bm.tab.sell": { en: "SELL", ru: "ПРОДАТЬ" },
@@ -673,21 +673,21 @@ export const DICT: Record<string, Entry> = {
   "t.script": { en: "script installed :: {name}", ru: "скрипт установлен :: {name}" },
   "t.scriptUse": { en: "script fired :: {name}", ru: "скрипт применён :: {name}" },
 
-  /* ---- scripts in status ---- */
+  /* ---- 状态中的脚本 ---- */
   "sp.scripts": { en: "INSTALLED SCRIPTS", ru: "УСТАНОВЛЕННЫЕ СКРИПТЫ" },
   "sp.noScripts": { en: "no scripts — buy them on the black market", ru: "скриптов нет — купите на чёрном рынке" },
   "sp.sold": { en: "data fenced", ru: "данных сбыто" },
   "sp.sabotage": { en: "sabotage runs", ru: "диверсий" },
   "sp.failed": { en: "contracts burned", ru: "сорвано контрактов" },
 
-  /* ---- notifications ---- */
+  /* ---- 通知 ---- */
   "nf.CONTRACT FAILED": { en: "CONTRACT FAILED", ru: "КОНТРАКТ ПРОВАЛЕН" },
   "nf.DATA SOLD": { en: "DATA SOLD", ru: "ДАННЫЕ ПРОДАНЫ" },
   "nf.SCRIPT ACQUIRED": { en: "SCRIPT ACQUIRED", ru: "СКРИПТ ПОЛУЧЕН" },
   "nf.BLACK MARKET ONLINE": { en: "BLACK MARKET ONLINE", ru: "ЧЁРНЫЙ РЫНОК ОТКРЫТ" },
   "nf.SABOTAGE COMPLETE": { en: "SABOTAGE COMPLETE", ru: "ДИВЕРСИЯ ВЫПОЛНЕНА" },
 
-  /* ---- hacker exchange ---- */
+  /* ---- 黑客交易所 ---- */
   "ex.title": { en: "HACKER EXCHANGE — REGISTRY", ru: "БАЗА ДАННЫХ ХАКЕРОВ" },
   "ex.indexing": { en: "indexing handles …", ru: "индексация позывных …" },
   "ex.listed": { en: "entry written", ru: "запись внесена" },
@@ -695,7 +695,7 @@ export const DICT: Record<string, Entry> = {
   "ex.statusLabel": { en: "status", ru: "статус" },
   "ex.rookie": { en: "ROOKIE", ru: "НОВИЧОК" },
 
-  /* ---- routing mini-game ---- */
+  /* ---- 路由小游戏 ---- */
   "rt.title": { en: "NETWORK ROUTING", ru: "СЕТЕВАЯ МАРШРУТИЗАЦИЯ" },
   "rt.hint": {
     en: "click a segment to rotate it — close the line from inlet to outlet",
@@ -735,7 +735,7 @@ export const DICT: Record<string, Entry> = {
   "nf.KEY RECOVERED": { en: "KEY RECOVERED", ru: "НАЙДЕН ПАРОЛЬ" },
   "dos.sealed": { en: "connect · WARDEN PASS", ru: "подключиться · WARDEN PASS" },
 
-  /* ---- archive ---- */
+  /* ---- 档案 ---- */
   "arc.title": { en: "PERSONNEL ARCHIVE", ru: "КАДРОВЫЙ АРХИВ" },
   "arc.scanBtn": { en: "SCAN AND RESTORE ACCESS", ru: "ПРОСКАНИРОВАТЬ И ВОССТАНОВИТЬ ДОСТУП" },
   "arc.scanning": { en: "scanning spools …", ru: "сканирование катушек …" },

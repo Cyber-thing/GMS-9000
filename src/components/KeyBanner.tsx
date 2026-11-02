@@ -6,8 +6,8 @@ import { useGame } from "../game/state";
 import { ALL_NODES } from "../data/regions";
 
 /**
- * Recovered WARDEN PASS keys, pinned at the bottom of the screen above every
- * modal — the operator needs them while the password prompt is open.
+ * 已恢复的 WARDEN PASS 密钥，固定在屏幕底部并位于所有
+ * 模态框之上，因为输入密码时操作员需要用到它们。
  */
 export default function KeyBanner() {
   const { t } = useT();

@@ -4,7 +4,7 @@
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-pixel: "VT323", "IBM Plex Mono", monospace;
 
-  /* graphite page */
+  /* 石墨色页面 */
   --color-ink: #0b0d09;
   --color-soot: #0e110c;
   --color-panel: #12150e;
@@ -12,17 +12,17 @@
   --color-header: #1a1f14;
   --color-well: #0a0c08;
 
-  /* borders */
+  /* 边框 */
   --color-line: #262c1f;
   --color-line2: #39422d;
   --color-line3: #4d5940;
 
-  /* text */
+  /* 文本 */
   --color-fog: #bcc4ae;
   --color-dim: #77806b;
   --color-faint: #4c5545;
 
-  /* muted phosphor palette */
+  /* 柔和的荧光色调色板 */
   --color-phos: #8fb56d;
   --color-phosdim: #5f7a4b;
   --color-phosbrite: #b3d98d;
@@ -51,7 +51,7 @@ body {
   overflow: hidden;
 }
 
-/* ---------- scrollbars: square, recessed ---------- */
+/* ---------- 滚动条：方形、内凹 ---------- */
 * {
   scrollbar-width: thin;
   scrollbar-color: #333b28 transparent;
@@ -80,7 +80,7 @@ body {
   color: #e8eedd;
 }
 
-/* ---------- keyframes ---------- */
+/* ---------- 关键帧 ---------- */
 @keyframes blink {
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
@@ -120,7 +120,7 @@ body {
   animation: netsweep 13s linear infinite;
 }
 
-/* ---------- CRT overlay ---------- */
+/* ---------- CRT 叠加层 ---------- */
 .crt-scanlines {
   background: repeating-linear-gradient(
     to bottom,
@@ -142,7 +142,7 @@ body {
   background: linear-gradient(180deg, rgba(143, 181, 109, 0.02), rgba(0, 0, 0, 0.03));
 }
 
-/* ---------- ascii progress blocks ---------- */
+/* ---------- ASCII 进度块 ---------- */
 .blocksbar {
   letter-spacing: 1px;
   font-family: var(--font-pixel);
@@ -150,7 +150,7 @@ body {
   line-height: 1;
 }
 
-/* text helpers */
+/* 文本辅助样式 */
 .txt-glow-green { text-shadow: 0 0 6px rgba(143, 181, 109, 0.45); }
 .txt-glow-amber { text-shadow: 0 0 6px rgba(207, 160, 75, 0.4); }
 
@@ -163,7 +163,7 @@ input[type="text"] {
   outline: none;
 }
 
-/* ---------- tutorial ---------- */
+/* ---------- 教程 ---------- */
 @keyframes tutpulse {
   0%, 100% { box-shadow: 0 0 0 1px #cfa04b, 0 0 14px rgba(207,160,75,0.35); }
   50%      { box-shadow: 0 0 0 2px #e8c478, 0 0 24px rgba(207,160,75,0.6); }
@@ -185,12 +185,12 @@ input[type="text"] {
 }
 .anim-call-glow { animation: callglow 1.6s ease-in-out infinite; }
 
-/* ---------- tutorial gating ---------- */
-/* NOTE: a CSS filter/opacity on a parent applies to its whole subtree and a
-   child cannot opt back out. So containers that hold a spotlight target are
-   never gated as a whole — their individual children get .tut-dim instead. */
+/* ---------- 教程门控 ---------- */
+/* 注意：父元素上的 CSS filter/opacity 会作用于其整个子树，
+   子元素无法单独退出。因此包含聚光目标的容器
+   永远不会整体被门控，而是改为给其各个子元素加 .tut-dim。 */
 
-/* a whole region that holds no target */
+/* 不含任何目标的整个区域 */
 .tut-gated {
   opacity: 0.2;
   pointer-events: none;
@@ -198,14 +198,14 @@ input[type="text"] {
   transition: opacity 200ms ease;
 }
 
-/* a single element inside an otherwise live region */
+/* 在其余可用区域中的单个元素 */
 .tut-dim {
   opacity: 0.16;
   pointer-events: none;
   transition: opacity 200ms ease;
 }
 
-/* the spotlighted element */
+/* 被聚光的元素 */
 .tut-ring {
   position: relative;
   z-index: 60;

@@ -1,14 +1,14 @@
 /* ==================================================================
-   NETWORK ROUTING — relay mini-game.
-   A grid of pipe segments: rotate them until an unbroken line runs
-   from the inlet to the outlet, then press RUN to push the signal.
-   Only tier 1 is wired up; the table is ready for harder boards.
+   NETWORK ROUTING：中继小游戏。
+   一格格管道段：旋转它们，直到有一条不间断的线路
+   从入口通到出口，然后按 RUN 推送信号。
+   目前只接通了等级 1；表格已为更难的棋盘做好准备。
    ================================================================== */
 
 export interface RoutingTier {
   cols: number;
   rows: number;
-  /** extra decoy cells sprinkled off the solution path */
+  /** 散布在解路径之外的额外诱饵格子 */
   decoys: number;
   failRep: number;
 }
@@ -21,7 +21,7 @@ export const usesRouting = (type: string, warden: number) =>
   type === "RELAY" && ROUTING_TIERS[warden] !== undefined;
 
 /* ------------------------------------------------------------------ */
-/* a cell is a set of open sides: 0=N 1=E 2=S 3=W                      */
+/* 一个格子就是一组开放的边：0=N 1=E 2=S 3=W                      */
 /* ------------------------------------------------------------------ */
 
 export type Side = 0 | 1 | 2 | 3;
@@ -30,11 +30,11 @@ export interface Cell {
   id: string;
   col: number;
   row: number;
-  /** open sides in the cell's *current* orientation */
+  /** 按格子*当前*朝向得到的开放边 */
   sides: Side[];
-  /** how many quarter-turns the player has applied */
+  /** 玩家已应用的四分之一转数 */
   turns: number;
-  /** on the intended solution path (debug / hinting) */
+  /** 位于预期解路径上（调试 / 提示用） */
   onPath: boolean;
   kind: "pipe" | "inlet" | "outlet";
   fixed: boolean;
@@ -57,7 +57,7 @@ const key = (c: number, r: number) => `${c}_${r}`;
 const OPP: Record<Side, Side> = { 0: 2, 1: 3, 2: 0, 3: 1 };
 const DELTA: Record<Side, [number, number]> = { 0: [0, -1], 1: [1, 0], 2: [0, 1], 3: [-1, 0] };
 
-/** carves a random walk from the left edge to the right edge */
+/** 从左边缘到右边缘开辟一条随机游走路径 */
 function carvePath(cols: number, rows: number): { c: number; r: number }[] {
   const startRow = ri(0, rows - 1);
   const path = [{ c: 0, r: startRow }];
@@ -66,7 +66,7 @@ function carvePath(cols: number, rows: number): { c: number; r: number }[] {
   let guard = 0;
 
   while (cur.c < cols - 1 && guard++ < 400) {
-    /* bias strongly to the right so the run always terminates */
+    /* 强烈偏向右侧，确保运行总会终止 */
     const opts: { c: number; r: number }[] = [];
     if (cur.c + 1 < cols) opts.push({ c: cur.c + 1, r: cur.r }, { c: cur.c + 1, r: cur.r });
     if (cur.r > 0) opts.push({ c: cur.c, r: cur.r - 1 });
@@ -77,7 +77,7 @@ function carvePath(cols: number, rows: number): { c: number; r: number }[] {
     seen.add(key(cur.c, cur.r));
     path.push(cur);
   }
-  /* make sure we really touched the right edge */
+  /* 确保确实触及右边缘 */
   while (cur.c < cols - 1) {
     cur = { c: cur.c + 1, r: cur.r };
     if (seen.has(key(cur.c, cur.r))) break;
@@ -92,7 +92,7 @@ export function generateRouting(tier: RoutingTier): RoutingBoard {
   const path = carvePath(cols, rows);
   const onPath = new Map<string, Side[]>();
 
-  /* every step opens the side it came from and the side it leaves by */
+  /* 每一步都会打开来向的那一侧和去向的那一侧 */
   path.forEach((p, i) => {
     const sides: Side[] = [];
     const prev = path[i - 1];
@@ -104,8 +104,8 @@ export function generateRouting(tier: RoutingTier): RoutingBoard {
     };
     if (prev) sides.push(OPP[link(p, prev)] === link(p, prev) ? link(p, prev) : link(p, prev));
     if (next) sides.push(link(p, next));
-    if (i === 0) sides.push(3);                       // inlet faces the left edge
-    if (i === path.length - 1) sides.push(1);         // outlet faces the right edge
+    if (i === 0) sides.push(3);                       // 入口朝向左边缘
+    if (i === path.length - 1) sides.push(1);         // 出口朝向右边缘
     onPath.set(key(p.c, p.r), [...new Set(sides)].sort() as Side[]);
   });
 
@@ -120,7 +120,7 @@ export function generateRouting(tier: RoutingTier): RoutingBoard {
       const isIn = c === first.c && r === first.r;
       const isOut = c === last.c && r === last.r;
       if (sol) {
-        /* scramble everything except the two terminals */
+        /* 打乱除两个端点之外的所有格子 */
         const turns = isIn || isOut ? 0 : ri(1, 3);
         cells.push({
           id: k, col: c, row: r,
@@ -133,7 +133,7 @@ export function generateRouting(tier: RoutingTier): RoutingBoard {
     }
   }
 
-  /* decoy segments on empty tiles — they can never complete a circuit */
+  /* 空格上的诱饵段：它们永远无法构成回路 */
   const empty: { c: number; r: number }[] = [];
   for (let r = 0; r < rows; r++)
     for (let c = 0; c < cols; c++) if (!onPath.has(key(c, r))) empty.push({ c, r });
@@ -149,12 +149,12 @@ export function generateRouting(tier: RoutingTier): RoutingBoard {
   return { cols, rows, cells, inlet: key(first.c, first.r), outlet: key(last.c, last.r) };
 }
 
-/** sides a cell currently presents, after the player's rotations */
+/** 玩家旋转之后，格子当前呈现的各边 */
 export const liveSides = (cell: Cell): Side[] => rotateSides(cell.sides, cell.turns);
 
 /**
- * Walks the circuit from the inlet. Returns the connected cell ids and
- * whether the signal reaches the outlet.
+ * 从入口开始遍历回路。返回相连的格子 id，
+ * 以及信号是否到达出口。
  */
 export function traceCircuit(board: RoutingBoard): { lit: Set<string>; solved: boolean } {
   const at = new Map(board.cells.map((c) => [c.id, c]));
@@ -171,7 +171,7 @@ export function traceCircuit(board: RoutingBoard): { lit: Set<string>; solved: b
       const nk = key(cell.col + dc, cell.row + dr);
       const nb = at.get(nk);
       if (!nb || lit.has(nk)) return;
-      /* the neighbour must open the facing side back at us */
+      /* 相邻格子必须在朝向我们的一侧也开放 */
       if (!liveSides(nb).includes(OPP[side])) return;
       lit.add(nk);
       queue.push(nk);
@@ -180,7 +180,7 @@ export function traceCircuit(board: RoutingBoard): { lit: Set<string>; solved: b
   return { lit, solved: lit.has(board.outlet) };
 }
 
-/** ordered inlet → outlet run, used to animate the signal */
+/** 按入口 → 出口排序的路径，用于信号动画 */
 export function signalPath(board: RoutingBoard): string[] {
   const at = new Map(board.cells.map((c) => [c.id, c]));
   const prev = new Map<string, string>();

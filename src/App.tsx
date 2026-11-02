@@ -44,7 +44,7 @@ import { tierOf, usesBreach } from "./game/breach";
 import { usesVault } from "./game/vault";
 import type { NodeState, NotifKind, TabId } from "./game/types";
 
-/* every game notification is narrated by the system console */
+/* 每条游戏通知都由系统控制台播报 */
 const NOTIF_TONE: Record<NotifKind, TermLine["tone"]> = {
   "NEW CODEX ENTRY": "ok",
   "CODEX UPDATED": "warn",
@@ -90,8 +90,8 @@ export default function App() {
   } = game;
   const tut = useTut();
   const tutFire = tut.fire;
-  /* A region is gated only when it holds none of the current targets;
-     regions that do hold one stay live and dim their own children. */
+  /* 仅当某个区域不含任何当前目标时才会被锁定；
+     含有目标的区域保持可用，并仅将其自身的子元素调暗。 */
   const gate = (...own: TutHighlight[]) =>
     tut.gating && (tut.step?.lockAll || !own.some((h) => tut.isHl(h))) ? "tut-gated" : "";
 
@@ -107,7 +107,7 @@ export default function App() {
     []
   );
 
-  /* ---------- session ---------- */
+  /* ---------- 会话 ---------- */
   const [splash, setSplash] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [operator, setOperator] = useState(() => store.get("operator", "UNKNOWN"));
@@ -115,7 +115,7 @@ export default function App() {
   const operatorRef = useRef(operator);
   operatorRef.current = operator;
 
-  /* ---------- navigation ---------- */
+  /* ---------- 导航 ---------- */
   const [view, setView] = useState<string>("world");
   const [trace, setTrace] = useState<RegionDef | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export default function App() {
   const [tab, setTab] = useState<TabId>("CHAT");
   const [askLogout, setAskLogout] = useState(false);
 
-  /* resizable three-column layout (desktop only) */
+  /* 可调整大小的三栏布局（仅桌面端） */
   const { hostRef, left: colLeft, right: colRight, dragging, startDrag, resetCol, nudge } = useColumns();
 
   const inRegion = view !== "world";
@@ -136,20 +136,20 @@ export default function App() {
   const viewRef = useRef(view);
   viewRef.current = view;
 
-  /* ---------- hacking animation ---------- */
+  /* ---------- 入侵动画 ---------- */
   const [hackingId, setHackingId] = useState<string | null>(null);
   const [hackPct, setHackPct] = useState(0);
   const hackIv = useRef<number | null>(null);
-  /** node currently played through the breach mini-game */
+  /** 当前正在通过入侵小游戏进行的节点 */
   const [breachId, setBreachId] = useState<string | null>(null);
-  /** data server whose file system is open */
+  /** 当前已打开文件系统的数据服务器 */
   const [vaultId, setVaultId] = useState<string | null>(null);
   const [marketOpen, setMarketOpen] = useState(false);
   const [routingId, setRoutingId] = useState<string | null>(null);
   const [passId, setPassId] = useState<string | null>(null);
   const [archiveId, setArchiveId] = useState<string | null>(null);
 
-  /* ---------- console output ---------- */
+  /* ---------- 控制台输出 ---------- */
   const [termLines, setTermLines] = useState<TermLine[]>([]);
   const [events, setEvents] = useState<NetEvent[]>([]);
   const [termOpen, setTermOpen] = useState(false);
@@ -176,7 +176,7 @@ export default function App() {
   useEffect(() => void store.set("operator", operator), [operator]);
   useEffect(() => void store.set("fx", fx), [fx]);
 
-  /* node states for the map */
+  /* 地图上的节点状态 */
   const nodeStates = useMemo(() => {
     const out: Record<string, NodeState> = {};
     ALL_NODES.forEach((n) => (out[n.id] = nodeState(n.id)));
@@ -199,7 +199,7 @@ export default function App() {
     };
   }, []);
 
-  /* ---------- boot ---------- */
+  /* ---------- 启动 ---------- */
   useEffect(() => {
     if (!loggedIn) return;
     const op = operatorRef.current;
@@ -217,7 +217,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedIn]);
 
-  /* ---------- chat ---------- */
+  /* ---------- 聊天 ---------- */
   const [chat, setChat] = useState<Record<ChannelId, ChatMsg[]>>(() => {
     const seed: Record<ChannelId, ChatMsg[]> = { GLOBAL: [], OPERATORS: [], MARKET: [], CORPORATE: [], PRIVATE: [] };
     SEED_HISTORY[langRef.current].forEach(([ch, nick, text]) =>
@@ -298,7 +298,7 @@ export default function App() {
     [print, pushChat, later, t, pools]
   );
 
-  /* ---------- navigation actions ---------- */
+  /* ---------- 导航操作 ---------- */
   const enterRegion = useCallback(
     (r: RegionDef) => {
       if (trace) return;
@@ -380,8 +380,8 @@ export default function App() {
     [nodes, print, t, nodeState, tutFire]
   );
 
-  /* ---------- GENIUS intrusion ---------- */
-  /** shared payoff: applied by both the scripted hack and the mini-game */
+  /* ---------- GENIUS 入侵 ---------- */
+  /** 共享收益：脚本化入侵和小游戏都会应用 */
   const completeHack = useCallback(
     (id: string) => {
       const n = ALL_NODES.find((x) => x.id === id);
@@ -420,7 +420,7 @@ export default function App() {
         return;
       }
 
-      /* ACCESS hosts on a supported WARDEN tier are played by hand */
+      /* 处于受支持 WARDEN 等级的 ACCESS 主机需手动操作 */
       if (usesBreach(id)) {
         setBreachId(id);
         tutFire("breach:start");
@@ -428,7 +428,7 @@ export default function App() {
         return;
       }
 
-      /* RELAY hosts run the routing puzzle */
+      /* RELAY 主机运行路由谜题 */
       const metaR = NODE_META[id];
       if (usesRouting(n.type, metaR.warden)) {
         setRoutingId(id);
@@ -436,7 +436,7 @@ export default function App() {
         return;
       }
 
-      /* WARDEN PASS sealed hosts want a literal key */
+      /* WARDEN PASS 封锁的主机需要输入字面密钥 */
       if (metaR.password && g.nodeStates[id] !== "COMPROMISED") {
         setPassId(id);
         return;
@@ -465,7 +465,7 @@ export default function App() {
     [hackingId, breachId, canHack, completeHack, print, later, t, tutFire]
   );
 
-  /* ---------- breach mini-game outcomes ---------- */
+  /* ---------- 入侵小游戏结果 ---------- */
   const breachWin = useCallback(() => {
     const id = breachId;
     setBreachId(null);
@@ -500,7 +500,7 @@ export default function App() {
       download(fileId);
       tutFire(`file:${fileId}` as never);
 
-      /* Ghost has an opinion about the memo that is not his target */
+      /* Ghost 对那份并非他目标的备忘录有自己的看法 */
       if (fileId === "f_icx_memo" && tut.phase === "talking") {
         const gotTarget = g.files.includes("f_icx_payroll");
         const l = gotTarget ? MEMO_ASIDE.after : MEMO_ASIDE.before;
@@ -512,7 +512,7 @@ export default function App() {
     [download, pushEvent, t, lang, tutFire, tut, g.files]
   );
 
-  /* ---------- data vault ---------- */
+  /* ---------- 数据保险库 ---------- */
   const openVault = useCallback(
     (id: string) => {
       if (!usesVault(id)) return;
@@ -529,7 +529,7 @@ export default function App() {
     print(t("dv.logOff"), "dim");
   }, [print, t]);
 
-  /* ---------- tutorial: watch contract milestones ---------- */
+  /* ---------- 教程：监视合同里程碑 ---------- */
   const ctState = g.contracts["ct_payroll"]?.state;
   useEffect(() => {
     if (ctState === "ACCEPTED" || ctState === "TARGET ACCESSED" || ctState === "DATA ACQUIRED")
@@ -537,8 +537,8 @@ export default function App() {
     if (ctState === "DELIVERED" || ctState === "COMPLETED") tutFire("deliver:ct_payroll");
   }, [ctState, tutFire]);
 
-  /* A reloaded session can be further along than the saved step index.
-     Walk the milestones in order and seek the script past the finished ones. */
+  /* 重新加载的会话可能比保存的步骤索引走得更远。
+     按顺序遍历里程碑，并把脚本推进到已完成的步骤之后。 */
   const tutSeek = tut.seekTo;
   const repaired = useRef(false);
   useEffect(() => {
@@ -553,8 +553,8 @@ export default function App() {
     else if (done(ct)) tutSeek("world");
   }, [tut.phase, g.contracts, g.files, g.nodeStates, tutSeek]);
 
-  /* a beat whose goal is already met must not stall the call: these states
-     can be true before the script asks for them (or after a reload) */
+  /* 目标已达成的节拍不能卡住通话：这些状态
+     可能在脚本请求它们之前（或重新加载之后）就已成立 */
   const tutSatisfy = tut.satisfy;
   const tutStepId = tut.step?.id;
   useEffect(() => {
@@ -567,7 +567,7 @@ export default function App() {
     if (tutStepId === "contacts" && tab === "CONTACTS") tutSatisfy("tab:CONTACTS");
   }, [tutStepId, g.files, g.nodeStates, selectedNode, inRegion, tab, tutSatisfy]);
 
-  /* ---------- routing puzzle ---------- */
+  /* ---------- 路由谜题 ---------- */
   const routingWin = useCallback(() => {
     const id = routingId;
     setRoutingId(null);
@@ -585,16 +585,16 @@ export default function App() {
     const n = ALL_NODES.find((x) => x.id === id);
     if (n) print(t("t.wpOk", { code: n.code }), "ok");
     completeHack(id);
-    /* the archive opens straight after the seal falls */
+    /* 封印解除后档案立即打开 */
     later(() => setArchiveId(id), 400);
   }, [passId, completeHack, print, t, later]);
 
-  /* ---------- archive ---------- */
+  /* ---------- 档案 ---------- */
   const archiveTake = useCallback(() => {
     download("f_termlist");
     print(t("arc.logTake"), "warn");
     pushEvent(t("arc.logTake"), "bad");
-    /* sable notices immediately */
+    /* sable 立刻察觉 */
     later(() => tut.playCall("sable1"), 1400);
   }, [download, print, pushEvent, later, tut]);
 
@@ -602,7 +602,7 @@ export default function App() {
     const id = archiveId;
     setArchiveId(null);
     if (!id) return;
-    /* restoring the access is the job itself */
+    /* 恢复访问权限本身就是任务 */
     if (!g.files.includes("f_access_restored")) {
       download("f_access_restored");
       const n = ALL_NODES.find((x) => x.id === id);
@@ -610,7 +610,7 @@ export default function App() {
     }
   }, [archiveId, g.files, download, print, t]);
 
-  /* ---------- sabotage ---------- */
+  /* ---------- 破坏 ---------- */
   const runSabotage = useCallback(
     (id: string) => {
       const n = ALL_NODES.find((x) => x.id === id);
@@ -621,7 +621,7 @@ export default function App() {
     [sabotage, print, pushEvent, t]
   );
 
-  /* ---------- sable: the call ends, the contact opens ---------- */
+  /* ---------- sable：通话结束，联系人开启 ---------- */
   const callId = tut.call?.script.id ?? null;
   const prevCall = useRef<string | null>(null);
   useEffect(() => {
@@ -634,9 +634,9 @@ export default function App() {
     prevCall.current = callId;
   }, [callId, sableArrives, markTab]);
 
-  /* ---------- tutorial: exchange listing, then the first real job ---------- */
+  /* ---------- 教程：交易所列表，然后是第一个真正的任务 ---------- */
   const [exchange, setExchange] = useState(false);
-  /** bumping this tells the contacts page to return to the thread list */
+  /** 递增此值会通知联系人页面返回线程列表 */
   const [contactsHome, setContactsHome] = useState(0);
   const tutStep = tut.step?.id;
   useEffect(() => {
@@ -646,18 +646,18 @@ export default function App() {
     }
   }, [tut.phase, tutStep, g.flags.listed, setFlag]);
 
-  /* A save made before the exchange existed has no `listed` flag; without it
-     operator_17 would never write. Grant it once the call is behind us. */
+  /* 在交易所出现之前的存档没有 `listed` 标志；没有它，
+     operator_17 就永远不会写信。通话结束后一次性授予该标志。 */
   useEffect(() => {
     if (tut.phase === "over" && tutorialSeen() && !g.flags.listed) setFlag("listed");
   }, [tut.phase, g.flags.listed, setFlag]);
 
-  /* operator_17 writes once the listing animation has played out */
+  /* 列表动画播放完毕后，operator_17 才会写信 */
   useEffect(() => {
     if (tut.phase !== "over" || !g.flags.listed || exchange || g.flags.arc_intro) return;
     const h = window.setTimeout(() => {
       openArchiveJob();
-      /* drop the operator straight onto the thread list, where it is waiting */
+      /* 直接把操作员带到正在等待的线程列表 */
       setTab("CONTACTS");
       markTab("CONTACTS");
       setContactsHome((n) => n + 1);
@@ -665,7 +665,7 @@ export default function App() {
     timeouts.current.push(h);
   }, [tut.phase, g.flags.listed, exchange, g.flags.arc_intro, openArchiveJob, markTab]);
 
-  /* the archive job closing is a beat in itself: show the operator the list */
+  /* 档案任务结束本身就是一个节拍：向操作员展示列表 */
   const arcState = g.contracts["ct_archive"]?.state;
   const arcShown = useRef(false);
   useEffect(() => {
@@ -679,9 +679,9 @@ export default function App() {
     timeouts.current.push(h);
   }, [arcState, markTab]);
 
-  /* Two unrelated petitioners surface after the archive job, on their own
-     schedules — m4rla first (her target is in the opening sector), Freddy
-     once the operator has the standing to reach GULF. */
+  /* 档案任务之后会有两位无关的请求者按各自的
+     时间表出现：先是 m4rla（她的目标在起始区域），
+     然后是 Freddy，待操作员有资格进入 GULF 时出现。 */
   const archiveDone = g.contracts["ct_archive"]?.state === "COMPLETED";
 
   useEffect(() => {
@@ -697,7 +697,7 @@ export default function App() {
 
   useEffect(() => {
     if (!archiveDone || g.flags.fred_intro) return;
-    if (g.rep < 45) return;   // his job lives in GULF
+    if (g.rep < 45) return;   // 他的任务位于 GULF
     const h = window.setTimeout(() => {
       openFreddy();
       setTab("CONTACTS");
@@ -707,7 +707,7 @@ export default function App() {
     timeouts.current.push(h);
   }, [archiveDone, g.flags.fred_intro, g.rep, openFreddy, markTab]);
 
-  /* recovery feedback */
+  /* 恢复反馈 */
   const wasRecovering = useRef(false);
   useEffect(() => {
     if (g.recovering && !wasRecovering.current) print(t("hk.recovering"), "warn");
@@ -718,7 +718,7 @@ export default function App() {
     wasRecovering.current = g.recovering;
   }, [g.recovering, print, pushEvent, t]);
 
-  /* ---------- ambient flavour ---------- */
+  /* ---------- 氛围点缀 ---------- */
   useEffect(() => {
     if (!loggedIn) return;
     let alive = true;
@@ -750,7 +750,7 @@ export default function App() {
     return () => window.removeEventListener("keydown", h);
   }, []);
 
-  /* ---------- notifications are narrated by the console ---------- */
+  /* ---------- 通知由控制台播报 ---------- */
   const lastNotif = useRef(0);
   useEffect(() => {
     if (!notifs.length) return;
@@ -760,7 +760,7 @@ export default function App() {
     fresh.forEach((n) => print(n.text, NOTIF_TONE[n.kind], t(`nf.${n.kind}`)));
   }, [notifs, print, t]);
 
-  /* ---------- disconnect: back to the login terminal ---------- */
+  /* ---------- 断开连接：返回登录终端 ---------- */
   const logout = useCallback(() => {
     const op = operatorRef.current;
     timeouts.current.forEach(clearTimeout);
@@ -867,7 +867,7 @@ export default function App() {
         ref={hostRef}
         className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden p-2 lg:flex-row lg:gap-0"
       >
-        {/* narrow-screen pane switcher */}
+        {/* 窄屏面板切换器 */}
         <div className="order-1 flex shrink-0 gap-px border border-line bg-soot lg:hidden">
           {([["map", inRegion ? t("pane.region") : t("pane.world")], ["data", t("pane.data")]] as const).map(
             ([id, label]) => (
@@ -887,7 +887,7 @@ export default function App() {
           )}
         </div>
 
-        {/* left column */}
+        {/* 左栏 */}
         <aside
           style={{ ["--col" as string]: `${colLeft}px` }}
           className={cn(
@@ -935,7 +935,7 @@ export default function App() {
           onNudge={nudge}
         />
 
-        {/* map */}
+        {/* 地图 */}
         <section
           className={cn(
             "order-2 w-full flex-col gap-1.5 lg:order-3 lg:mx-0 lg:flex lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1",
@@ -970,7 +970,7 @@ export default function App() {
           )}
           </div>
 
-          {/* map-column footer — the market door lives here, never over the canvas */}
+          {/* 地图栏页脚：黑市入口在这里，绝不覆盖在画布上 */}
           <div className="flex h-[26px] shrink-0 items-center justify-end gap-2 border border-line bg-soot px-2">
             <span className="mr-auto hidden truncate text-[7.5px] uppercase tracking-[0.18em] text-faint sm:inline">
               {inRegion ? t("map.panHint") : t("bm.footer")}
@@ -1001,7 +1001,7 @@ export default function App() {
           onNudge={nudge}
         />
 
-        {/* right column: tabbed game panel */}
+        {/* 右栏：标签式游戏面板 */}
         <aside
           style={{ ["--col" as string]: `${colRight}px` }}
           className={cn(

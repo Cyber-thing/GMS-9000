@@ -58,7 +58,7 @@ export default function SidePanel({
         ) : undefined
       }
     >
-      {/* ---- main tab bar ---- */}
+      {/* ---- 主标签栏 ---- */}
       <div className="flex shrink-0 border-b border-line2 bg-soot">
         {TABS.map((id) => {
           const active = id === tab;
@@ -86,7 +86,7 @@ export default function SidePanel({
         })}
       </div>
 
-      {/* ---- page ---- */}
+      {/* ---- 页面 ---- */}
       {tab === "CHAT" && (
         <ChatPage
           messages={messages}

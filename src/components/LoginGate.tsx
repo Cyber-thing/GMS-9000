@@ -26,7 +26,7 @@ export default function LoginGate({
   const [armed, setArmed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /* the arm state disarms itself so a stray click can never wipe a save */
+  /* 确认状态会自行解除，因此误点永远不会清除存档 */
   useEffect(() => {
     if (!armed) return;
     const h = setTimeout(() => setArmed(false), 5000);
@@ -70,7 +70,7 @@ export default function LoginGate({
 
       <div className="anim-msgin relative my-auto w-full max-w-[520px]">
         <div className="border border-line2 bg-panel shadow-[0_0_80px_rgba(143,181,109,0.06),inset_0_0_0_1px_rgba(0,0,0,0.6)]">
-          {/* header */}
+          {/* 页头 */}
           <div className="flex h-[30px] items-center gap-2 border-b border-line2 bg-header px-2.5">
             <StatusDot color="#8fb56d" pulse />
             <span className="truncate text-[9px] font-bold uppercase tracking-[0.26em] text-dim">
@@ -81,7 +81,7 @@ export default function LoginGate({
           </div>
 
           <div className="px-5 py-4 sm:px-7 sm:py-5">
-            {/* logo */}
+            {/* 徽标 */}
             <div className="flex items-center gap-3">
               <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center border border-phosdim bg-phos/10 text-phosbrite">
                 <ScanEye size={24} strokeWidth={1.6} />
@@ -96,7 +96,7 @@ export default function LoginGate({
               </div>
             </div>
 
-            {/* boot log */}
+            {/* 启动日志 */}
             <div className="mt-4 min-h-[86px] border-y border-line py-2">
               {BOOT_KEYS.slice(0, booted).map((k, i) => (
                 <div key={k} className="anim-msgin text-[10px] leading-[1.7] text-dim">
@@ -116,7 +116,7 @@ export default function LoginGate({
                   booted < BOOT_KEYS.length && "pointer-events-none opacity-30"
                 )}
               >
-                {/* language select */}
+                {/* 语言选择 */}
                 <div className="mt-3.5">
                   <label className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.26em] text-faint">
                     <Globe2 size={10} /> {t("login.lang")}
@@ -161,7 +161,7 @@ export default function LoginGate({
                   </div>
                 </div>
 
-                {/* handle */}
+                {/* 用户名 */}
                 <div className="mt-3.5">
                   <label className="block text-[9px] uppercase tracking-[0.26em] text-faint">
                     {t("login.handle")}
@@ -215,7 +215,7 @@ export default function LoginGate({
               </div>
             )}
 
-            {/* warning */}
+            {/* 警告 */}
             <div className="mt-4 flex items-start gap-2 border border-amberdim/40 bg-amber/5 px-2.5 py-2">
               <ShieldAlert size={12} className="mt-[1px] shrink-0 text-amber" />
               <p className="text-[8.5px] uppercase leading-relaxed tracking-[0.1em] text-amberdim">
@@ -235,7 +235,7 @@ export default function LoginGate({
           {t("login.foot")}
         </p>
 
-        {/* ---- cold boot / wipe save ---- */}
+        {/* ---- 冷启动 / 清除存档 ---- */}
         <div className="mt-2 border border-line bg-panel/70">
           {!armed ? (
             <button

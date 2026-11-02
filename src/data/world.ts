@@ -6,7 +6,7 @@ export interface RegionDef {
   desc: string;
   lon: number;
   lat: number;
-  /* land bitmap slice bounding box [colStart,rowStart,colEnd,rowEnd] inclusive */
+  /* 陆地位图切片边界框 [colStart,rowStart,colEnd,rowEnd]，含边界 */
   box: { c0: number; r0: number; c1: number; r1: number };
 }
 
@@ -33,7 +33,7 @@ export const REGIONS: RegionDef[] = [
   },
 ];
 
-/* decorative unreachable points on the world net */
+/* 世界网络上装饰性的不可达点 */
 export const DEAD_POINTS = [
   { code: "EU-LINK", name: "EUROPEAN TRUNK", lon: 12, lat: 50, note: "transatlantic trunk severed in this build" },
   { code: "EASTNET", name: "EASTERN NET", lon: 96, lat: 38, note: "no route announced from this terminal" },
@@ -43,50 +43,50 @@ export const DEAD_POINTS = [
 export const UPLINK = { code: "SAT-0", name: "SATELLITE UPLINK", lon: -24, lat: 18 };
 
 /* ------------------------------------------------------------------ */
-/* coarse land bitmap: 72 cols x 36 rows, 5-degree cells.              */
-/* runs of land [row, colStart, colEnd]                                */
+/* 粗糙的陆地位图：72 列 x 36 行，每格 5 度。              */
+/* 陆地段 [row, colStart, colEnd]                                */
 /* ------------------------------------------------------------------ */
 
 export const GRID_COLS = 72;
 export const GRID_ROWS = 36;
 
 const RUNS: [number, number, number][] = [
-  /* 72 x 36 cells, 5 degrees each.  col = (lon+180)/5, row = (90-lat)/5 */
+  /* 72 x 36 个格子，每格 5 度。col = (lon+180)/5，row = (90-lat)/5 */
 
-  /* --- arctic rim + greenland --- */
+  /* --- 北极边缘 + 格陵兰 --- */
   [2, 27, 31],
   [3, 10, 22], [3, 26, 32], [3, 44, 64],
-  /* --- canada / alaska / siberia / scandinavia --- */
+  /* --- 加拿大 / 阿拉斯加 / 西伯利亚 / 斯堪的纳维亚 --- */
   [4, 8, 24], [4, 26, 32], [4, 38, 41], [4, 44, 66],
   [5, 4, 25], [5, 27, 31], [5, 37, 42], [5, 44, 66],
   [6, 4, 25], [6, 28, 30], [6, 34, 36], [6, 37, 43], [6, 43, 67],
   [7, 5, 24], [7, 34, 36], [7, 37, 43], [7, 43, 67],
-  /* --- usa / europe / asia --- */
+  /* --- 美国 / 欧洲 / 亚洲 --- */
   [8, 7, 23], [8, 34, 36], [8, 37, 44], [8, 44, 67],
   [9, 9, 23], [9, 34, 44], [9, 44, 66],
   [10, 11, 23], [10, 34, 47], [10, 48, 65], [10, 67, 68],
-  /* --- mediterranean sits here: no land between col 23 and col 46 --- */
+  /* --- 地中海位于此处：第 23 列到第 46 列之间没有陆地 --- */
   [11, 11, 22], [11, 46, 60], [11, 67, 68],
-  /* --- mexico / north africa / arabia / china --- */
+  /* --- 墨西哥 / 北非 / 阿拉伯 / 中国 --- */
   [12, 12, 21], [12, 44, 48], [12, 50, 60],
   [13, 13, 20], [13, 33, 47], [13, 50, 53], [13, 55, 58],
-  /* (africa's north coast starts here; the row above is the mediterranean) */
-  /* --- central america / sahel / india / indochina --- */
+  /* （非洲北部海岸从这里开始；上一行是地中海） */
+  /* --- 中美洲 / 萨赫勒 / 印度 / 中南半岛 --- */
   [14, 14, 19], [14, 33, 47], [14, 51, 53], [14, 55, 58],
   [15, 16, 19], [15, 33, 47], [15, 51, 53], [15, 56, 59],
   [16, 17, 20], [16, 33, 46], [16, 52, 53], [16, 57, 62],
-  /* --- colombia / equatorial africa / indonesia --- */
+  /* --- 哥伦比亚 / 赤道非洲 / 印度尼西亚 --- */
   [17, 19, 22], [17, 34, 46], [17, 58, 63],
   [18, 19, 24], [18, 34, 46], [18, 59, 63],
   [19, 19, 26], [19, 35, 46], [19, 60, 64],
-  /* --- brazil / southern africa / australia --- */
+  /* --- 巴西 / 南部非洲 / 澳大利亚 --- */
   [20, 20, 27], [20, 35, 45],
-  [21, 20, 28], [21, 35, 44], [21, 59, 67],  /* australia begins */
+  [21, 20, 28], [21, 35, 44], [21, 59, 67],  /* 澳大利亚起点 */
   [22, 21, 28], [22, 35, 44], [22, 59, 67],
   [23, 21, 28], [23, 35, 43], [23, 59, 66],
   [24, 22, 27], [24, 36, 42], [24, 60, 65],
   [25, 22, 26], [25, 37, 41], [25, 61, 64], [25, 69, 70],
-  /* --- southern cone --- */
+  /* --- 南锥体 --- */
   [26, 23, 25], [26, 69, 70],
   [27, 23, 25],
   [28, 23, 24],
@@ -113,7 +113,7 @@ export function worldGrid(): LandGrid {
   return FULL;
 }
 
-/* slice for a region, padded with margin */
+/* 区域切片，带边距填充 */
 export function regionGrid(box: RegionDef["box"], margin = 1): LandGrid {
   const c0 = Math.max(0, box.c0 - margin);
   const r0 = Math.max(0, box.r0 - margin);
@@ -128,10 +128,10 @@ export function regionGrid(box: RegionDef["box"], margin = 1): LandGrid {
   return { cols, rows, land };
 }
 
-/* deterministic pseudo-random for stable dot brightness */
+/* 确定性伪随机，用于稳定的点亮度 */
 export const cellJitter = (c: number, r: number) => ((c * 73856093) ^ (r * 19349663)) >>> 0;
 
-/* lon/lat helpers for the world view */
+/* 世界视图的经纬度辅助函数 */
 export const lonToX = (lon: number) => (lon + 180) / 360;
 export const latToY = (lat: number) => (90 - lat) / 180;
 

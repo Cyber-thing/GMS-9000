@@ -12,14 +12,14 @@ export interface ChatMsg {
 
 export const CHANNELS: ChannelId[] = ["GLOBAL", "OPERATORS", "MARKET", "CORPORATE", "PRIVATE"];
 
-/* muted nick palette — hashed by nick */
+/* 柔和的昵称调色板：按昵称哈希取色 */
 export const NICK_COLORS = [
-  "#8fb56d", // muted green
-  "#cfa04b", // amber
-  "#7f95a8", // steel blue
-  "#8f86b8", // muted violet
-  "#a8ad96", // pale sage
-  "#b36a52", // oxide
+  "#8fb56d", // 柔和的绿色
+  "#cfa04b", // 琥珀色
+  "#7f95a8", // 钢蓝色
+  "#8f86b8", // 柔和的紫色
+  "#a8ad96", // 淡鼠尾草色
+  "#b36a52", // 氧化色
 ];
 
 export const nickColor = (nick: string): string => {
@@ -154,7 +154,7 @@ export const CHAT_POOL: Record<ChannelId, { nicks: string[]; msgs: PoolEntry[] }
   },
 };
 
-/* canned cyber-slang replies to the operator's own messages — {op} = operator handle */
+/* 针对操作员自己消息的现成赛博俚语回复：{op} = 操作员用户名 */
 export const REPLY_POOL: { ch: ChannelId | "ANY"; nick: string; text: string }[] = [
   { ch: "ANY", nick: "irq0", text: "ack" },
   { ch: "ANY", nick: "koma", text: "ack ack" },
@@ -193,7 +193,7 @@ export const REPLY_POOL: { ch: ChannelId | "ANY"; nick: string; text: string }[]
   { ch: "CORPORATE", nick: "SYSTEM", text: "your input has been routed to the void. reference #0042." },
 ];
 
-/* greeting volley — fired when the operator says hello */
+/* 问候连发：操作员打招呼时触发 */
 export const GREETING_POOL: { nick: string; text: string }[] = [
   { nick: "koma", text: "o7" },
   { nick: "coldboot", text: "yo, {op}" },

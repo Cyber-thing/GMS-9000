@@ -94,7 +94,7 @@ export default function NodeDossier({
   const routing = usesRouting(node.type, meta.warden);
   const wrecked = g.sabotaged.includes(node.id);
   const burning = g.burning.includes(node.id);
-  /* some hosts only expose SABOTAGE once a client has asked for it */
+  /* 有些主机只有在客户提出要求后才会开放 SABOTAGE */
   const gateOk = !meta.sabotageGate || !!g.contracts[meta.sabotageGate];
   const reward = Math.round(
     (meta.rep + meta.warden * CFG.repPerWarden) * (breached ? CFG.repeatMult : 1)
@@ -107,7 +107,7 @@ export default function NodeDossier({
       : st === "LOCKED"
         ? t("dos.condLocked")
         : t("dos.condOpen");
-  /* a gate worth showing: a real requirement, or a node we cannot reach yet */
+  /* 值得显示的门槛：真实的要求，或我们尚无法到达的节点 */
   const gated = !!meta.req || st === "LOCKED" || st === "RESTRICTED";
 
   return (
@@ -118,7 +118,7 @@ export default function NodeDossier({
       right={<span className="text-[8px] tracking-[0.16em] text-faint">{sectorCode}</span>}
     >
       <div className="p-3">
-        {/* header */}
+        {/* 页头 */}
         <div className="flex items-center justify-between gap-2">
           <span className="flex min-w-0 items-center gap-2">
             <TypeGlyphShape type={node.type} color={color} size={12} />
@@ -134,7 +134,7 @@ export default function NodeDossier({
           </span>
         </div>
 
-        {/* ---- primary action ---- */}
+        {/* ---- 主要操作 ---- */}
         {hacking ? (
           <div className="mt-2.5 border border-amberdim/60 bg-amber/5 px-2.5 py-2">
             <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.14em] text-amber">
@@ -195,7 +195,7 @@ export default function NodeDossier({
           </button>
         )}
 
-        {/* ---- sabotage ---- */}
+        {/* ---- 破坏 ---- */}
         {corp && st === "COMPROMISED" && (
           wrecked ? (
             <div
@@ -221,7 +221,7 @@ export default function NodeDossier({
           )
         )}
 
-        {/* ---- access conditions ---- */}
+        {/* ---- 访问条件 ---- */}
         {gated && (
           <div
             className="mt-2 border-l-2 py-1 pl-2"
@@ -246,7 +246,7 @@ export default function NodeDossier({
           </div>
         )}
 
-        {/* ---- parameters ---- */}
+        {/* ---- 参数 ---- */}
         <div className={cn("mt-2 space-y-px border-y border-line py-1.5", gating && "tut-dim")}>
           <KV k={t("dos.class")} v={t(`ncls.${meta.cls}`)} />
           <KV k={t("dos.owner")} v={owner ? (lang === "ru" ? owner.nameRu : owner.name) : "—"} vc="#a8ad96" />
@@ -260,7 +260,7 @@ export default function NodeDossier({
           />
         </div>
 
-        {/* data discovery */}
+        {/* 数据发现 */}
         {st === "COMPROMISED" && vault && (
           <div className="mt-2.5 border-t border-line pt-2">
             <p className="text-[9.5px] leading-snug text-faint">{t("dos.vaultHint")}</p>

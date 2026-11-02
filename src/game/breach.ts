@@ -2,26 +2,26 @@ import { NODE_META } from "./data";
 import { ALL_NODES } from "../data/regions";
 
 /* ================================================================== */
-/* BREACH — node intrusion mini-game                                   */
+/* BREACH：节点入侵小游戏                                   */
 /* ------------------------------------------------------------------ */
-/* Every cell carries a hex expression; solving it gives the number of */
-/* seconds that cell takes to load. WARDEN wakes 10s after entry (or   */
-/* immediately after the first solved hop) and then hunts the operator.*/
-/* Tier doubles the amount of ground to cover: 1,2,4,8,16 cells.       */
+/* 每个格子都带有一个十六进制表达式；解出它即得到 */
+/* 该格子加载所需的秒数。WARDEN 在进入 10 秒后苏醒（或在   */
+/* 第一次解出跳转后立即苏醒），然后开始追捕操作员。*/
+/* 等级会使需要覆盖的路程翻倍：1、2、4、8、16 个格子。       */
 /* ================================================================== */
 
 export interface BreachTier {
-  /** cells that must be crossed between ENTRY and ACCESS */
+  /** ENTRY 与 ACCESS 之间必须穿过的格子数 */
   hops: number;
-  /** WARDEN countdown, seconds */
+  /** WARDEN 倒计时，单位为秒 */
   timerSec: number;
-  /** countdown also wakes on its own after this many ms in the map */
+  /** 在地图中停留这么多毫秒后，倒计时也会自行启动 */
   alarmMs: number;
-  /** REP burned on a lockout */
+  /** 锁定时扣除的 REP */
   failRep: number;
-  /** dial-up handshake duration, ms */
+  /** 拨号握手时长，单位为毫秒 */
   dialMs: number;
-  /** how wide the schematic may get */
+  /** 示意图最宽可以到多宽 */
   maxRows: number;
 }
 
@@ -35,7 +35,7 @@ export const BREACH_TIERS: Record<number, BreachTier> = {
 
 export const MAX_CELL_SECONDS = 15;
 
-/** ACCESS hosts always play the mini-game, every tier is supported */
+/** ACCESS 主机始终进行小游戏，支持所有等级 */
 export function usesBreach(nodeId: string): boolean {
   const n = ALL_NODES.find((x) => x.id === nodeId);
   const m = NODE_META[nodeId];
@@ -58,9 +58,9 @@ export interface BreachCell {
   row: number;
   rows: number;
   kind: CellKind;
-  /** displayed hex expression, e.g. "0A-04" */
+  /** 显示的十六进制表达式，例如 "0A-04" */
   expr: string;
-  /** seconds this cell costs, 1..15 */
+  /** 该格子耗费的秒数，1..15 */
   cost: number;
 }
 
@@ -85,8 +85,8 @@ const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)];
 const hex = (v: number) => v.toString(16).toUpperCase().padStart(2, "0");
 
 /**
- * Builds a hex expression whose value is `want` seconds.
- * Mixes addition and subtraction so the board reads like real arithmetic.
+ * 构建一个值为 `want` 秒的十六进制表达式。
+ * 混用加法和减法，使棋盘读起来像真实的算术。
  */
 export function hexExpr(want: number): string {
   if (Math.random() < 0.5) {
@@ -99,7 +99,7 @@ export function hexExpr(want: number): string {
   return `${hex(a)}+${hex(want - a)}`;
 }
 
-/** cost curve: early cells are cheap, later ones bite, never above 15s */
+/** 成本曲线：前面的格子便宜，后面的越来越贵，永不超过 15 秒 */
 const costFor = (col: number, cols: number): number => {
   const depth = cols <= 2 ? 0 : (col - 1) / Math.max(1, cols - 2);
   const lo = Math.round(2 + depth * 3);
@@ -108,9 +108,9 @@ const costFor = (col: number, cols: number): number => {
 };
 
 /**
- * Layered schematic: ENTRY → `hops` columns → ACCESS.
- * Columns hold 1..maxRows cells, wired so that several distinct routes exist
- * while every route costs the same number of hops.
+ * 分层示意图：ENTRY → `hops` 列 → ACCESS。
+ * 每列包含 1..maxRows 个格子，连线保证存在多条不同路线，
+ * 同时每条路线的跳数相同。
  */
 export function generateBreach(tier: BreachTier): BreachMap {
   const cells: BreachCell[] = [];
@@ -121,7 +121,7 @@ export function generateBreach(tier: BreachTier): BreachMap {
 
   const columns: string[][] = [];
   for (let c = 1; c <= tier.hops; c++) {
-    /* widen the middle of the board, keep the ends narrow */
+    /* 棋盘中间加宽，两端保持窄 */
     const t = tier.hops === 1 ? 1 : Math.sin((c / (tier.hops + 1)) * Math.PI);
     const maxHere = Math.max(1, Math.round(tier.maxRows * t));
     const n = tier.hops === 1 ? 1 : ri(Math.min(2, maxHere), Math.max(1, maxHere));
@@ -151,13 +151,13 @@ export function generateBreach(tier: BreachTier): BreachMap {
   for (let c = 0; c < columns.length - 1; c++) {
     const from = columns[c];
     const to = columns[c + 1];
-    /* every cell gets a forward edge */
+    /* 每个格子都有一条向前的边 */
     from.forEach((a, i) => link(a, to[Math.min(i, to.length - 1)]));
-    /* every cell in the next column stays reachable */
+    /* 下一列中的每个格子都保持可达 */
     to.forEach((b, j) => {
       if (!links.some((l) => l.b === b)) link(from[Math.min(j, from.length - 1)], b);
     });
-    /* extra diagonals so the operator has a real choice of routes */
+    /* 额外的对角线，让操作员有真正的路线选择 */
     from.forEach((a, i) => {
       if (to.length > 1 && Math.random() < 0.62) {
         const alt = to[(i + 1) % to.length];
@@ -172,12 +172,12 @@ export function generateBreach(tier: BreachTier): BreachMap {
   return { cells, links, entry: "entry", access: "access", cols, tier };
 }
 
-/** neighbours reachable from a cell (links run left → right) */
+/** 从某个格子可到达的邻居（链路从左向右） */
 export function neighboursOf(map: BreachMap, id: string): string[] {
   return map.links.filter((l) => l.a === id).map((l) => l.b);
 }
 
-/** cheapest total seconds from ENTRY to ACCESS — used for balance checks */
+/** 从 ENTRY 到 ACCESS 的最小总秒数，用于平衡性检查 */
 export function cheapestRoute(map: BreachMap): number {
   const byId = new Map(map.cells.map((c) => [c.id, c]));
   const best = new Map<string, number>([[map.entry, 0]]);
@@ -193,7 +193,7 @@ export function cheapestRoute(map: BreachMap): number {
   return best.get(map.access) ?? Infinity;
 }
 
-/* layout helpers — drawing space grows with the board */
+/* 布局辅助：绘图空间随棋盘增长 */
 export const BOARD_H = 320;
 export const boardWidth = (cols: number) => Math.max(560, Math.min(1080, 150 + cols * 86));
 

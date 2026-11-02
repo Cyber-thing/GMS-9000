@@ -3,11 +3,11 @@ import { NODE_META, filesOfNode } from "./data";
 import type { Lang } from "../i18n";
 
 /* ================================================================== */
-/* DATA VAULT — file-system mini-game for DATA SERVER hosts            */
+/* DATA VAULT：面向 DATA SERVER 主机的文件系统小游戏            */
 /* ------------------------------------------------------------------ */
-/* The operator walks folders, scans files and hunts for the payload   */
-/* the client asked for. Junk files return noise or flavour text;      */
-/* payload files drop a real DataFile into storage.                    */
+/* 操作员遍历文件夹、扫描文件，并搜寻客户   */
+/* 所要的载荷。垃圾文件返回噪声或氛围文本；      */
+/* 载荷文件会向存储中投放一个真实的 DataFile。                    */
 /* ================================================================== */
 
 export type ScanState = "idle" | "scanning" | "done";
@@ -17,18 +17,18 @@ export interface VaultResult {
   kind: ResultKind;
   title: string;
   body: string[];
-  /** DataFile id for payload hits */
+  /** 载荷命中的 DataFile id */
   fileId?: string;
 }
 
 export interface VaultFile {
   id: string;
-  name: string;      // DOS 8.3 style
+  name: string;      // DOS 8.3 风格
   size: string;
   date: string;
   scan: ScanState;
   result: VaultResult | null;
-  /** resolved lazily on scan */
+  /** 扫描时才惰性解析 */
   seedKind: ResultKind;
   seedIdx: number;
   payloadId?: string;
@@ -50,7 +50,7 @@ export const usesVault = (nodeId: string): boolean =>
   ALL_NODES.find((n) => n.id === nodeId)?.type === "DATA SERVER";
 
 /* ------------------------------------------------------------------ */
-/* themed content per owning organisation                              */
+/* 按所属组织划分的主题内容                              */
 /* ------------------------------------------------------------------ */
 
 interface Theme {
@@ -58,7 +58,7 @@ interface Theme {
   folders: string[];
   files: string[];
   people: string[];
-  /** flavour snippets: [titleEn, titleRu, bodyEn, bodyRu] */
+  /** 氛围片段：[titleEn, titleRu, bodyEn, bodyRu] */
   texts: [string, string, string, string][];
 }
 
@@ -222,7 +222,7 @@ const FALLBACK: Theme = {
 };
 
 /* ------------------------------------------------------------------ */
-/* payload briefings shown when the real file is uncovered             */
+/* 发现真实文件时显示的载荷简报             */
 /* ------------------------------------------------------------------ */
 
 const PAYLOAD_TEXT: Record<string, [string, string]> = {
@@ -277,12 +277,12 @@ const shuffle = <T,>(a: T[]): T[] => [...a].sort(() => Math.random() - 0.5);
 
 const EXTS = ["DAT", "DOC", "MSG", "LOG", "TXT", "BIN"];
 
-/** builds a fresh, slightly different file system every time the host is entered */
+/** 每次进入主机时构建一个全新的、略有不同的文件系统 */
 export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles: string[] = []): VaultFS {
   const meta = NODE_META[nodeId];
   const theme = (meta && THEMES[meta.owner]) || FALLBACK;
 
-  /* payloads still worth recovering: not held, and not already fenced away */
+  /* 仍值得找回的载荷：未持有，且尚未被倒卖出去 */
   const all = filesOfNode(nodeId).map((f) => f.id);
   const pending = all.filter((id) => !ownedFiles.includes(id) && !burnedFiles.includes(id));
 
@@ -310,13 +310,13 @@ export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles:
     };
   };
 
-  /* junk first */
+  /* 先放垃圾文件 */
   folders.forEach((f) => {
     const n = ri(3, 6);
     for (let i = 0; i < n; i++) f.files.push(mkFile(Math.random() < 0.55 ? "empty" : "text"));
   });
 
-  /* scatter the real payloads, one per folder at most */
+  /* 散布真实载荷，每个文件夹至多一个 */
   shuffle(pending).forEach((pid, i) => {
     const target = folders[i % folders.length];
     const file = mkFile("payload", pid);
@@ -326,7 +326,7 @@ export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles:
   return { volume: theme.vol, folders, payloads: pending };
 }
 
-/** resolves what a scan turns up — called when the operator scans a file */
+/** 解析扫描结果：操作员扫描文件时调用 */
 export function resolveScan(
   file: VaultFile,
   nodeId: string,

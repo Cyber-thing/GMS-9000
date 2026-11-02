@@ -56,7 +56,7 @@ const freshState = (): GameState => {
   };
 };
 
-/* ---------------- derived helpers ---------------- */
+/* ---------------- 派生的辅助函数 ---------------- */
 
 export function reqMet(req: Requirement | undefined, s: GameState): boolean {
   if (!req) return true;
@@ -72,7 +72,7 @@ export function nodeStateOf(id: string, s: GameState): NodeState {
   const m = NODE_META[id];
   if (!m) return "LOCKED";
   if (s.nodeStates[id] === "COMPROMISED") return "COMPROMISED";
-  /* whole sectors stay shut until the operator has a name */
+  /* 整个区域保持关闭，直到操作员有了名字 */
   const node = ALL_NODES.find((n) => n.id === id);
   const gate = node ? SECTOR_REP[node.sector] ?? 0 : 0;
   if (s.rep < gate) return "RESTRICTED";
@@ -141,8 +141,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const saved = store.get<GameState | null>("game", null);
     if (!saved) return freshState();
     const base = freshState();
-    /* Transient flags must never survive a reload: their timers do not.
-       Anything mid-flight is settled here instead of hanging forever. */
+    /* 瞬态标志绝不能在重新加载后保留：它们的计时器不会保留。
+       任何进行到一半的东西都在这里了结，而不是永远悬着。 */
     const contracts = { ...(saved.contracts ?? {}) };
     Object.entries(contracts).forEach(([id, pr]) => {
       if (pr?.state === "DELIVERED") contracts[id] = { state: "COMPLETED" };
@@ -159,16 +159,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       flags: saved.flags ?? {},
       threadRead: saved.threadRead ?? {},
       contracts,
-      recovering: false,   // the 4.2s timer is gone after a reload
+      recovering: false,   // 4.2 秒的计时器在重新加载后已消失
     };
   });
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const gRef = useRef<GameState>(null as unknown as GameState);
   const [lastHack, setLastHack] = useState<HackResult | null>(null);
   const langRef = useRef<"en" | "ru">("en");
-  /** the tab the operator is currently looking at — never badge it */
+  /** 操作员当前正在查看的标签页：永不加角标 */
   const activeTab = useRef<TabId>("CHAT");
-  /** the contact thread open on screen, if any — never badge or toast it */
+  /** 屏幕上打开的联系人线程（如果有）：永不加角标或弹出提示 */
   const activeThread = useRef<string | null>(null);
   const nid = useRef(1);
   const timers = useRef<number[]>([]);
@@ -185,7 +185,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setG((s) => ({ ...s, unread: { ...s.unread, [tab]: s.unread[tab] + 1 } }));
   }, []);
 
-  /** push a line that keeps both languages so it re-renders on EN/RU switch */
+  /** 推送一行同时保留两种语言的消息，以便在 EN/RU 切换时重新渲染 */
   const say = useCallback(
     (contact: string, en: string, ru_: string, extra: Partial<ThreadMsg> = {}) => {
       setG((s) => {
@@ -215,7 +215,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  /* ---------- contact unlocking by REP ---------- */
+  /* ---------- 按 REP 解锁联系人 ---------- */
   useEffect(() => {
     CONTACTS.forEach((c) => {
       if (g.rep >= c.repReq && !g.contacts.includes(c.id)) {
@@ -238,19 +238,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
         notify("NEW CONTACT MESSAGE", `${c.nick} :: ${ru() ? "новое сообщение" : "new message"}`, "CONTACTS");
       }
     });
-    /* ---- contract offers: one live job per contact, in order ---- */
+    /* ---- 合同邀约：每个联系人同时只有一个进行中的任务，按顺序 ---- */
     const BUSY: string[] = ["AVAILABLE", "ACCEPTED", "TARGET ACCESSED", "DATA ACQUIRED", "SABOTAGED", "DELIVERED"];
 
     for (const ct of CONTRACTS) {
-      if (ct.scripted) continue;                                         // driven by its own dialogue
-      if (g.contracts[ct.id]) continue;                                  // already offered
-      if (ct.market ? !g.market.unlocked : false) continue;              // channel closed
-      if (!g.contacts.includes(ct.contact)) continue;                    // contact unknown
-      if (g.rep < ct.repReq) continue;                                   // not respected enough
-      if (ct.regionReq && !g.regions.includes(ct.regionReq)) continue;   // region not licensed
+      if (ct.scripted) continue;                                         // 由其自身的对话驱动
+      if (g.contracts[ct.id]) continue;                                  // 已提供过
+      if (ct.market ? !g.market.unlocked : false) continue;              // 渠道已关闭
+      if (!g.contacts.includes(ct.contact)) continue;                    // 联系人未知
+      if (g.rep < ct.repReq) continue;                                   // 尚未获得足够的尊重
+      if (ct.regionReq && !g.regions.includes(ct.regionReq)) continue;   // 区域未获许可
       if (ct.afterReq && g.contracts[ct.afterReq]?.state !== "COMPLETED") continue;
 
-      /* this contact must have nothing else on the table */
+      /* 此联系人必须没有其他待办事项 */
       const busy = CONTRACTS.some(
         (o) => o.contact === ct.contact && g.contracts[o.id] && BUSY.includes(g.contracts[o.id].state)
       );
@@ -262,8 +262,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
           : {
               ...s,
               contracts: { ...s.contracts, [ct.id]: { state: "AVAILABLE" } },
-              /* market jobs are posted on the board; only legitimate
-                 clients introduce themselves through CONTACTS */
+              /* 市场任务发布在公告板上；只有合法
+                 的客户才会通过 CONTACTS 自我介绍 */
               threads: ct.market
                 ? s.threads
                 : {
@@ -285,12 +285,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
             }
       );
       notify("NEW CONTRACT", `${ru() ? ct.titleRu : ct.title}`, "CONTACTS");
-      break; // at most one new offer per pass, so jobs trickle in
+      break; // 每次处理最多一个新邀约，让任务陆续出现
     }
 
   }, [g.rep, g.contacts, g.contracts, g.market.unlocked, g.regions, notify]);
 
-  /* ---------------- hacking ---------------- */
+  /* ---------------- 入侵 ---------------- */
 
   const nodeState = useCallback((id: string) => nodeStateOf(id, g), [g]);
 
@@ -324,7 +324,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const newCodex = repeat ? [] : m.codex.filter((c) => g.codex[c] !== "DISCOVERED" && g.codex[c] !== "UPDATED");
       const updCodex = repeat ? [] : m.codex.filter((c) => g.codex[c] === "DISCOVERED" || g.codex[c] === "UPDATED");
 
-      /* breaching a host exposes its direct neighbours on the routing graph */
+      /* 入侵一台主机会暴露其在路由图上的直接邻居 */
       const unlocked = repeat
         ? []
         : (NEIGHBOURS[id] ?? []).filter(
@@ -379,7 +379,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         };
       });
 
-      /* contract progress: target accessed */
+      /* 合同进度：目标已访问 */
       CONTRACTS.forEach((ct) => {
         const pr = g.contracts[ct.id];
         if (ct.target === id && pr?.state === "ACCEPTED") {
@@ -387,7 +387,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       });
 
-      /* notifications */
+      /* 通知 */
       if (repGain > 0) notify("REP INCREASED", `+${repGain} REP`, "STATUS");
       if (relHit !== 0) {
         const own = factionById(m.owner);
@@ -412,10 +412,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g, canHack, notify]
   );
 
-  /* ================= scripted quest: LOCKED OUT ================= */
+  /* ================= 剧情任务：LOCKED OUT ================= */
 
-  /** `thread` says which conversation the line belongs to. An OP reply has no
-      sender of its own, so without it the line would land in the wrong chat. */
+  /** `thread` 指明该行属于哪个对话。OP 的回复自身没有
+      发送者，所以没有它，这一行就会落到错误的聊天里。 */
   const pushBeat = useCallback((b: Beat, thread?: string) => {
     const who = thread ?? (b.from === "OP" ? "op17" : b.from);
     setG((s) => {
@@ -433,7 +433,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           action: b.action,
         },
       ];
-      /* if the operator is reading this very thread, it is read on arrival */
+      /* 如果操作员正在阅读这个线程，则消息到达时即为已读 */
       const seen = activeThread.current === who && activeTab.current === "CONTACTS";
       return {
         ...s,
@@ -450,7 +450,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setG((s) => (s.flags[k] === v ? s : { ...s, flags: { ...s.flags, [k]: v } }));
   }, []);
 
-  /** opens the archive job once the tutorial contract is settled */
+  /** 教程合同了结后，开启档案任务 */
   const openArchiveJob = useCallback(() => {
     if (g.flags.arc_intro) return;
     setFlag("arc_intro");
@@ -462,8 +462,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     OP17_INTRO.forEach((b) => pushBeat(b, "op17"));
   }, [g.flags.arc_intro, setFlag, pushBeat]);
 
-  /** sable introduces himself once his call is over: the contact appears and
-      his standing offer for the list lands in the thread */
+  /** sable 在通话结束后自我介绍：联系人出现，
+      他针对那份列表的长期报价也落入线程中 */
   const sableArrives = useCallback(() => {
     if (g.flags.sable_met) return;
     setFlag("sable_met");
@@ -471,13 +471,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       ...s,
       contacts: s.contacts.includes("sablec") ? s.contacts : [...s.contacts, "sablec"],
     }));
-    /* only pitch for the list while the operator still has it to give */
+    /* 只有当操作员仍持有该列表可供交付时，才推销该列表 */
     if (g.flags["sable-ok"] !== true && g.files.includes("f_termlist")) {
       pushBeat(SABLE_OFFER, "sablec");
     }
   }, [g.flags.sable_met, g.flags, g.files, setFlag, pushBeat]);
 
-  /** Freddy asks about his sister's implant — his target sits in GULF */
+  /** Freddy 询问他妹妹的植入体：他的目标位于 GULF */
   const openFreddy = useCallback(() => {
     if (g.flags.fred_intro) return;
     if (g.rep < (SECTOR_REP.w1_gulf ?? 0)) return;
@@ -489,7 +489,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     FREDDY_IMPLANT.forEach((b) => pushBeat(b, "freddy"));
   }, [g.flags.fred_intro, g.rep, setFlag, pushBeat]);
 
-  /** m4rla wants a hall to go dark — unrelated to Freddy, runs in parallel */
+  /** m4rla 想让一个大厅熄灯：与 Freddy 无关，并行运行 */
   const openMarla = useCallback(() => {
     if (g.flags.marla_intro) return;
     setFlag("marla_intro");
@@ -500,10 +500,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     MARLA_PROJ.forEach((b) => pushBeat(b, "marla"));
   }, [g.flags.marla_intro, setFlag, pushBeat]);
 
-  /** the operator answers a scripted question */
+  /** 操作员回答一个脚本化的问题 */
   const pickChoice = useCallback(
     (msgId: number, choiceId: string) => {
-      /* stamp the chosen option so the buttons collapse */
+      /* 标记所选选项，使按钮折叠 */
       let label = "";
       setG((s) => {
         const threads = { ...s.threads };
@@ -537,7 +537,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const stillHasIt = gRef.current.files.includes("f_termlist");
         const soldIt = gRef.current.flags["sable-ok"] === true;
 
-        /* sold it to sable and still tries to talk — he throws you out */
+        /* 卖给了 sable 还想继续交谈：他把你赶了出去 */
         if (soldIt) {
           setFlag("arc_told", "sold_then_told");
           setFlag("op17_blocked", true);
@@ -549,7 +549,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        /* no file to show — and he trusts the company */
+        /* 没有文件可出示：而且他信任那家公司 */
         if (!stillHasIt) {
           setFlag("arc_told", "empty");
           OP17_DISBELIEF.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 1100));
@@ -569,7 +569,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           ...s,
           relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.toldCivic,
                        intercell: (s.relations.intercell ?? 0) + ARCHIVE_REL.toldIntercell },
-          /* handing it over spends the copy */
+          /* 交出文件会消耗副本 */
           burned: s.burned.includes("f_termlist") ? s.burned : [...s.burned, "f_termlist"],
           threads: {
             ...s.threads,
@@ -584,8 +584,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       if (choiceId === "hide") {
         setFlag("arc_told", "hidden");
-        /* nothing to re-offer if he already has the list, or if the operator
-           no longer holds a copy to sell */
+        /* 如果他已经拥有该列表，或者操作员
+           已不再持有可出售的副本，就没有可重新提供的内容 */
         const alreadySold = gRef.current.flags["sable-ok"] === true;
         const stillHolds = gRef.current.files.includes("f_termlist");
         if (alreadySold || !stillHolds) return;
@@ -597,7 +597,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      /* ---- Freddy: implant queue ---- */
+      /* ---- Freddy：植入体队列 ---- */
       if (choiceId === "fi_what") {
         pushBeat({ id: "a4", from: "OP", line: { en: "What do you need?", ru: "Что нужно?" } }, "freddy");
         later(() => FREDDY_IMPLANT_2.forEach((b) => pushBeat(b, "freddy")), 800);
@@ -615,7 +615,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      /* ---- m4rla: projectors ---- */
+      /* ---- m4rla：投影仪 ---- */
       if (choiceId === "mp_which") {
         pushBeat({ id: "a7", from: "OP", line: { en: "Which room?", ru: "Какой зал?" } }, "marla");
         later(() => MARLA_PROJ_2.forEach((b) => pushBeat(b, "marla")), 800);
@@ -648,7 +648,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           credits: s.credits + 350,
           rep: s.rep + 14,
           relations: { ...s.relations, fusion: (s.relations.fusion ?? 0) - 12 },
-          /* the copy is his now */
+          /* 副本现在归他了 */
           files: s.files.filter((x) => x !== "f_queue_memo"),
           burned: s.burned.includes("f_queue_memo") ? s.burned : [...s.burned, "f_queue_memo"],
           stats: { ...s.stats, contracts: s.stats.contracts + 1 },
@@ -659,8 +659,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       if (choiceId === "sendsable") {
-        /* this records the deal with sable — it must NOT count as having
-           answered operator_17, who can still be told (and will not believe it) */
+        /* 这记录的是与 sable 的交易：绝不能算作已经
+           回复 operator_17，他仍然可以被告知（而且不会相信） */
         setFlag("sable-ok", true);
         pushBeat({ id: "a3", from: "OP", line: { en: "Sending the list.", ru: "Отправляю список." } }, "sablec");
         setG((s) => ({
@@ -668,11 +668,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
           credits: s.credits + ARCHIVE_PAY.sable,
           rep: s.rep + ARCHIVE_PAY.repSable,
           relations: { ...s.relations, intercell: (s.relations.intercell ?? 0) + ARCHIVE_PAY.relSable },
-          /* the copy goes to him: it leaves storage and is spent */
+          /* 副本交给了他：它离开存储并被消耗 */
           files: s.files.filter((x) => x !== "f_termlist"),
           burned: s.burned.includes("f_termlist") ? s.burned : [...s.burned, "f_termlist"],
         }));
-        /* close any duplicate prompt left open in his thread */
+        /* 关闭他线程中遗留的任何重复提示 */
         setG((s) => ({
           ...s,
           threads: {
@@ -691,7 +691,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [pushBeat, setFlag, notify]
   );
 
-  /* ---------------- files ---------------- */
+  /* ---------------- 文件 ---------------- */
 
   const download = useCallback(
     (fileId: string) => {
@@ -705,8 +705,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }));
       notify("DATA ACQUIRED", `${ru() ? f.nameRu : f.name} → DATA STORED`, "STATUS");
 
-      /* The archive key arms operator_17's hand-over. Scripted jobs are
-         excluded from the generic prompt, so this is wired explicitly. */
+      /* 档案密钥会启用 operator_17 的移交。脚本化任务
+         被排除在通用提示之外，所以这里需要显式接入。 */
       if (fileId === "f_access_restored") {
         const st = g.contracts.ct_archive?.state;
         if (st === "ACCEPTED" || st === "TARGET ACCESSED") {
@@ -721,7 +721,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      /* the memo in hand only opens the hand-over — Freddy reacts on delivery */
+      /* 手里的备忘录只会开启移交：Freddy 在交付时才有反应 */
       if (fileId === "f_queue_memo") {
         const st = g.contracts.ct_implant?.state;
         if (st === "ACCEPTED" || st === "TARGET ACCESSED") {
@@ -732,7 +732,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      /* a note that carries a WARDEN PASS key announces it plainly */
+      /* 带有 WARDEN PASS 密钥的便笺会明确地宣告这一点 */
       const unlocks = Object.values(NODE_META).find((m) => m.passwordFrom === fileId);
       if (unlocks?.password) {
         const n = ALL_NODES.find((x) => x.id === unlocks.id);
@@ -742,7 +742,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       CONTRACTS.forEach((ct) => {
         const pr = g.contracts[ct.id];
-        /* scripted jobs stage their own hand-over line — skip the generic one */
+        /* 脚本化任务会自己安排移交台词：跳过通用的那条 */
         if (ct.scripted) return;
         if (ct.kind === "DATA" && ct.file === fileId && (pr?.state === "TARGET ACCESSED" || pr?.state === "ACCEPTED")) {
           setG((s) => ({ ...s, contracts: { ...s.contracts, [ct.id]: { state: "DATA ACQUIRED" } } }));
@@ -760,14 +760,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.files, g.contracts, notify, pushThread, pushBeat]
   );
 
-  /* ---------------- contracts ---------------- */
+  /* ---------------- 合同 ---------------- */
 
   const acceptContract = useCallback(
     (id: string) => {
       const ct = contractById(id);
       if (!ct || g.contracts[id]?.state !== "AVAILABLE") return;
 
-      /* the operator may already have done the work before taking the job */
+      /* 操作员可能在接下任务之前就已经完成了工作 */
       const hasFile = !!ct.file && g.files.includes(ct.file);
       const wrecked = g.sabotaged.includes(ct.target);
       const breached = g.nodeStates[ct.target] === "COMPROMISED";
@@ -784,7 +784,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       if (ct.kind === "SABOTAGE") {
         if (wrecked) {
-          /* already dark — go straight to the payout prompt, never a dead end */
+          /* 已经熄灯：直接进入报酬提示，绝不留死胡同 */
           say(ct.contact,
             `${code} is already dark? You work ahead of me. Confirm it and I will pay.`,
             `${code} уже погашен? Ты работаешь на опережение. Подтверди, и я заплачу.`,
@@ -823,7 +823,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       setG((s) => ({ ...s, contracts: { ...s.contracts, [id]: { state: "DELIVERED" } } }));
 
-      /* hand-written jobs play their own closing scene */
+      /* 手写的任务会播放自己的收尾场景 */
       if (ct.scripted && id === "ct_archive") {
         OP17_DELIVER.forEach((b, i) =>
           timers.current.push(window.setTimeout(() => pushBeat(b, "op17"), i * 1000))
@@ -840,9 +840,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
             }));
             notify("CONTRACT COMPLETED", ru() ? ct.titleRu : ct.title, "CONTACTS");
             notify("REP INCREASED", `+${ct.rep} REP`, "STATUS");
-            /* only ask about the list if the operator actually took it */
+            /* 仅当操作员确实接了列表时才询问它 */
             setG((s) => {
-              /* offer the fork to anyone who saw the list, held or sold */
+              /* 向所有见过该列表的人提供分支，无论是持有还是已卖出 */
               const sawIt = s.files.includes("f_termlist") || s.burned.includes("f_termlist");
               if (sawIt && !s.flags.arc_told) {
                 timers.current.push(window.setTimeout(() => pushBeat(OP17_FORK), 900));
@@ -861,7 +861,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       const t = window.setTimeout(() => {
         setG((s) => {
-          /* the job may have been burned while the transfer was in flight */
+          /* 转交进行期间，任务可能已经作废 */
           if (s.contracts[id]?.state !== "DELIVERED") return s;
           return {
             ...s,
@@ -869,7 +869,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             credits: s.credits + ct.credits,
             rep: s.rep + ct.rep,
             relations: { ...s.relations, [ct.client]: (s.relations[ct.client] ?? 0) + ct.relation },
-            /* the client now holds the data: its street value is spent */
+            /* 客户现在持有这些数据：其街头价值已耗尽 */
             burned: ct.file && !s.burned.includes(ct.file) ? [...s.burned, ct.file] : s.burned,
             stats: {
               ...s.stats,
@@ -890,7 +890,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.contracts, g.files, say, notify, pushBeat]
   );
 
-  /* ---------------- identity reset ---------------- */
+  /* ---------------- 身份重置 ---------------- */
 
   const recover = useCallback(() => {
     if (g.recovering) return;
@@ -901,7 +901,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     timers.current.push(t);
   }, [g.recovering]);
 
-  /* ---------------- failed intrusion ---------------- */
+  /* ---------------- 入侵失败 ---------------- */
 
   const failBreach = useCallback(
     (nodeId: string, repLoss: number) => {
@@ -912,7 +912,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [notify]
   );
 
-  /* ---------------- sabotage ---------------- */
+  /* ---------------- 破坏 ---------------- */
 
   const sabotage = useCallback(
     (nodeId: string) => {
@@ -940,7 +940,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }));
       notify("SABOTAGE COMPLETE", n?.code ?? nodeId, "CONTACTS");
 
-      /* Freddy pays on the spot, no report needed */
+      /* Freddy 当场付款，无需报告 */
       if (nodeId === "w1p_crp2") {
         const pr = gRef.current.contracts.sb_projector?.state;
         if (pr === "ACCEPTED" || pr === "TARGET ACCESSED") {
@@ -958,10 +958,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      /* tell the client the job is physically done */
+      /* 告诉客户任务已在现实中完成 */
       CONTRACTS.forEach((ct) => {
         if (ct.kind !== "SABOTAGE" || ct.target !== nodeId) return;
-        if (ct.scripted) return;   // its own dialogue handles the payout
+        if (ct.scripted) return;   // 其自身的对话负责处理报酬
         const pr = g.contracts[ct.id];
         if (pr?.state !== "ACCEPTED" && pr?.state !== "TARGET ACCESSED") return;
         pushThread(ct.contact, {
@@ -979,7 +979,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.sabotaged, g.nodeStates, g.contracts, notify, pushThread, pushBeat]
   );
 
-  /* ---------------- black market ---------------- */
+  /* ---------------- 黑市 ---------------- */
 
   const openMarket = useCallback(() => {
     if (g.market.unlocked || g.credits < CFG.marketPrice) return false;
@@ -1007,7 +1007,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.market, g.credits, notify]
   );
 
-  /** current street value of a held file — collapses once it has been fenced */
+  /** 所持文件的当前街头价值：一旦被倒卖就会暴跌 */
   const fenceValue = useCallback(
     (id: string) => {
       const f = resolveFile(id);
@@ -1025,7 +1025,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.contracts, g.burned]
   );
 
-  /** fences a file. Selling contracted data burns the client. */
+  /** 倒卖文件。出售已签约的数据会得罪客户。 */
   const sellFile = useCallback(
     (id: string) => {
       if (!g.files.includes(id)) return null;
@@ -1039,7 +1039,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       setG((s) => {
         const relations = { ...s.relations };
-        /* a resold copy nobody wants does not anger anyone further */
+        /* 没人要的转售副本不会再激怒任何人 */
         if (!spent) {
           relations[f.owner] = (relations[f.owner] ?? 0) + CFG.sellRelHit;
           relations[crew] = (relations[crew] ?? 0) + CFG.betrayCrewGain;
@@ -1049,7 +1049,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           ...s,
           credits: s.credits + credits,
           files: s.files.filter((x) => x !== id),
-          /* the copy is out there now: it can never be sold at full price again */
+          /* 副本已经流出：它再也无法以全价出售 */
           burned: s.burned.includes(id) ? s.burned : [...s.burned, id],
           relations,
           contracts: owed
@@ -1076,7 +1076,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.files, fenceValue, notify, say]
   );
 
-  /* ---------------- upgrades ---------------- */
+  /* ---------------- 升级 ---------------- */
 
   const buyUpgrade = useCallback(
     (id: string) => {
@@ -1095,7 +1095,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [g.credits, g.rep, g.upgrades, notify]
   );
 
-  /* ---------------- misc ---------------- */
+  /* ---------------- 杂项 ---------------- */
 
   const markThreadRead = useCallback((contact: string) => {
     setG((s) => {
@@ -1104,7 +1104,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  /** the contacts page reports which thread is on screen (null = the list) */
+  /** 联系人页面报告当前屏幕上显示的线程（null = 列表） */
   const setOpenThread = useCallback((contact: string | null) => {
     activeThread.current = contact;
     if (contact) markThreadRead(contact);

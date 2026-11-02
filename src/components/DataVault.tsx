@@ -10,8 +10,8 @@ import { useTut } from "../game/tutorial";
 
 const SCAN_MS = 1500;
 
-/* Anything a document puts in quotes is a literal the operator must type:
-   render it bold and lit so it cannot be missed in a wall of text. */
+/* 文档中用引号括起来的内容都是操作员必须输入的字面值：
+   加粗并高亮显示，以免在大段文字中被漏掉。 */
 function highlightKeys(line: string) {
   const parts = line.split(/"([^"]+)"/g);
   return parts.map((part, i) =>
@@ -50,7 +50,7 @@ export default function DataVault({
 }) {
   const { t, lang } = useT();
   const { isHl, gating } = useTut();
-  /* while the script points at the exit, the browser panes go quiet */
+  /* 当脚本指向出口时，浏览器面板保持安静 */
   const leaving = isHl("vault:close");
 
   const [fs, setFs] = useState<VaultFS>(() => generateVault(nodeId, ownedFiles, burnedFiles));
@@ -150,7 +150,7 @@ export default function DataVault({
   return (
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[92vh] w-[min(760px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
-        {/* ---- title bar ---- */}
+        {/* ---- 标题栏 ---- */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color="#7f95a8" pulse />
           <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
@@ -173,7 +173,7 @@ export default function DataVault({
           </button>
         </div>
 
-        {/* ---- volume strip ---- */}
+        {/* ---- 卷标条 ---- */}
         <div className="flex h-[22px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em] text-faint">
           <HardDrive size={10} className="text-phosdim" />
           <span className="text-phosdim">{fs.volume}:\</span>
@@ -182,9 +182,9 @@ export default function DataVault({
           <span>{t("dv.scanned", { a: scannedCount, b: totalCount })}</span>
         </div>
 
-        {/* ---- panes ---- */}
+        {/* ---- 面板 ---- */}
         <div className={cn("flex min-h-0 flex-1", (leaving || (gating && !isHl("vault"))) && "tut-dim")}>
-          {/* folders */}
+          {/* 文件夹 */}
           <div className="w-[104px] shrink-0 overflow-y-auto border-r border-line bg-well sm:w-[132px]">
             {fs.folders.map((d) => {
               const active = d.id === openDir;
@@ -217,7 +217,7 @@ export default function DataVault({
             })}
           </div>
 
-          {/* files */}
+          {/* 文件 */}
           <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
             <div className="flex items-center gap-2 border-b border-line bg-panel2 px-2 py-[3px] text-[7.5px] uppercase tracking-[0.16em] text-faint">
               <span className="min-w-0 flex-1">{t("dv.colName")}</span>
@@ -273,7 +273,7 @@ export default function DataVault({
           </div>
         </div>
 
-        {/* ---- status bar ---- */}
+        {/* ---- 状态栏 ---- */}
         <div className="flex h-[24px] shrink-0 items-center gap-2 border-t border-line2 bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em]">
           {scanning ? (
             <>
@@ -292,7 +292,7 @@ export default function DataVault({
         </div>
       </div>
 
-      {/* ---- document reader ---- */}
+      {/* ---- 文档阅读器 ---- */}
       {reader && (
         <div
           className="absolute inset-0 z-[97] flex items-center justify-center bg-ink/80 p-4"

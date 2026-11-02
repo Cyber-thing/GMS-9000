@@ -8,7 +8,7 @@ export interface TermLine {
   t: string;
   text: string;
   tone?: "ok" | "warn" | "err" | "dim";
-  /** optional event label, e.g. "NEW CODEX ENTRY" */
+  /** 可选的事件标签，例如 "NEW CODEX ENTRY" */
   tag?: string;
 }
 
@@ -35,7 +35,7 @@ export default function TerminalBar({
     if (el) el.scrollTop = el.scrollHeight;
   }, [lines.length, expanded]);
 
-  /* count traffic that scrolled by while the console was collapsed */
+  /* 统计控制台折叠期间滚过的流量 */
   const [missed, setMissed] = useState(0);
   const seen = useRef(lines.length);
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function TerminalBar({
 
   return (
     <div className="relative z-30 shrink-0 border-t border-line2 bg-[#0d100a]">
-      {/* header strip */}
+      {/* 页头条 */}
       <div className="flex h-[24px] items-center gap-2 border-b border-line px-2">
         <TerminalSquare size={11} className="shrink-0 text-phosdim" />
         <span className="truncate text-[9px] font-bold uppercase tracking-[0.22em] text-dim">{t("term.title")}</span>
@@ -78,7 +78,7 @@ export default function TerminalBar({
         </button>
       </div>
 
-      {/* log body */}
+      {/* 日志主体 */}
       <div
         ref={boxRef}
         className={cn(
@@ -107,7 +107,7 @@ export default function TerminalBar({
         )}
       </div>
 
-      {/* status strip */}
+      {/* 状态条 */}
       <div className="flex h-[18px] items-center gap-3 border-t border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.16em] text-faint">
         <span>{t("term.mem")}</span>
         <span>{t("term.buf", { n: lines.length })}</span>

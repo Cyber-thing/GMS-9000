@@ -26,7 +26,7 @@ function shapeCls(g: string) {
               : "";
 }
 
-/* strong shape styling used both in sector list and node detail */
+/* 在区域列表和节点详情中共用的强调形状样式 */
 export function TypeGlyphShape({ type, color, size = 8, hollow = false }: { type: NetNode["type"]; color: string; size?: number; hollow?: boolean }) {
   return (
     <span
@@ -42,7 +42,7 @@ export function TypeGlyphShape({ type, color, size = 8, hollow = false }: { type
 }
 
 /* ================================================================== */
-/* sector panel                                                        */
+/* 区域面板                                                        */
 /* ================================================================== */
 
 export function SectorPanel({
@@ -161,11 +161,11 @@ export function SectorPanel({
 }
 
 /* ================================================================== */
-/* node panel                                                          */
+/* 节点面板                                                          */
 /* ================================================================== */
 
 /* ================================================================== */
-/* event log                                                           */
+/* 事件日志                                                           */
 /* ================================================================== */
 
 export interface NetEvent {

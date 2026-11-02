@@ -1,7 +1,7 @@
 import type { NetLink, NetNode, RegionData, Sector } from "./network";
 
 /* ================================================================== */
-/* WEST1 — NORTH AMERICA                                               */
+/* WEST1：北美洲                                               */
 /* ================================================================== */
 
 const W1_SECTORS: Sector[] = [
@@ -38,19 +38,19 @@ const W1_SECTORS: Sector[] = [
 ];
 
 const W1_NODES: NetNode[] = [
-  /* arctic echo */
+  /* 北极回声 */
   { id: "w1a_rly", code: "RLY-X01", type: "RELAY", sector: "w1_arct", x: 90, y: 70, status: "UNKNOWN", desc: "Ionospheric relay. Answers in 61-second bursts." },
   { id: "w1a_res", code: "RES-X02", type: "RESEARCH", sector: "w1_arct", x: 190, y: 110, status: "UNKNOWN", desc: "Auroral research array. Echoes telemetry from '88." },
   { id: "w1a_acc", code: "ACC-X03", type: "ACCESS", sector: "w1_arct", x: 130, y: 140, status: "OFFLINE", desc: "Ice station uplink. Mast collapsed last winter." },
 
-  /* northern grid */
+  /* 北部网格 */
   { id: "w1n_acc", code: "ACC-N01", type: "ACCESS", sector: "w1_north", x: 330, y: 90, status: "ONLINE", desc: "Vancouver dial-in pool. Clean lines, 64 ports." },
   { id: "w1n_rly", code: "RLY-N02", type: "RELAY", sector: "w1_north", x: 470, y: 120, status: "ONLINE", desc: "Prairie relay on the Winnipeg spur." },
   { id: "w1n_dsv", code: "DSV-N03", type: "DATA SERVER", sector: "w1_north", x: 560, y: 75, status: "ONLINE", desc: "Hydro utility data vault. Meter archives since '71." },
   { id: "w1n_rly2", code: "RLY-N04", type: "RELAY", sector: "w1_north", x: 690, y: 140, status: "ONLINE", desc: "Hudson Bay relay. Weatherproofed and lonely." },
   { id: "w1n_arc", code: "ARC-N05", type: "ARCHIVE", sector: "w1_north", x: 390, y: 150, status: "OFFLINE", desc: "Government tape archive. Budget cut in '93." },
 
-  /* pac-net */
+  /* 太平洋网络 */
   { id: "w1p_acc", code: "ACC-P01", type: "ACCESS", sector: "w1_pac", x: 316, y: 308, status: "ONLINE", desc: "Bay area access concentrator. 96 lines, all screeching." },
   { id: "w1p_dsv", code: "DSV-P02", type: "DATA SERVER", sector: "w1_pac", x: 395, y: 340, status: "ONLINE", desc: "Intercell Synthetics west records host. Guest port 23 open." },
   { id: "w1p_res", code: "RES-P03", type: "RESEARCH", sector: "w1_pac", x: 320, y: 405, status: "ONLINE", desc: "Seismic lab node. Uploads tremor logs hourly." },
@@ -58,21 +58,21 @@ const W1_NODES: NetNode[] = [
   { id: "w1p_rly", code: "RLY-P05", type: "RELAY", sector: "w1_pac", x: 350, y: 462, status: "OFFLINE", desc: "Coastal relay. Salt corrosion, carrier dead." },
   { id: "w1p_crp2", code: "CRP-P06", type: "CORPORATE", sector: "w1_pac", x: 318, y: 362, status: "ONLINE", desc: "Takamuri Global freight desk. Indexes every crate that moves west." },
 
-  /* central grid (contested) */
+  /* 中部网格（争议区） */
   { id: "w1m_rly", code: "RLY-C01", type: "RELAY", sector: "w1_mid", x: 575, y: 255, status: "ONLINE", desc: "Denver exchange relay. Three owners claim it." },
   { id: "w1m_sec", code: "SEC-C02", type: "SECURITY", sector: "w1_mid", x: 700, y: 300, status: "RESTRICTED", desc: "Anonymous security appliance. Vendor plate filed off." },
   { id: "w1m_dsv", code: "DSV-C03", type: "DATA SERVER", sector: "w1_mid", x: 640, y: 350, status: "ONLINE", desc: "Grain commodity server. Suspiciously fast." },
   { id: "w1m_prv", code: "PRV-C04", type: "PRIVATE", sector: "w1_mid", x: 765, y: 250, status: "UNKNOWN", desc: "CB radio gateway somebody digitized at 3am." },
   { id: "w1m_crp", code: "CRP-C06", type: "CORPORATE", sector: "w1_mid", x: 568, y: 330, status: "ONLINE", desc: "Intercell clearing host. Routes the shell transfers nobody signs for." },
 
-  /* atlantic grid */
+  /* 大西洋网格 */
   { id: "w1e_acc", code: "ACC-A01", type: "ACCESS", sector: "w1_atl", x: 900, y: 230, status: "ONLINE", desc: "Metro access pool. Expect busy signals." },
   { id: "w1e_crp", code: "CRP-A02", type: "CORPORATE", sector: "w1_atl", x: 1010, y: 265, status: "ONLINE", desc: "Agogee Heights east tower. Logs everything." },
   { id: "w1e_dsv", code: "DSV-A03", type: "DATA SERVER", sector: "w1_atl", x: 935, y: 330, status: "ONLINE", desc: "Financial records mirror. Batch window 0200-0400." },
   { id: "w1e_rly", code: "RLY-A04", type: "RELAY", sector: "w1_atl", x: 1065, y: 385, status: "ONLINE", desc: "Cable landing relay. The ocean hums through it." },
   { id: "w1e_sec", code: "SEC-A05", type: "SECURITY", sector: "w1_atl", x: 890, y: 415, status: "ONLINE", desc: "Metro watchdog. Humorless by specification." },
 
-  /* gulfnet */
+  /* 海湾网络 */
   { id: "w1g_acc", code: "ACC-G01", type: "ACCESS", sector: "w1_gulf", x: 520, y: 470, status: "ONLINE", desc: "Austin dial pool. Slackers welcome." },
   { id: "w1g_dsv", code: "DSV-G02", type: "DATA SERVER", sector: "w1_gulf", x: 645, y: 500, status: "ONLINE", desc: "Oil & gas telemetry vault. Pressure logs by the minute." },
   { id: "w1g_rly", code: "RLY-G03", type: "RELAY", sector: "w1_gulf", x: 765, y: 460, status: "ONLINE", desc: "Gulf coastal relay. Hurricane-rated enclosure." },
@@ -81,16 +81,16 @@ const W1_NODES: NetNode[] = [
 ];
 
 const W1_LINKS: NetLink[] = [
-  /* arctic */
+  /* 北极 */
   { a: "w1a_rly", b: "w1a_res", state: "weak" },
   { a: "w1a_rly", b: "w1a_acc", state: "down" },
-  /* north */
+  /* 北部 */
   { a: "w1n_acc", b: "w1n_rly", state: "stable" },
   { a: "w1n_rly", b: "w1n_dsv", state: "stable" },
   { a: "w1n_rly", b: "w1n_rly2", state: "stable" },
   { a: "w1n_acc", b: "w1n_arc", state: "weak" },
   { a: "w1n_arc", b: "w1n_rly", state: "weak" },
-  /* pac */
+  /* 太平洋 */
   { a: "w1p_acc", b: "w1p_dsv", state: "stable" },
   { a: "w1p_acc", b: "w1p_res", state: "stable" },
   { a: "w1p_dsv", b: "w1p_prv", state: "weak" },
@@ -98,25 +98,25 @@ const W1_LINKS: NetLink[] = [
   { a: "w1p_prv", b: "w1p_rly", state: "weak" },
   { a: "w1p_res", b: "w1p_crp2", state: "stable" },
   { a: "w1p_crp2", b: "w1p_dsv", state: "weak" },
-  /* central */
+  /* 中部 */
   { a: "w1m_rly", b: "w1m_sec", state: "weak" },
   { a: "w1m_rly", b: "w1m_dsv", state: "stable" },
   { a: "w1m_sec", b: "w1m_prv", state: "weak" },
   { a: "w1m_dsv", b: "w1m_prv", state: "weak" },
   { a: "w1m_rly", b: "w1m_crp", state: "stable" },
   { a: "w1m_crp", b: "w1m_dsv", state: "weak" },
-  /* atlantic */
+  /* 大西洋 */
   { a: "w1e_acc", b: "w1e_crp", state: "stable" },
   { a: "w1e_acc", b: "w1e_dsv", state: "stable" },
   { a: "w1e_crp", b: "w1e_rly", state: "stable" },
   { a: "w1e_dsv", b: "w1e_sec", state: "stable" },
   { a: "w1e_rly", b: "w1e_sec", state: "weak" },
-  /* gulf */
+  /* 海湾 */
   { a: "w1g_acc", b: "w1g_dsv", state: "stable" },
   { a: "w1g_dsv", b: "w1g_rly", state: "stable" },
   { a: "w1g_acc", b: "w1g_prv", state: "down" },
   { a: "w1g_dsv", b: "w1g_prv2", state: "weak" },
-  /* backbone */
+  /* 主干 */
   { a: "w1a_rly", b: "w1n_rly2", state: "weak", backbone: true },
   { a: "w1n_acc", b: "w1p_acc", state: "stable", backbone: true },
   { a: "w1n_dsv", b: "w1m_rly", state: "stable", backbone: true },
@@ -129,7 +129,7 @@ const W1_LINKS: NetLink[] = [
 ];
 
 /* ================================================================== */
-/* WETLOW — SOUTH AMERICA                                              */
+/* WETLOW：南美洲                                              */
 /* ================================================================== */
 
 const WL_SECTORS: Sector[] = [
@@ -166,65 +166,65 @@ const WL_SECTORS: Sector[] = [
 ];
 
 const WL_NODES: NetNode[] = [
-  /* equator */
+  /* 赤道 */
   { id: "wlq_acc", code: "ACC-Q01", type: "ACCESS", sector: "wl_eq", x: 120, y: 90, status: "ONLINE", desc: "Caracas access pool. Warm modems, open doors." },
   { id: "wlq_rly", code: "RLY-Q02", type: "RELAY", sector: "wl_eq", x: 250, y: 120, status: "ONLINE", desc: "Equatorial trunk relay. Roasts at noon." },
   { id: "wlq_dsv", code: "DSV-Q03", type: "DATA SERVER", sector: "wl_eq", x: 355, y: 80, status: "ONLINE", desc: "Coffee exchange records server. Definitely just coffee." },
 
-  /* amazon mesh (contested) */
+  /* 亚马逊网格（争议区） */
   { id: "wlz_rly", code: "RLY-M01", type: "RELAY", sector: "wl_amz", x: 500, y: 180, status: "ONLINE", desc: "River float relay, Manaus reach. Powered questionably." },
   { id: "wlz_arc", code: "ARC-M02", type: "ARCHIVE", sector: "wl_amz", x: 640, y: 245, status: "UNKNOWN", desc: "Mission archive. Rumored to hold pre-network logs." },
   { id: "wlz_prv", code: "PRV-M03", type: "PRIVATE", sector: "wl_amz", x: 765, y: 160, status: "ONLINE", desc: "Jungle host. Photosynthesis-powered (unverified)." },
   { id: "wlz_sec", code: "SEC-M04", type: "SECURITY", sector: "wl_amz", x: 840, y: 285, status: "RESTRICTED", desc: "Logging concession security grid. Do not probe twice." },
 
-  /* andes */
+  /* 安第斯 */
   { id: "wld_rly", code: "RLY-A01", type: "RELAY", sector: "wl_and", x: 150, y: 240, status: "ONLINE", desc: "Altiplano relay. Oxygen optional, uptime not." },
   { id: "wld_res", code: "RES-A02", type: "RESEARCH", sector: "wl_and", x: 255, y: 320, status: "ONLINE", desc: "Observatory node. Nightly sky dumps, 400MB of dark." },
   { id: "wld_acc", code: "ACC-A03", type: "ACCESS", sector: "wl_and", x: 140, y: 395, status: "ONLINE", desc: "Valparaiso dial pool. Funicular of packets." },
 
-  /* atlantic shelf */
+  /* 大西洋陆架 */
   { id: "wls_crp", code: "CRP-S01", type: "CORPORATE", sector: "wl_atl", x: 920, y: 300, status: "ONLINE", desc: "Port authority host. Stamped, signed, mirrored." },
   { id: "wls_rly", code: "RLY-S02", type: "RELAY", sector: "wl_atl", x: 1045, y: 345, status: "ONLINE", desc: "Shelf cable relay. Barnacled but swift." },
   { id: "wls_dsv", code: "DSV-S03", type: "DATA SERVER", sector: "wl_atl", x: 955, y: 415, status: "ONLINE", desc: "Shipping ledger mirror. Every crate accounted." },
 
-  /* pampa */
+  /* 潘帕斯 */
   { id: "wlp_acc", code: "ACC-PA01", type: "ACCESS", sector: "wl_pam", x: 400, y: 450, status: "ONLINE", desc: "Buenos Aires access. Passionate about uptime." },
   { id: "wlp_rly", code: "RLY-PA02", type: "RELAY", sector: "wl_pam", x: 545, y: 480, status: "ONLINE", desc: "Pampeano backbone relay. Grass-fed packets." },
   { id: "wlp_dsv", code: "DSV-PA03", type: "DATA SERVER", sector: "wl_pam", x: 665, y: 430, status: "ONLINE", desc: "Cattle futures vault. Volatile." },
   { id: "wlp_prv", code: "PRV-PA04", type: "PRIVATE", sector: "wl_pam", x: 460, y: 558, status: "OFFLINE", desc: "Estancia node. Generator out of diesel." },
 
-  /* south cape */
+  /* 南角 */
   { id: "wlc_rly", code: "RLY-CA01", type: "RELAY", sector: "wl_cape", x: 320, y: 610, status: "UNKNOWN", desc: "Cape relay. Signal bends wrong here. Count the echoes." },
   { id: "wlc_arc", code: "ARC-CA02", type: "ARCHIVE", sector: "wl_cape", x: 465, y: 650, status: "OFFLINE", desc: "Whaling records archive. Waterlogged in both senses." },
   { id: "wlc_res", code: "RES-CA03", type: "RESEARCH", sector: "wl_cape", x: 510, y: 590, status: "UNKNOWN", desc: "Penguin census beacon. Someone taught it to ping." },
 ];
 
 const WL_LINKS: NetLink[] = [
-  /* equator */
+  /* 赤道 */
   { a: "wlq_acc", b: "wlq_rly", state: "stable" },
   { a: "wlq_rly", b: "wlq_dsv", state: "stable" },
-  /* amazon */
+  /* 亚马逊 */
   { a: "wlz_rly", b: "wlz_arc", state: "weak" },
   { a: "wlz_rly", b: "wlz_prv", state: "weak" },
   { a: "wlz_prv", b: "wlz_sec", state: "weak" },
   { a: "wlz_arc", b: "wlz_sec", state: "down" },
-  /* andes */
+  /* 安第斯 */
   { a: "wld_rly", b: "wld_res", state: "stable" },
   { a: "wld_res", b: "wld_acc", state: "stable" },
   { a: "wld_rly", b: "wld_acc", state: "stable" },
-  /* shelf */
+  /* 陆架 */
   { a: "wls_crp", b: "wls_rly", state: "stable" },
   { a: "wls_crp", b: "wls_dsv", state: "stable" },
   { a: "wls_rly", b: "wls_dsv", state: "stable" },
-  /* pampa */
+  /* 潘帕斯 */
   { a: "wlp_acc", b: "wlp_rly", state: "stable" },
   { a: "wlp_rly", b: "wlp_dsv", state: "stable" },
   { a: "wlp_acc", b: "wlp_prv", state: "down" },
   { a: "wlp_dsv", b: "wlp_prv", state: "weak" },
-  /* cape */
+  /* 海角 */
   { a: "wlc_rly", b: "wlc_arc", state: "weak" },
   { a: "wlc_arc", b: "wlc_res", state: "weak" },
-  /* backbone */
+  /* 主干 */
   { a: "wlq_rly", b: "wlz_rly", state: "stable", backbone: true },
   { a: "wlq_acc", b: "wld_rly", state: "stable", backbone: true },
   { a: "wlz_sec", b: "wls_crp", state: "weak", backbone: true },

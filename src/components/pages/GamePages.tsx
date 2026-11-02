@@ -81,7 +81,7 @@ export function CodexPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* category rail */}
+      {/* 分类栏 */}
       <div className="flex shrink-0 overflow-x-auto border-b border-line bg-soot">
         {CATS.map((c) => (
           <button
@@ -133,7 +133,7 @@ export function CodexPage() {
           );
         })}
 
-        {/* update log */}
+        {/* 更新日志 */}
         {g.codexLog.length > 0 && (
           <div className="border-t border-line2 p-2.5">
             <div className="text-[8px] uppercase tracking-[0.2em] text-faint">{t("cx.log")}</div>
@@ -165,11 +165,11 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
   const { g, acceptContract, deliverContract, pickChoice, markThreadRead, setOpenThread } = useGame();
   const { isHl, gating, fire } = useTut();
   const [open, setOpen] = useState<string | null>(null);
-  /* a bumped `home` means the game wants the operator back on the thread list */
+  /* `home` 被递增意味着游戏希望操作员回到线程列表 */
   useEffect(() => { if (home > 0) setOpen(null); }, [home]);
 
-  /* tell the game which thread is on screen so it never badges or toasts it,
-     and mark it read while it stays open */
+  /* 告诉游戏当前屏幕上显示的是哪个线程，使其永不显示角标或弹出提示，
+     并在其保持打开期间将其标为已读 */
   useEffect(() => {
     setOpenThread(open);
     return () => setOpenThread(null);
@@ -183,7 +183,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
   const jumpToOffer = () =>
     offerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  /* opening a thread lands on the live job, not at the top of the backlog */
+  /* 打开线程时定位到进行中的任务，而不是积压消息的顶部 */
   useEffect(() => {
     if (!open) return;
     const h = setTimeout(() => {
@@ -203,7 +203,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
     const threadBlocked = c.id === "op17"
       ? g.flags.op17_blocked === true
       : c.id === "sablec" ? g.flags.sable_blocked === true : false;
-    /* every job with this contact is settled and nothing awaits an answer */
+    /* 与此联系人的所有任务都已了结，且没有等待回复的内容 */
     const mine = CONTRACTS.filter((x) => x.contact === c.id && g.contracts[x.id]);
     const threadClosed =
       mine.length > 0 &&
@@ -255,7 +255,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                   {(lang === "ru" ? m.textRu : m.textEn) ?? m.text}
                 </p>
 
-                {/* contract card */}
+                {/* 合同卡片 */}
                 {ct && m.action === "offer" && (
                   <div className="mt-1 border border-line2 bg-well p-2">
                     <div className="text-[10px] font-bold tracking-[0.1em] text-phosbrite">
@@ -319,7 +319,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                   </button>
                 )}
 
-                {/* scripted reply buttons */}
+                {/* 脚本化回复按钮 */}
                 {m.choices && !m.picked && (
                   <div className="mt-1 flex flex-col gap-1">
                     {m.choices.map((ch) => (
@@ -373,7 +373,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
         const activeCt = CONTRACTS.filter(
           (ct) => ct.contact === c.id && g.contracts[ct.id] && g.contracts[ct.id].state !== "COMPLETED"
         );
-        /* fresh lines arrived while away, or a question is still unanswered */
+        /* 离开期间收到了新消息，或仍有问题未回答 */
         const missed = (g.threadRead?.[c.id] ?? 0) < thread.length;
         const awaiting =
           thread.some((m) => m.choices && !m.picked) ||

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Database } from "lucide-react";
 import { useT } from "../i18n";
 
-/* Scrolling roster of handles that finally lands on the operator's own. */
+/* 滚动的用户名名单，最终停在操作员自己的名字上。 */
 
 const POOL = [
   "NULLBYTE","Ghost_404","deadlink","rootkit","SYNTH","coldboot","BlackRelay","koma","irq0",
@@ -26,7 +26,7 @@ export default function HackerExchange({
   const [badge, setBadge] = useState(false);
   const timers = useRef<number[]>([]);
 
-  /* a long roster so the scroll reads as "thousands of names" */
+  /* 名单很长，让滚动看起来像“成千上万个名字” */
   const rows = useMemo(() => {
     const out: string[] = [];
     for (let i = 0; i < 90; i++) out.push(POOL[(i * 7 + 3) % POOL.length] + (i % 5 === 0 ? `_${i}` : ""));
@@ -37,7 +37,7 @@ export default function HackerExchange({
   useEffect(() => {
     const total = rows.length - 9;
     let i = 0;
-    /* fast at first, easing to a stop on the operator's line */
+    /* 起初很快，随后逐渐减速，停在操作员所在的那一行 */
     const tick = () => {
       i += 1;
       setOffset(Math.min(i, total));
@@ -90,7 +90,7 @@ export default function HackerExchange({
                 </div>
               );
             })}
-            {/* scan veil */}
+            {/* 扫描遮罩 */}
             <div
               className="pointer-events-none absolute inset-0"
               style={{

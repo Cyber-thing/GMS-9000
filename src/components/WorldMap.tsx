@@ -18,7 +18,7 @@ import { useT } from "../i18n";
 import { regionContinent } from "../i18n/content";
 
 /* ------------------------------------------------------------------ */
-/* route trace overlay — "packets in flight"                           */
+/* 路由追踪叠加层：“飞行中的数据包”                           */
 /* ------------------------------------------------------------------ */
 
 export function RouteTrace({ region }: { region: RegionDef }) {
@@ -83,7 +83,7 @@ export function RouteTrace({ region }: { region: RegionDef }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* world net map                                                       */
+/* 世界网络地图                                                       */
 /* ------------------------------------------------------------------ */
 
 export default function WorldMap({
@@ -153,18 +153,18 @@ export default function WorldMap({
           className="relative border border-line2 bg-[#0b0e11]"
           style={{ width: box.w, height: box.h }}
         >
-          {/* ======== svg: graticule + land + route arc ======== */}
+          {/* ======== SVG：经纬网 + 陆地 + 路由弧线 ======== */}
           <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 ${MAP_W} ${MAP_H}`} preserveAspectRatio="none" aria-hidden>
-            {/* graticule every 30° */}
+            {/* 每 30° 一条经纬线 */}
             {Array.from({ length: 11 }, (_, i) => (
               <line key={`g${i}`} x1={((i + 1) * 30) / 360 * MAP_W} y1={0} x2={((i + 1) * 30) / 360 * MAP_W} y2={MAP_H} stroke="#1b2028" strokeWidth={0.7} />
             ))}
             {Array.from({ length: 5 }, (_, i) => (
               <line key={`v${i}`} x1={0} y1={((i + 1) * 30) / 180 * MAP_H} x2={MAP_W} y2={((i + 1) * 30) / 180 * MAP_H} stroke="#1b2028" strokeWidth={0.7} />
             ))}
-            {/* equator emphasis */}
+            {/* 强调赤道 */}
             <line x1={0} y1={MAP_H / 2} x2={MAP_W} y2={MAP_H / 2} stroke="#25303b" strokeWidth={1} strokeDasharray="6 6" />
-            {/* land dots */}
+            {/* 陆地点阵 */}
             {cells.map(({ c, r, tone }) => (
               <rect
                 key={`${c}_${r}`}
@@ -176,13 +176,13 @@ export default function WorldMap({
               />
             ))}
 
-            {/* uplink rings */}
+            {/* 上行链路光环 */}
             <circle cx={upl.x} cy={upl.y} r={10} fill="none" stroke="#8f86b8" opacity={0.5}>
               <animate attributeName="r" values="8;26" dur="2.6s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.55;0" dur="2.6s" repeatCount="indefinite" />
             </circle>
 
-            {/* packet stream along route arc during trace */}
+            {/* 追踪期间沿路由弧线流动的数据包 */}
             {arc && (
               <>
                 <path d={arc} fill="none" stroke="#cfa04b" strokeWidth={1.2} strokeDasharray="5 7" className="anim-dashflow" opacity={0.85} />
@@ -195,7 +195,7 @@ export default function WorldMap({
             )}
           </svg>
 
-          {/* ======== uplink marker ======== */}
+          {/* ======== 上行链路标记 ======== */}
           <div
             className="absolute z-10"
             style={{ left: `${lonToX(UPLINK.lon) * 100}%`, top: `${latToY(UPLINK.lat) * 100}%`, transform: "translate(-50%,-50%)" }}
@@ -208,7 +208,7 @@ export default function WorldMap({
             </div>
           </div>
 
-          {/* ======== region gateways ======== */}
+          {/* ======== 区域网关 ======== */}
           {REGIONS.map((r) => {
             const active = trace?.id === r.id;
             const locked = !unlockedRegions.includes(r.id);
@@ -270,7 +270,7 @@ export default function WorldMap({
             );
           })}
 
-          {/* ======== dead points ======== */}
+          {/* ======== 死点 ======== */}
           {DEAD_POINTS.map((p) => (
             <button
               key={p.code}
@@ -287,7 +287,7 @@ export default function WorldMap({
             </button>
           ))}
 
-          {/* frame labels */}
+          {/* 边框标签 */}
           <span className="pointer-events-none absolute left-[6px] top-[5px] text-[7.5px] tracking-[0.22em] text-faint">
             {t("world.fig")}
           </span>
@@ -296,7 +296,7 @@ export default function WorldMap({
           </span>
         </div>
 
-        {/* ======== route trace overlay ======== */}
+        {/* ======== 路由追踪叠加层 ======== */}
         {trace && <RouteTrace region={trace} />}
       </div>
     </Panel>

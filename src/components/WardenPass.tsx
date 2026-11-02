@@ -4,7 +4,7 @@ import { cn } from "../utils/cn";
 import { useT } from "../i18n";
 import { StatusDot } from "./chrome";
 
-/** WARDEN PASS — a literal password prompt guarding a node. */
+/** WARDEN PASS：守卫节点的字面密码提示。 */
 export default function WardenPass({
   nodeCode,
   expected,
@@ -63,7 +63,7 @@ export default function WardenPass({
         </div>
 
         <div className="px-4 py-4">
-          {/* banner */}
+          {/* 横幅 */}
           <div className="flex items-center gap-2 border border-amberdim/60 bg-amber/8 px-2.5 py-2">
             <ShieldAlert size={16} className="shrink-0 text-amber" />
             <div className="min-w-0">
@@ -76,7 +76,7 @@ export default function WardenPass({
             </div>
           </div>
 
-          {/* field */}
+          {/* 输入框 */}
           <label className="mt-3 block text-[9px] uppercase tracking-[0.24em] text-faint">
             {t("wp.prompt")}
           </label>
@@ -101,7 +101,7 @@ export default function WardenPass({
             <span className="h-[13px] w-[7px] shrink-0 animate-blink bg-phosdim" />
           </div>
 
-          {/* verdict */}
+          {/* 判定 */}
           <div className="mt-2 min-h-[16px] text-[10px] uppercase tracking-[0.16em]">
             {state === "checking" && <span className="animate-softpulse text-amber">{t("wp.checking")}</span>}
             {state === "denied" && (
