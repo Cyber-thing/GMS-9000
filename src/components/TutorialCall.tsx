@@ -65,7 +65,7 @@ function Portrait({ size = 34, avatar = "skull" }: { size?: number; avatar?: "sk
 
 export default function TutorialCall() {
   const { t, lang } = useT();
-  const { phase, step, answer, next, choose, call, callNext, callAnswer, callRinging } = useTut();
+  const { phase, step, answer, next, choose, call, callNext, callAnswer, callRinging, aside } = useTut();
   const [typed, setTyped] = useState(false);
   const [skip, setSkip] = useState(false);
   const [folded, setFolded] = useState(false);
@@ -192,7 +192,8 @@ export default function TutorialCall() {
   /* ---------------- call in progress ---------------- */
   if (phase !== "talking" || !step) return null;
 
-  const line = lang === "ru" ? step.ru : step.en;
+  /* a passing remark temporarily replaces the scripted line */
+  const line = aside ?? (lang === "ru" ? step.ru : step.en);
   const waiting = !!step.waitFor;
 
   return (
@@ -239,7 +240,7 @@ export default function TutorialCall() {
           <Portrait />
           <div className="min-w-0 flex-1">
             <p className="min-h-[32px] text-[11px] leading-relaxed text-fog/95">
-              {skip ? line : <Typed text={line} onDone={() => setTyped(true)} />}
+              {skip && !aside ? line : <Typed key={aside ?? step.id} text={line} onDone={() => setTyped(true)} />}
             </p>
 
             {/* yes / no fork */}

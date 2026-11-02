@@ -52,6 +52,8 @@ export interface TutStep {
   final?: boolean;
   /** plays the hacker-exchange listing animation behind the call */
   listing?: boolean;
+  /** nothing but the call window is clickable on this beat */
+  lockAll?: boolean;
 }
 
 export const TUT_STEPS: TutStep[] = [
@@ -59,12 +61,14 @@ export const TUT_STEPS: TutStep[] = [
     id: "intro",
     en: "They redesigned the interface again. These idiots never leave us alone. Fine — I already worked most of it out, do not waste your time.",
     ru: "Они снова обновили интерфейс. Эти идиоты не оставляют нас в покое. Ладно, я уже немного разобрался, не трать время.",
+    lockAll: true,
   },
   {
     id: "ask",
     en: "Let me run you through the basics, quickly.",
     ru: "Давай быстро по основным моментам.",
     choice: true,
+    lockAll: true,
   },
   {
     id: "panel",
@@ -129,8 +133,8 @@ export const TUT_STEPS: TutStep[] = [
   },
   {
     id: "dsv2",
-    en: "There. The server is ours — fire up GENIUS.",
-    ru: "Всё, сервер наш, запускай гения.",
+    en: "Right — head back to the server and fire up GENIUS.",
+    ru: "Всё, возвращайся к серверу и запускай Гения.",
     highlight: ["node:w1p_dsv", "connect"],
     waitFor: "hack:w1p_dsv",
   },
@@ -203,6 +207,18 @@ export const DECLINE_STEP = DECLINE_STEPS[0];
 
 export const CALLER = { nick: "Ghost_404" };
 
+/** Ghost comments when the operator scans the memo that is not his target. */
+export const MEMO_ASIDE = {
+  before: {
+    en: "That is not what I need. Looks like something you could sell, though.",
+    ru: "Это мне не нужно. Но выглядит как то, что можно продать.",
+  },
+  after: {
+    en: "Looks like something you could sell. Keep it. Now bring me my documents, quickly!",
+    ru: "Это выглядит как то, что можно продать. Оставь себе. И тащи мне мои документы поживее!",
+  },
+};
+
 /* ------------------------------------------------------------------ */
 /* story calls — scripted monologues that reuse the call window        */
 /* ------------------------------------------------------------------ */
@@ -262,6 +278,9 @@ interface Ctx {
   step: TutStep | null;
   /** active story call, if any */
   call: { script: CallScript; idx: number } | null;
+  /** transient line shown in place of the current beat */
+  aside: string | null;
+  sayAside: (text: string) => void;
   playCall: (id: string) => void;
   callNext: () => void;
   callAnswer: () => void;
@@ -296,6 +315,8 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   /* a call that was ringing when the tab closed resumes as ringing */
   const [call, setCall] = useState<{ script: CallScript; idx: number } | null>(null);
   const [callRinging, setCallRinging] = useState(false);
+  const [aside, setAside] = useState<string | null>(null);
+  const asideTimer = useRef<number | null>(null);
   const [phase, setPhase] = useState<Phase>(saved.phase === "over" ? "over" : saved.phase);
   const [idx, setIdx] = useState(saved.idx);
   const [declined, setDeclined] = useState(saved.declined);
@@ -358,6 +379,12 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     if (cur?.waitFor === e) setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
   }, [phase, declined]);
 
+  const sayAside = useCallback((text: string) => {
+    setAside(text);
+    if (asideTimer.current) clearTimeout(asideTimer.current);
+    asideTimer.current = window.setTimeout(() => setAside(null), 7000);
+  }, []);
+
   const playCall = useCallback((id: string) => {
     const script = CALL_SCRIPTS[id];
     if (!script) return;
@@ -378,12 +405,12 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Ctx>(
     () => ({
       phase, step, active,
-      call, playCall, callNext, callAnswer, callRinging,
+      call, playCall, callNext, callAnswer, callRinging, aside, sayAside,
       hl: phase === "talking" && step ? step.highlight?.[0] ?? null : null,
       hls: phase === "talking" && step ? step.highlight ?? [] : [],
       isHl: (h: TutHighlight) =>
         phase === "talking" ? (step?.highlight ?? []).includes(h) : false,
-      gating: phase === "talking" && !!step?.highlight?.length,
+      gating: phase === "talking" && (!!step?.highlight?.length || !!step?.lockAll),
       answer, next, choose, fire, satisfy, seekTo, end, start,
     }),
     [phase, step, active, call, playCall, callNext, callAnswer, callRinging,

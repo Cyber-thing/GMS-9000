@@ -20,7 +20,7 @@ import KeyBanner from "./components/KeyBanner";
 import MessageToast from "./components/MessageToast";
 import { ROUTING_TIERS, usesRouting } from "./game/routing";
 import TutorialCall from "./components/TutorialCall";
-import { tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
+import { MEMO_ASIDE, tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
 import { useColumns } from "./hooks/useColumns";
 import { EventLog, SectorPanel, mkEvent, type NetEvent } from "./components/InfoPanels";
 import TerminalBar, { type TermLine } from "./components/TerminalBar";
@@ -93,7 +93,7 @@ export default function App() {
   /* A region is gated only when it holds none of the current targets;
      regions that do hold one stay live and dim their own children. */
   const gate = (...own: TutHighlight[]) =>
-    tut.gating && !own.some((h) => tut.isHl(h)) ? "tut-gated" : "";
+    tut.gating && (tut.step?.lockAll || !own.some((h) => tut.isHl(h))) ? "tut-gated" : "";
 
   const langRef = useRef(lang);
   langRef.current = lang;
@@ -499,10 +499,17 @@ export default function App() {
     (_nodeId: string, fileId: string) => {
       download(fileId);
       tutFire(`file:${fileId}` as never);
+
+      /* Ghost has an opinion about the memo that is not his target */
+      if (fileId === "f_icx_memo" && tut.phase === "talking") {
+        const gotTarget = g.files.includes("f_icx_payroll");
+        const l = gotTarget ? MEMO_ASIDE.after : MEMO_ASIDE.before;
+        tut.sayAside(lang === "ru" ? l.ru : l.en);
+      }
       const f = resolveFile(fileId);
       if (f) pushEvent(t("hk.download", { name: lang === "ru" ? f.nameRu : f.name }), "good");
     },
-    [download, pushEvent, t, lang, tutFire]
+    [download, pushEvent, t, lang, tutFire, tut, g.files]
   );
 
   /* ---------- data vault ---------- */
@@ -639,6 +646,12 @@ export default function App() {
     }
   }, [tut.phase, tutStep, g.flags.listed, setFlag]);
 
+  /* A save made before the exchange existed has no `listed` flag; without it
+     operator_17 would never write. Grant it once the call is behind us. */
+  useEffect(() => {
+    if (tut.phase === "over" && tutorialSeen() && !g.flags.listed) setFlag("listed");
+  }, [tut.phase, g.flags.listed, setFlag]);
+
   /* operator_17 writes once the listing animation has played out */
   useEffect(() => {
     if (tut.phase !== "over" || !g.flags.listed || exchange || g.flags.arc_intro) return;
@@ -651,6 +664,20 @@ export default function App() {
     }, 1800);
     timeouts.current.push(h);
   }, [tut.phase, g.flags.listed, exchange, g.flags.arc_intro, openArchiveJob, markTab]);
+
+  /* the archive job closing is a beat in itself: show the operator the list */
+  const arcState = g.contracts["ct_archive"]?.state;
+  const arcShown = useRef(false);
+  useEffect(() => {
+    if (arcState !== "COMPLETED" || arcShown.current) return;
+    arcShown.current = true;
+    const h = window.setTimeout(() => {
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }, 1200);
+    timeouts.current.push(h);
+  }, [arcState, markTab]);
 
   /* Two unrelated petitioners surface after the archive job, on their own
      schedules — m4rla first (her target is in the opening sector), Freddy

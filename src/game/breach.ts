@@ -26,11 +26,11 @@ export interface BreachTier {
 }
 
 export const BREACH_TIERS: Record<number, BreachTier> = {
-  1: { hops: 1,  timerSec: 30, alarmMs: 10000, failRep: 8,  dialMs: 2600, maxRows: 2 },
-  2: { hops: 2,  timerSec: 34, alarmMs: 10000, failRep: 12, dialMs: 2600, maxRows: 3 },
-  3: { hops: 4,  timerSec: 48, alarmMs: 10000, failRep: 18, dialMs: 2800, maxRows: 3 },
-  4: { hops: 8,  timerSec: 80, alarmMs: 10000, failRep: 26, dialMs: 3000, maxRows: 4 },
-  5: { hops: 16, timerSec: 140, alarmMs: 10000, failRep: 36, dialMs: 3200, maxRows: 4 },
+  1: { hops: 1,  timerSec: 25, alarmMs: 10000, failRep: 8,  dialMs: 2600, maxRows: 2 },
+  2: { hops: 2,  timerSec: 28, alarmMs: 10000, failRep: 12, dialMs: 2600, maxRows: 3 },
+  3: { hops: 4,  timerSec: 40, alarmMs: 10000, failRep: 18, dialMs: 2800, maxRows: 3 },
+  4: { hops: 8,  timerSec: 68, alarmMs: 10000, failRep: 26, dialMs: 3000, maxRows: 4 },
+  5: { hops: 16, timerSec: 118, alarmMs: 10000, failRep: 36, dialMs: 3200, maxRows: 4 },
 };
 
 export const MAX_CELL_SECONDS = 15;

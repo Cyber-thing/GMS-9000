@@ -118,7 +118,7 @@ interface Ctx {
   openMarla: () => void;
   openArchiveJob: () => void;
   setFlag: (k: string, v?: string | boolean) => void;
-  pushBeat: (b: Beat) => void;
+  pushBeat: (b: Beat, thread?: string) => void;
   openMarket: () => boolean;
   buyScript: (id: string) => boolean;
   sellFile: (id: string) => { credits: number; betrayed?: string } | null;
@@ -414,8 +414,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   /* ================= scripted quest: LOCKED OUT ================= */
 
-  const pushBeat = useCallback((b: Beat) => {
-    const who = b.from === "OP" ? "op17" : b.from;
+  /** `thread` says which conversation the line belongs to. An OP reply has no
+      sender of its own, so without it the line would land in the wrong chat. */
+  const pushBeat = useCallback((b: Beat, thread?: string) => {
+    const who = thread ?? (b.from === "OP" ? "op17" : b.from);
     setG((s) => {
       const list = [
         ...(s.threads[who] ?? []),
@@ -455,7 +457,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       contacts: s.contacts.includes("op17") ? s.contacts : [...s.contacts, "op17"],
       contracts: { ...s.contracts, ct_archive: { state: "AVAILABLE" } },
     }));
-    OP17_INTRO.forEach(pushBeat);
+    OP17_INTRO.forEach((b) => pushBeat(b, "op17"));
   }, [g.flags.arc_intro, setFlag, pushBeat]);
 
   /** sable introduces himself once his call is over: the contact appears and
@@ -467,8 +469,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       ...s,
       contacts: s.contacts.includes("sablec") ? s.contacts : [...s.contacts, "sablec"],
     }));
-    pushBeat(SABLE_OFFER);
-  }, [g.flags.sable_met, setFlag, pushBeat]);
+    /* only pitch for the list while the operator still has it to give */
+    if (g.flags["sable-ok"] !== true && g.files.includes("f_termlist")) {
+      pushBeat(SABLE_OFFER, "sablec");
+    }
+  }, [g.flags.sable_met, g.flags, g.files, setFlag, pushBeat]);
 
   /** Freddy asks about his sister's implant — his target sits in GULF */
   const openFreddy = useCallback(() => {
@@ -479,7 +484,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       ...s,
       contacts: s.contacts.includes("freddy") ? s.contacts : [...s.contacts, "freddy"],
     }));
-    FREDDY_IMPLANT.forEach(pushBeat);
+    FREDDY_IMPLANT.forEach((b) => pushBeat(b, "freddy"));
   }, [g.flags.fred_intro, g.rep, setFlag, pushBeat]);
 
   /** m4rla wants a hall to go dark — unrelated to Freddy, runs in parallel */
@@ -490,7 +495,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       ...s,
       contacts: s.contacts.includes("marla") ? s.contacts : [...s.contacts, "marla"],
     }));
-    MARLA_PROJ.forEach(pushBeat);
+    MARLA_PROJ.forEach((b) => pushBeat(b, "marla"));
   }, [g.flags.marla_intro, setFlag, pushBeat]);
 
   /** the operator answers a scripted question */
@@ -515,14 +520,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       if (choiceId === "listen") {
         pushBeat({ id: "a1", from: "OP", line: { en: "I am listening.", ru: "Я слушаю." } });
-        later(() => OP17_BRIEF.forEach(pushBeat), 700);
+        later(() => OP17_BRIEF.forEach((b) => pushBeat(b, "op17")), 700);
         return;
       }
 
       if (choiceId === "accept") {
         pushBeat({ id: "a2", from: "OP", line: { en: "Taking the contract.", ru: "Принимаю контракт." } });
         setG((s) => ({ ...s, contracts: { ...s.contracts, ct_archive: { state: "ACCEPTED", accepted: true } } }));
-        later(() => OP17_ACCEPTED.forEach(pushBeat), 800);
+        later(() => OP17_ACCEPTED.forEach((b) => pushBeat(b, "op17")), 800);
         return;
       }
 
@@ -534,7 +539,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (soldIt) {
           setFlag("arc_told", "sold_then_told");
           setFlag("op17_blocked", true);
-          OP17_SOLD_REFUSAL.forEach((b, i) => later(() => pushBeat(b), i * 1200));
+          OP17_SOLD_REFUSAL.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 1200));
           setG((s) => ({
             ...s,
             relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.emptyCivic },
@@ -545,7 +550,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         /* no file to show — and he trusts the company */
         if (!stillHasIt) {
           setFlag("arc_told", "empty");
-          OP17_DISBELIEF.forEach((b, i) => later(() => pushBeat(b), i * 1100));
+          OP17_DISBELIEF.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 1100));
           setG((s) => ({
             ...s,
             relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.emptyCivic },
@@ -557,7 +562,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setFlag("sable-revenge", true);
         setFlag("operator-knows", true);
         setFlag("sable_blocked", true);
-        OP17_TOLD.forEach((b, i) => later(() => pushBeat(b), i * 900));
+        OP17_TOLD.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 900));
         setG((s) => ({
           ...s,
           relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.toldCivic,
@@ -571,16 +576,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
             ),
           },
         }));
-        later(() => pushBeat(SABLE_PUNISH), 2600);
+        later(() => pushBeat(SABLE_PUNISH, "sablec"), 2600);
         return;
       }
 
       if (choiceId === "hide") {
         setFlag("arc_told", "hidden");
-        /* sable has already made his offer when he called — nudge it back up */
+        /* nothing to re-offer if he already has the list, or if the operator
+           no longer holds a copy to sell */
+        const alreadySold = gRef.current.flags["sable-ok"] === true;
+        const stillHolds = gRef.current.files.includes("f_termlist");
+        if (alreadySold || !stillHolds) return;
         later(() => {
           const open = (gRef.current.threads.sablec ?? []).some((m) => m.choices && !m.picked);
-          if (!open) pushBeat(SABLE_OFFER);
+          if (!open) pushBeat(SABLE_OFFER, "sablec");
           notify("NEW CONTACT MESSAGE", "sable", "CONTACTS");
         }, 900);
         return;
@@ -588,44 +597,44 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       /* ---- Freddy: implant queue ---- */
       if (choiceId === "fi_what") {
-        pushBeat({ id: "a4", from: "OP", line: { en: "What do you need?", ru: "Что нужно?" } });
-        later(() => FREDDY_IMPLANT_2.forEach(pushBeat), 800);
+        pushBeat({ id: "a4", from: "OP", line: { en: "What do you need?", ru: "Что нужно?" } }, "freddy");
+        later(() => FREDDY_IMPLANT_2.forEach((b) => pushBeat(b, "freddy")), 800);
         return;
       }
       if (choiceId === "fi_ask") {
-        pushBeat({ id: "a5", from: "OP", line: { en: "What do you want from me?", ru: "От меня что требуется?" } });
-        later(() => FREDDY_IMPLANT_3.forEach(pushBeat), 800);
+        pushBeat({ id: "a5", from: "OP", line: { en: "What do you want from me?", ru: "От меня что требуется?" } }, "freddy");
+        later(() => FREDDY_IMPLANT_3.forEach((b) => pushBeat(b, "freddy")), 800);
         return;
       }
       if (choiceId === "fi_ok") {
-        pushBeat({ id: "a6", from: "OP", line: { en: "All right.", ru: "Хорошо." } });
+        pushBeat({ id: "a6", from: "OP", line: { en: "All right.", ru: "Хорошо." } }, "freddy");
         setG((s) => ({ ...s, contracts: { ...s.contracts, ct_implant: { state: "ACCEPTED", accepted: true } } }));
-        later(() => FREDDY_IMPLANT_4.forEach(pushBeat), 800);
+        later(() => FREDDY_IMPLANT_4.forEach((b) => pushBeat(b, "freddy")), 800);
         return;
       }
 
       /* ---- m4rla: projectors ---- */
       if (choiceId === "mp_which") {
-        pushBeat({ id: "a7", from: "OP", line: { en: "Which room?", ru: "Какой зал?" } });
-        later(() => MARLA_PROJ_2.forEach(pushBeat), 800);
+        pushBeat({ id: "a7", from: "OP", line: { en: "Which room?", ru: "Какой зал?" } }, "marla");
+        later(() => MARLA_PROJ_2.forEach((b) => pushBeat(b, "marla")), 800);
         return;
       }
       if (choiceId === "mp_why") {
         pushBeat({
           id: "a9", from: "OP",
           line: { en: "And you want the projectors down.", ru: "И ты хочешь, чтобы проекторы вырубились." },
-        });
-        later(() => MARLA_PROJ_3.forEach(pushBeat), 800);
+        }, "marla");
+        later(() => MARLA_PROJ_3.forEach((b) => pushBeat(b, "marla")), 800);
         return;
       }
       if (choiceId === "mp_ok") {
-        pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь." } });
+        pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь." } }, "marla");
         const already = gRef.current.nodeStates["w1p_crp2"] === "COMPROMISED";
         setG((s) => ({
           ...s,
           contracts: { ...s.contracts, sb_projector: { state: already ? "TARGET ACCESSED" : "ACCEPTED", accepted: true } },
         }));
-        later(() => (already ? MARLA_PROJ_ALREADY : MARLA_PROJ_READY).forEach(pushBeat), 850);
+        later(() => (already ? MARLA_PROJ_ALREADY : MARLA_PROJ_READY).forEach((b) => pushBeat(b, "marla")), 850);
         return;
       }
 
@@ -642,15 +651,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
           burned: s.burned.includes("f_queue_memo") ? s.burned : [...s.burned, "f_queue_memo"],
           stats: { ...s.stats, contracts: s.stats.contracts + 1 },
         }));
-        FREDDY_IMPLANT_DONE.forEach((b, i) => later(() => pushBeat(b), i * 1300));
+        FREDDY_IMPLANT_DONE.forEach((b, i) => later(() => pushBeat(b, "freddy"), i * 1300));
         notify("CONTRACT COMPLETED", "+350cr", "CONTACTS");
         return;
       }
 
       if (choiceId === "sendsable") {
-        setFlag("arc_told", "sable");
+        /* this records the deal with sable — it must NOT count as having
+           answered operator_17, who can still be told (and will not believe it) */
         setFlag("sable-ok", true);
-        pushBeat({ id: "a3", from: "OP", line: { en: "Sending the list.", ru: "Отправляю список." } });
+        pushBeat({ id: "a3", from: "OP", line: { en: "Sending the list.", ru: "Отправляю список." } }, "sablec");
         setG((s) => ({
           ...s,
           credits: s.credits + ARCHIVE_PAY.sable,
@@ -660,7 +670,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
           files: s.files.filter((x) => x !== "f_termlist"),
           burned: s.burned.includes("f_termlist") ? s.burned : [...s.burned, "f_termlist"],
         }));
-        later(() => pushBeat(SABLE_REWARD), 1100);
+        /* close any duplicate prompt left open in his thread */
+        setG((s) => ({
+          ...s,
+          threads: {
+            ...s.threads,
+            sablec: (s.threads.sablec ?? []).map((m) =>
+              m.choices && !m.picked ? { ...m, picked: "sendsable" } : m
+            ),
+          },
+        }));
+        later(() => pushBeat(SABLE_REWARD, "sablec"), 1100);
         notify("CONTRACT COMPLETED", `+${ARCHIVE_PAY.sable}cr`, "CONTACTS");
         return;
       }
@@ -689,7 +709,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (st === "ACCEPTED" || st === "TARGET ACCESSED") {
           setG((s) => ({ ...s, contracts: { ...s.contracts, ct_implant: { state: "DATA ACQUIRED" } } }));
           timers.current.push(
-            window.setTimeout(() => FREDDY_IMPLANT_HOLD.forEach(pushBeat), 900)
+            window.setTimeout(() => FREDDY_IMPLANT_HOLD.forEach((b) => pushBeat(b, "freddy")), 900)
           );
         }
       }
@@ -704,6 +724,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       CONTRACTS.forEach((ct) => {
         const pr = g.contracts[ct.id];
+        /* scripted jobs stage their own hand-over line — skip the generic one */
+        if (ct.scripted) return;
         if (ct.kind === "DATA" && ct.file === fileId && (pr?.state === "TARGET ACCESSED" || pr?.state === "ACCEPTED")) {
           setG((s) => ({ ...s, contracts: { ...s.contracts, [ct.id]: { state: "DATA ACQUIRED" } } }));
           const c = contactById(ct.contact);
@@ -786,7 +808,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       /* hand-written jobs play their own closing scene */
       if (ct.scripted && id === "ct_archive") {
         OP17_DELIVER.forEach((b, i) =>
-          timers.current.push(window.setTimeout(() => pushBeat(b), i * 1000))
+          timers.current.push(window.setTimeout(() => pushBeat(b, "op17"), i * 1000))
         );
         timers.current.push(
           window.setTimeout(() => {
@@ -912,7 +934,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             stats: { ...s.stats, contracts: s.stats.contracts + 1, sabotage: s.stats.sabotage + 1 },
           }));
           MARLA_PROJ_DONE.forEach((b, i) =>
-            timers.current.push(window.setTimeout(() => pushBeat(b), 900 + i * 900))
+            timers.current.push(window.setTimeout(() => pushBeat(b, "marla"), 900 + i * 900))
           );
           notify("CONTRACT COMPLETED", "+300cr", "CONTACTS");
         }
@@ -921,6 +943,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       /* tell the client the job is physically done */
       CONTRACTS.forEach((ct) => {
         if (ct.kind !== "SABOTAGE" || ct.target !== nodeId) return;
+        if (ct.scripted) return;   // its own dialogue handles the payout
         const pr = g.contracts[ct.id];
         if (pr?.state !== "ACCEPTED" && pr?.state !== "TARGET ACCESSED") return;
         pushThread(ct.contact, {
