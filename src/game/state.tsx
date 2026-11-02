@@ -4,7 +4,7 @@ import {
 import { store, stampNow } from "../lib/util";
 import { ALL_NODES } from "../data/regions";
 import {
-  OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_DELIVER, OP17_FORK,
+  OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_READY, OP17_DELIVER, OP17_FORK,
   OP17_TOLD, OP17_DISBELIEF, OP17_SOLD_REFUSAL, SABLE_PUNISH, SABLE_REWARD, SABLE_OFFER,
   FREDDY_IMPLANT, FREDDY_IMPLANT_2, FREDDY_IMPLANT_3, FREDDY_IMPLANT_4,
   FREDDY_IMPLANT_HOLD, FREDDY_IMPLANT_DONE,
@@ -429,6 +429,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
           textRu: b.line.ru,
           t: stampNow(),
           choices: b.choices,
+          contract: b.contract,
+          action: b.action,
         },
       ];
       /* if the operator is reading this very thread, it is read on arrival */
@@ -702,6 +704,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
         stats: { ...s.stats, files: s.stats.files + 1 },
       }));
       notify("DATA ACQUIRED", `${ru() ? f.nameRu : f.name} → DATA STORED`, "STATUS");
+
+      /* The archive key arms operator_17's hand-over. Scripted jobs are
+         excluded from the generic prompt, so this is wired explicitly. */
+      if (fileId === "f_access_restored") {
+        const st = g.contracts.ct_archive?.state;
+        if (st === "ACCEPTED" || st === "TARGET ACCESSED") {
+          setG((s) => ({ ...s, contracts: { ...s.contracts, ct_archive: { state: "DATA ACQUIRED" } } }));
+          timers.current.push(
+            window.setTimeout(
+              () =>
+                OP17_READY.forEach((b) => pushBeat(b, "op17")),
+              900
+            )
+          );
+        }
+      }
 
       /* the memo in hand only opens the hand-over — Freddy reacts on delivery */
       if (fileId === "f_queue_memo") {

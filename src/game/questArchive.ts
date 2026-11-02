@@ -11,10 +11,14 @@ export interface Line {
 
 export interface Beat {
   id: string;
-  from: "op17" | "sablec" | "OP";
+  /** any contact id, or "OP" for the operator's own reply */
+  from: string;
   line: Line;
   /** reply buttons rendered under this message */
   choices?: { id: string; en: string; ru: string }[];
+  /** attaches the contract card / hand-over button to this line */
+  contract?: string;
+  action?: "offer" | "deliver" | "done";
 }
 
 export const L = (en: string, ru: string): Line => ({ en, ru });
@@ -53,6 +57,20 @@ export const OP17_ACCEPTED: Beat[] = [
       "Good. He works in the Northline sector. And please — do not get caught. I would rather management never learned we hired a hacker to clean up our own mess.",
       "Хорошо. Он работает в секторе Northline. И пожалуйста, не попадись. Не хочу, чтобы начальство узнало что мы наняли хакера закрывать наши косяки."
     ),
+  },
+];
+
+/** the access key is in hand — he asks for it */
+export const OP17_READY: Beat[] = [
+  {
+    id: "q3b",
+    from: "op17",
+    line: L(
+      "You are in? Good. Push the access key over and I will close the ticket.",
+      "Ты внутри? Хорошо. Перебрось ключ доступа, и я закрою заявку."
+    ),
+    contract: "ct_archive",
+    action: "deliver",
   },
 ];
 
@@ -173,7 +191,7 @@ export const ARCHIVE_PAY = {
 
 export const FREDDY_IMPLANT: Beat[] = [
   {
-    id: "fi1", from: "freddy" as never,
+    id: "fi1", from: "freddy",
     line: L("Hi — can you help me?", "Привет, вы можете мне помочь?"),
     choices: [{ id: "fi_what", en: "What do you need?", ru: "Что нужно?" }],
   },
@@ -181,7 +199,7 @@ export const FREDDY_IMPLANT: Beat[] = [
 
 export const FREDDY_IMPLANT_2: Beat[] = [
   {
-    id: "fi2", from: "freddy" as never,
+    id: "fi2", from: "freddy",
     line: L(
       "My sister was in the queue for a new implant. Her turn was coming up — she was due to get it this month. Then a notice arrived: force majeure, the queue is pushed back a year.",
       "Моя сестра стояла в очереди за новым имплантом. Её время подходило, в этом месяце должны были отдать новый. Но пришло уведомление, что из-за форс-мажорных обстоятельств очередь перенесена на год."
@@ -192,7 +210,7 @@ export const FREDDY_IMPLANT_2: Beat[] = [
 
 export const FREDDY_IMPLANT_3: Beat[] = [
   {
-    id: "fi3", from: "freddy" as never,
+    id: "fi3", from: "freddy",
     line: L(
       "I want to crack the Fusion Cybernetics server and find the reason. I will pay!",
       "Я хочу вскрыть сервер Fusion Cybernetics и найти причину. Я заплачу!"
@@ -203,7 +221,7 @@ export const FREDDY_IMPLANT_3: Beat[] = [
 
 export const FREDDY_IMPLANT_4: Beat[] = [
   {
-    id: "fi4", from: "freddy" as never,
+    id: "fi4", from: "freddy",
     line: L("Excellent! The server is somewhere in GULF!", "Отлично! Сервер где-то в GULF!"),
   },
 ];
@@ -211,7 +229,7 @@ export const FREDDY_IMPLANT_4: Beat[] = [
 /** the memo is in hand — offer to pass it on */
 export const FREDDY_IMPLANT_HOLD: Beat[] = [
   {
-    id: "fi5", from: "freddy" as never,
+    id: "fi5", from: "freddy",
     line: L(
       "Did you get anything? Send it over, I want to read it myself.",
       "Ты что-нибудь нашёл? Присылай, я хочу прочитать сам."
@@ -226,18 +244,18 @@ export const FREDDY_IMPLANT_DONE: Beat[] = [
     line: L("Here. This is why her slot moved.", "Вот. Из-за этого её очередь и сдвинули."),
   },
   {
-    id: "fi7", from: "freddy" as never,
+    id: "fi7", from: "freddy",
     line: L("Those absolute bastards!", "Вот же сволочи!"),
   },
   {
-    id: "fi8", from: "freddy" as never,
+    id: "fi8", from: "freddy",
     line: L(
       "The colour. He did not like the COLOUR. And they went down the list looking for someone with nobody to stand up for them, and they picked her because she is nobody. Because she would not cause problems.",
       "Цвет. Ему не понравился ЦВЕТ. И они пошли по списку искать того, за кого некому заступиться, и выбрали её, потому что она никто. Потому что она не создаст проблем."
     ),
   },
   {
-    id: "fi9", from: "freddy" as never,
+    id: "fi9", from: "freddy",
     line: L(
       "She waited two years. Thank you for finding this. I do not know what I am going to do with it yet, but I am keeping it.",
       "Она ждала два года. Спасибо, что нашёл. Пока не знаю, что с этим делать, но я это так не оставлю."
@@ -251,7 +269,7 @@ export const FREDDY_IMPLANT_DONE: Beat[] = [
 
 export const MARLA_PROJ: Beat[] = [
   {
-    id: "mp1", from: "marla" as never,
+    id: "mp1", from: "marla",
     line: L(
       "You take work, yes? Nothing heroic. I need a room to go dark.",
       "Ты ведь берёшь работу? Ничего героического. Мне нужно, чтобы один зал погас."
@@ -262,7 +280,7 @@ export const MARLA_PROJ: Beat[] = [
 
 export const MARLA_PROJ_2: Beat[] = [
   {
-    id: "mp2", from: "marla" as never,
+    id: "mp2", from: "marla",
     line: L(
       "The presentation hall booked through the Takamuri freight desk. My ex is on stage there today, and he has been rehearsing that slide deck for a month.",
       "Презентационный зал, который бронируют через грузовой отдел Takamuri. Сегодня там на сцене мой бывший, он этот показ репетировал целый месяц."
@@ -273,7 +291,7 @@ export const MARLA_PROJ_2: Beat[] = [
 
 export const MARLA_PROJ_3: Beat[] = [
   {
-    id: "mp3", from: "marla" as never,
+    id: "mp3", from: "marla",
     line: L(
       "The projector rigs hang off the same controller as the freight index. Knock it over and the hall is dark for a few hours. Petty? Completely. I am still paying.",
       "Проекторы висят на том же контроллере, что и грузовой индекс. Опрокинь его — зал погаснет на несколько часов. Мелочно? Абсолютно. Платить я всё равно буду."
@@ -284,7 +302,7 @@ export const MARLA_PROJ_3: Beat[] = [
 
 export const MARLA_PROJ_READY: Beat[] = [
   {
-    id: "mp4", from: "marla" as never,
+    id: "mp4", from: "marla",
     line: L("CRP-P06. Today. Do not miss.", "CRP-P06. Сегодня. Только не промахнись."),
   },
 ];
@@ -292,7 +310,7 @@ export const MARLA_PROJ_READY: Beat[] = [
 /** she reacts when the host was already breached before she asked */
 export const MARLA_PROJ_ALREADY: Beat[] = [
   {
-    id: "mp5", from: "marla" as never,
+    id: "mp5", from: "marla",
     line: L(
       "Wait — you are already inside that host? Even better. Then you only have to pull the plug.",
       "Погоди — ты уже внутри этого узла? Тогда ещё круче. Остаётся только дёрнуть рубильник."
@@ -302,7 +320,7 @@ export const MARLA_PROJ_ALREADY: Beat[] = [
 
 export const MARLA_PROJ_DONE: Beat[] = [
   {
-    id: "mp6", from: "marla" as never,
+    id: "mp6", from: "marla",
     line: L(
       "The hall is dark. I can hear it from the street. Worth every credit.",
       "Зал погас. Это слышно даже с улицы. Каждый кредит того стоил."
