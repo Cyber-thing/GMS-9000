@@ -5,13 +5,14 @@ import { blockBar } from "../lib/util";
 import { useT } from "../i18n";
 import { StatusDot } from "./chrome";
 import { resolveFile } from "../game/data";
-import { generateVault, resolveScan, type VaultFS, type VaultFile, type VaultResult } from "../game/vault";
+import { generateVault, resolveScan, vaultTimer, type VaultFS, type VaultFile, type VaultResult } from "../game/vault";
+import { NODE_META } from "../game/data";
+import WardenClock from "./WardenClock";
 import { useTut } from "../game/tutorial";
 
 const SCAN_MS = 1500;
 
-/* 文档中用引号括起来的内容都是操作员必须输入的字面值：
-   加粗并高亮显示，以免在大段文字中被漏掉。 */
+/* 文档中引号包围的内容表示需要输入的字面值，因此使用粗体高亮。 */
 function highlightKeys(line: string) {
   const parts = line.split(/"([^"]+)"/g);
   return parts.map((part, i) =>
@@ -37,6 +38,7 @@ export default function DataVault({
   burnedFiles,
   onAcquire,
   onClose,
+  onEjected,
   onLog,
 }: {
   nodeId: string;
@@ -46,11 +48,12 @@ export default function DataVault({
   burnedFiles: string[];
   onAcquire: (fileId: string) => void;
   onClose: () => void;
+  onEjected: () => void;
   onLog: (key: string, params?: Record<string, string | number>) => void;
 }) {
   const { t, lang } = useT();
   const { isHl, gating } = useTut();
-  /* 当脚本指向出口时，浏览器面板保持安静 */
+  /* 教程指向退出按钮时，文件浏览区域暂时停用。 */
   const leaving = isHl("vault:close");
 
   const [fs, setFs] = useState<VaultFS>(() => generateVault(nodeId, ownedFiles, burnedFiles));
@@ -59,6 +62,10 @@ export default function DataVault({
   const [pct, setPct] = useState(0);
   const [reader, setReader] = useState<VaultResult | null>(null);
   const [found, setFound] = useState<string[]>([]);
+  /* WARDEN 倒计时：T2 起生效，时间耗尽即被逐出 */
+  const warden = NODE_META[nodeId]?.warden ?? 1;
+  const limit = vaultTimer(warden);
+  const [ejected, setEjected] = useState(false);
   const timers = useRef<number[]>([]);
 
   useEffect(
@@ -91,7 +98,7 @@ export default function DataVault({
     }));
 
   const scan = (file: VaultFile) => {
-    if (scanning || file.scan === "scanning") return;
+    if (ejected || scanning || file.scan === "scanning") return;
     if (file.scan === "done") {
       if (file.result && file.result.kind !== "empty") setReader(file.result);
       return;
@@ -149,7 +156,7 @@ export default function DataVault({
 
   return (
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
-      <div className="anim-msgin flex max-h-[92vh] w-[min(760px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
+      <div className="anim-msgin relative flex max-h-[92vh] w-[min(760px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* ---- 标题栏 ---- */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color="#7f95a8" pulse />
@@ -173,7 +180,7 @@ export default function DataVault({
           </button>
         </div>
 
-        {/* ---- 卷标条 ---- */}
+        {/* 卷标信息 */}
         <div className="flex h-[22px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em] text-faint">
           <HardDrive size={10} className="text-phosdim" />
           <span className="text-phosdim">{fs.volume}:\</span>
@@ -182,8 +189,19 @@ export default function DataVault({
           <span>{t("dv.scanned", { a: scannedCount, b: totalCount })}</span>
         </div>
 
-        {/* ---- 面板 ---- */}
-        <div className={cn("flex min-h-0 flex-1", (leaving || (gating && !isHl("vault"))) && "tut-dim")}>
+        <WardenClock
+          seconds={limit}
+          warden={warden}
+          running={!ejected}
+          onExpire={() => {
+            setEjected(true);
+            setReader(null);
+            onEjected();
+          }}
+        />
+
+        {/* 文件浏览区域 */}
+        <div className={cn("flex min-h-0 flex-1", (leaving || ejected || (gating && !isHl("vault"))) && "tut-dim")}>
           {/* 文件夹 */}
           <div className="w-[104px] shrink-0 overflow-y-auto border-r border-line bg-well sm:w-[132px]">
             {fs.folders.map((d) => {
@@ -273,7 +291,16 @@ export default function DataVault({
           </div>
         </div>
 
-        {/* ---- 状态栏 ---- */}
+        {}
+        {ejected && (
+          <div className="absolute inset-0 z-[5] flex items-center justify-center bg-ink/85">
+            <div className="anim-msgin border border-oxide bg-oxide/12 px-5 py-3 text-center">
+              <div className="pixel text-[26px] leading-none text-[#e0634a]">{t("wc.ejected")}</div>
+              <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-dim">{t("wc.ejectedSub")}</div>
+            </div>
+          </div>
+        )}
+
         <div className="flex h-[24px] shrink-0 items-center gap-2 border-t border-line2 bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em]">
           {scanning ? (
             <>
@@ -292,7 +319,7 @@ export default function DataVault({
         </div>
       </div>
 
-      {/* ---- 文档阅读器 ---- */}
+      {}
       {reader && (
         <div
           className="absolute inset-0 z-[97] flex items-center justify-center bg-ink/80 p-4"

@@ -5,10 +5,7 @@ import { useT } from "../i18n";
 import { useGame } from "../game/state";
 import { ALL_NODES } from "../data/regions";
 
-/**
- * 已恢复的 WARDEN PASS 密钥，固定在屏幕底部并位于所有
- * 模态框之上，因为输入密码时操作员需要用到它们。
- */
+/** 已恢复的 WARDEN PASS 密钥固定显示在所有弹窗上方，便于在密码窗口中使用。 */
 export default function KeyBanner() {
   const { t } = useT();
   const { g, setFlag } = useGame();

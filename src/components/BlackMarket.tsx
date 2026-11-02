@@ -8,7 +8,7 @@ import { ALL_NODES } from "../data/regions";
 
 type Tab = "sell" | "buy" | "jobs";
 
-/* 黑市呈红色：它是控制台中唯一的敌对界面 */
+/* 黑市使用红色视觉语言，是控制台中的高风险界面。 */
 const RED = "#c25b46";
 
 export default function BlackMarket({
@@ -24,7 +24,7 @@ export default function BlackMarket({
 
   const unlocked = g.market.unlocked;
 
-  /* ---------- 锁定的门 ---------- */
+  /* 锁定入口。 */
   if (!unlocked) {
     const afford = g.credits >= CFG.marketPrice;
     return (
@@ -59,7 +59,7 @@ export default function BlackMarket({
     );
   }
 
-  /* ---------- 哪些文件已承诺给进行中的合同 ---------- */
+  /* 标记已承诺给未完成合同的数据文件。 */
   const owedBy = (fileId: string) =>
     CONTRACTS.find(
       (ct) =>
@@ -74,7 +74,7 @@ export default function BlackMarket({
 
   return (
     <Shell onClose={onClose} tab={tab} setTab={setTab}>
-      {/* ================= 出售 ================= */}
+      {}
       {tab === "sell" && (
         <div className="min-h-0 flex-1 overflow-y-auto p-2">
           {g.files.length === 0 && (
@@ -140,7 +140,7 @@ export default function BlackMarket({
         </div>
       )}
 
-      {/* ================= 购买 ================= */}
+      {}
       {tab === "buy" && (
         <div className="min-h-0 flex-1 overflow-y-auto p-2">
           {SCRIPTS.map((sc) => {
@@ -188,7 +188,7 @@ export default function BlackMarket({
         </div>
       )}
 
-      {/* ================= 任务 ================= */}
+      {}
       {tab === "jobs" && (
         <div className="min-h-0 flex-1 overflow-y-auto p-2">
           <p className="mb-1.5 px-1 text-[8.5px] uppercase leading-snug tracking-[0.12em] text-faint">
@@ -251,8 +251,6 @@ export default function BlackMarket({
   );
 }
 
-/* ------------------------------------------------------------------ */
-
 function Shell({
   children, onClose, tab, setTab, locked = false,
 }: {
@@ -272,7 +270,7 @@ function Shell({
         className="anim-msgin flex max-h-[86vh] w-[min(460px,100%)] flex-col border bg-[#140d0c] shadow-[0_0_70px_rgba(194,91,70,0.18)]"
         style={{ borderColor: "#c25b4688" }}
       >
-        {/* 标题 */}
+        {/* 标题栏 */}
         <div
           className="flex h-[28px] shrink-0 items-center gap-2 border-b px-2.5"
           style={{ borderColor: "#c25b4855", background: "rgba(194,91,70,0.12)" }}
@@ -289,7 +287,7 @@ function Shell({
           </button>
         </div>
 
-        {/* 标签页 */}
+        {}
         {!locked && (
           <div className="flex shrink-0 border-b" style={{ borderColor: "#c25b4833" }}>
             {TABS.map(([id, key]) => (

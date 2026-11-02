@@ -34,13 +34,10 @@ export const store = {
     try {
       localStorage.setItem("netgrid." + key, JSON.stringify(value));
     } catch {
-      /* 空操作 */
+      
     }
   },
-  /**
-   * 清除持久化的游戏数据。默认保留界面偏好（语言、CRT、列宽），
-   * 因为它们是设置，不是进度。
-   */
+  /** 清除游戏进度，同时默认保留语言、CRT 和列宽等界面设置。 */
   wipe(keep: string[] = ["lang", "fx", "col.left", "col.right"]) {
     try {
       const spared = new Set(keep.map((k) => "netgrid." + k));
@@ -51,7 +48,7 @@ export const store = {
       }
       doomed.forEach((k) => localStorage.removeItem(k));
     } catch {
-      /* 空操作 */
+      
     }
   },
 };

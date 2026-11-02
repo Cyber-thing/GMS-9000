@@ -26,7 +26,7 @@ function shapeCls(g: string) {
               : "";
 }
 
-/* 在区域列表和节点详情中共用的强调形状样式 */
+/* 扇区列表和节点详情共用的图形样式 */
 export function TypeGlyphShape({ type, color, size = 8, hollow = false }: { type: NetNode["type"]; color: string; size?: number; hollow?: boolean }) {
   return (
     <span
@@ -41,9 +41,7 @@ export function TypeGlyphShape({ type, color, size = 8, hollow = false }: { type
   );
 }
 
-/* ================================================================== */
-/* 区域面板                                                        */
-/* ================================================================== */
+/* 扇区面板 */
 
 export function SectorPanel({
   sector,
@@ -160,13 +158,9 @@ export function SectorPanel({
   );
 }
 
-/* ================================================================== */
-/* 节点面板                                                          */
-/* ================================================================== */
+/* 节点面板 */
 
-/* ================================================================== */
-/* 事件日志                                                           */
-/* ================================================================== */
+/* 事件日志 */
 
 export interface NetEvent {
   id: number;

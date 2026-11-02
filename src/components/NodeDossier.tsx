@@ -9,6 +9,8 @@ import { useGame } from "../game/state";
 import { CFG, NODE_META, factionById, filesOfNode } from "../game/data";
 import { usesVault } from "../game/vault";
 import { usesRouting } from "../game/routing";
+import { NEIGHBOURS } from "../game/data";
+import { ALL_NODES } from "../data/regions";
 import { useTut } from "../game/tutorial";
 
 export const NODE_STATE_COLOR: Record<string, string> = {
@@ -94,20 +96,27 @@ export default function NodeDossier({
   const routing = usesRouting(node.type, meta.warden);
   const wrecked = g.sabotaged.includes(node.id);
   const burning = g.burning.includes(node.id);
-  /* 有些主机只有在客户提出要求后才会开放 SABOTAGE */
+  /* 部分主机只有在收到对应合同时才会显示破坏操作。 */
   const gateOk = !meta.sabotageGate || !!g.contracts[meta.sabotageGate];
   const reward = Math.round(
     (meta.rep + meta.warden * CFG.repPerWarden) * (breached ? CFG.repeatMult : 1)
   );
+
+  /* 已攻陷的相邻节点，用于说明这个节点为什么还打不开 */
+  const openedBy = (NEIGHBOURS[node.id] ?? [])
+    .map((id) => ALL_NODES.find((x) => x.id === id))
+    .filter((x): x is NonNullable<typeof x> => !!x);
 
   const condition = meta.req?.rep
     ? t("dos.condRep", { n: meta.req.rep })
     : meta.req?.node
       ? t("dos.condNode", { code: meta.req.node })
       : st === "LOCKED"
-        ? t("dos.condLocked")
+        ? openedBy.length
+          ? t("dos.condNeighbour", { list: openedBy.slice(0, 3).map((x) => x.code).join(", ") })
+          : t("dos.condLocked")
         : t("dos.condOpen");
-  /* 值得显示的门槛：真实的要求，或我们尚无法到达的节点 */
+  /* 仅在存在真实限制或节点暂不可达时显示访问条件。 */
   const gated = !!meta.req || st === "LOCKED" || st === "RESTRICTED";
 
   return (
@@ -118,7 +127,7 @@ export default function NodeDossier({
       right={<span className="text-[8px] tracking-[0.16em] text-faint">{sectorCode}</span>}
     >
       <div className="p-3">
-        {/* 页头 */}
+        {/* 标题栏 */}
         <div className="flex items-center justify-between gap-2">
           <span className="flex min-w-0 items-center gap-2">
             <TypeGlyphShape type={node.type} color={color} size={12} />
@@ -152,7 +161,7 @@ export default function NodeDossier({
           >
             <FolderOpen size={11} /> {t("dos.archive")}
           </button>
-        ) : vault && st === "COMPROMISED" ? (
+        ) : corp && st === "COMPROMISED" ? null : vault && st === "COMPROMISED" ? (
           <button
             onClick={() => onEnterVault(node.id)}
             className={cn(
@@ -195,7 +204,7 @@ export default function NodeDossier({
           </button>
         )}
 
-        {/* ---- 破坏 ---- */}
+        {/* ---- 破坏：已攻陷的企业节点只保留这一个操作 ---- */}
         {corp && st === "COMPROMISED" && (
           wrecked ? (
             <div
@@ -210,7 +219,7 @@ export default function NodeDossier({
             <>
               <button
                 onClick={() => onSabotage(node.id)}
-                className="mt-1.5 flex w-full items-center justify-center gap-2 border border-[#c25b46] bg-[#c25b46]/15 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-[#e0634a] transition-all hover:bg-[#c25b46] hover:text-ink hover:shadow-[0_0_14px_rgba(194,91,70,0.35)]"
+                className="mt-2.5 flex w-full items-center justify-center gap-2 border border-[#c25b46] bg-[#c25b46]/15 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-[#e0634a] transition-all hover:bg-[#c25b46] hover:text-ink hover:shadow-[0_0_14px_rgba(194,91,70,0.35)]"
               >
                 <Bomb size={11} /> {t("dos.sabotage")}
               </button>

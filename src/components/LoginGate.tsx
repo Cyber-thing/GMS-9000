@@ -26,7 +26,7 @@ export default function LoginGate({
   const [armed, setArmed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /* 确认状态会自行解除，因此误点永远不会清除存档 */
+  /* 确认状态会自动解除，避免误触导致存档被清除。 */
   useEffect(() => {
     if (!armed) return;
     const h = setTimeout(() => setArmed(false), 5000);
@@ -70,7 +70,7 @@ export default function LoginGate({
 
       <div className="anim-msgin relative my-auto w-full max-w-[520px]">
         <div className="border border-line2 bg-panel shadow-[0_0_80px_rgba(143,181,109,0.06),inset_0_0_0_1px_rgba(0,0,0,0.6)]">
-          {/* 页头 */}
+          {/* 标题栏 */}
           <div className="flex h-[30px] items-center gap-2 border-b border-line2 bg-header px-2.5">
             <StatusDot color="#8fb56d" pulse />
             <span className="truncate text-[9px] font-bold uppercase tracking-[0.26em] text-dim">
@@ -81,7 +81,7 @@ export default function LoginGate({
           </div>
 
           <div className="px-5 py-4 sm:px-7 sm:py-5">
-            {/* 徽标 */}
+            {/* 标志 */}
             <div className="flex items-center gap-3">
               <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center border border-phosdim bg-phos/10 text-phosbrite">
                 <ScanEye size={24} strokeWidth={1.6} />
@@ -161,7 +161,7 @@ export default function LoginGate({
                   </div>
                 </div>
 
-                {/* 用户名 */}
+                {/* 操作员代号 */}
                 <div className="mt-3.5">
                   <label className="block text-[9px] uppercase tracking-[0.26em] text-faint">
                     {t("login.handle")}
@@ -235,7 +235,7 @@ export default function LoginGate({
           {t("login.foot")}
         </p>
 
-        {/* ---- 冷启动 / 清除存档 ---- */}
+        {}
         <div className="mt-2 border border-line bg-panel/70">
           {!armed ? (
             <button

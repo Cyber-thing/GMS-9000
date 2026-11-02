@@ -2,13 +2,7 @@ import { ALL_NODES } from "../data/regions";
 import { NODE_META, filesOfNode } from "./data";
 import type { Lang } from "../i18n";
 
-/* ================================================================== */
-/* DATA VAULT：面向 DATA SERVER 主机的文件系统小游戏            */
-/* ------------------------------------------------------------------ */
-/* 操作员遍历文件夹、扫描文件，并搜寻客户   */
-/* 所要的载荷。垃圾文件返回噪声或氛围文本；      */
-/* 载荷文件会向存储中投放一个真实的 DataFile。                    */
-/* ================================================================== */
+/* 列出区域内的数据服务器。 */
 
 export type ScanState = "idle" | "scanning" | "done";
 export type ResultKind = "empty" | "text" | "payload";
@@ -17,18 +11,18 @@ export interface VaultResult {
   kind: ResultKind;
   title: string;
   body: string[];
-  /** 载荷命中的 DataFile id */
+  
   fileId?: string;
 }
 
 export interface VaultFile {
   id: string;
-  name: string;      // DOS 8.3 风格
+  name: string;      // DOS 8.3 命名格式
   size: string;
   date: string;
   scan: ScanState;
   result: VaultResult | null;
-  /** 扫描时才惰性解析 */
+  
   seedKind: ResultKind;
   seedIdx: number;
   payloadId?: string;
@@ -49,16 +43,21 @@ export interface VaultFS {
 export const usesVault = (nodeId: string): boolean =>
   ALL_NODES.find((n) => n.id === nodeId)?.type === "DATA SERVER";
 
-/* ------------------------------------------------------------------ */
-/* 按所属组织划分的主题内容                              */
-/* ------------------------------------------------------------------ */
+/**
+ * 文件系统的 WARDEN 倒计时：从 T2 起生效，等级越高留给玩家的时间越少。
+ * 返回 0 表示该主机没有防护，可以从容翻找。
+ */
+export function vaultTimer(warden: number): number {
+  const table: Record<number, number> = { 2: 75, 3: 60, 4: 45, 5: 32 };
+  return table[warden] ?? 0;
+}
 
 interface Theme {
   vol: string;
   folders: string[];
   files: string[];
   people: string[];
-  /** 氛围片段：[titleEn, titleRu, bodyEn, bodyRu] */
+  
   texts: [string, string, string, string][];
 }
 
@@ -221,10 +220,6 @@ const FALLBACK: Theme = {
   texts: [],
 };
 
-/* ------------------------------------------------------------------ */
-/* 发现真实文件时显示的载荷简报             */
-/* ------------------------------------------------------------------ */
-
 const PAYLOAD_TEXT: Record<string, [string, string]> = {
   f_queue_memo: [
     "QUEUE OVERRIDE — SALES PRIORITY\nPremium client (tier A, retainer paid) is dissatisfied with the casing colour of his current implant and demands a replacement unit this month. Stock is allocated. Accordingly, pull one recipient from the top of the public waiting list.\nSelection criteria: close enough to the front that a unit is reserved in their name, and insignificant enough that the deferral will not create problems — no legal cover, no press contacts, no family able to escalate. Candidate selected and moved to the next annual cycle. Notify by standard force-majeure template; do not state a reason.",
@@ -269,20 +264,16 @@ const genericPayload = (lang: Lang): string =>
     ? "Содержимое проиндексировано и извлечено. Для заказчика этого достаточно."
     : "Contents indexed and extracted. Enough for the client to work with.";
 
-/* ------------------------------------------------------------------ */
-
 const ri = (lo: number, hi: number) => lo + Math.floor(Math.random() * (hi - lo + 1));
 const pick = <T,>(a: T[]): T => a[Math.floor(Math.random() * a.length)];
 const shuffle = <T,>(a: T[]): T[] => [...a].sort(() => Math.random() - 0.5);
 
 const EXTS = ["DAT", "DOC", "MSG", "LOG", "TXT", "BIN"];
 
-/** 每次进入主机时构建一个全新的、略有不同的文件系统 */
 export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles: string[] = []): VaultFS {
   const meta = NODE_META[nodeId];
   const theme = (meta && THEMES[meta.owner]) || FALLBACK;
 
-  /* 仍值得找回的载荷：未持有，且尚未被倒卖出去 */
   const all = filesOfNode(nodeId).map((f) => f.id);
   const pending = all.filter((id) => !ownedFiles.includes(id) && !burnedFiles.includes(id));
 
@@ -310,13 +301,11 @@ export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles:
     };
   };
 
-  /* 先放垃圾文件 */
   folders.forEach((f) => {
     const n = ri(3, 6);
     for (let i = 0; i < n; i++) f.files.push(mkFile(Math.random() < 0.55 ? "empty" : "text"));
   });
 
-  /* 散布真实载荷，每个文件夹至多一个 */
   shuffle(pending).forEach((pid, i) => {
     const target = folders[i % folders.length];
     const file = mkFile("payload", pid);
@@ -326,7 +315,6 @@ export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles:
   return { volume: theme.vol, folders, payloads: pending };
 }
 
-/** 解析扫描结果：操作员扫描文件时调用 */
 export function resolveScan(
   file: VaultFile,
   nodeId: string,

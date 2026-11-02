@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowDownToLine, ArrowLeft, BookLock, CheckCircle2, CircleDollarSign, Database,
+  ArrowDownToLine, ArrowLeft, Banknote, BookLock, CheckCircle2, CircleDollarSign, Database,
   FileLock2, Handshake, Star, TrendingUp, Upload, UserRound, Zap,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
@@ -13,10 +13,9 @@ import {
 import { ALL_NODES } from "../../data/regions";
 import type { CodexCat } from "../../game/types";
 import { useTut } from "../../game/tutorial";
+import RichText from "../RichText";
 
-/* ================================================================== */
-/* CODEX                                                               */
-/* ================================================================== */
+/* 知识库。 */
 
 const CATS: CodexCat[] = ["FACTIONS", "CHARACTERS", "LOCATIONS", "NETWORK", "INTEL"];
 
@@ -156,20 +155,16 @@ export function CodexPage() {
   );
 }
 
-/* ================================================================== */
-/* CONTACTS                                                            */
-/* ================================================================== */
+/* 联系人 */
 
 export function ContactsPage({ home = 0 }: { home?: number }) {
   const { t, lang } = useT();
   const { g, acceptContract, deliverContract, pickChoice, markThreadRead, setOpenThread } = useGame();
   const { isHl, gating, fire } = useTut();
   const [open, setOpen] = useState<string | null>(null);
-  /* `home` 被递增意味着游戏希望操作员回到线程列表 */
+  
   useEffect(() => { if (home > 0) setOpen(null); }, [home]);
 
-  /* 告诉游戏当前屏幕上显示的是哪个线程，使其永不显示角标或弹出提示，
-     并在其保持打开期间将其标为已读 */
   useEffect(() => {
     setOpenThread(open);
     return () => setOpenThread(null);
@@ -183,7 +178,6 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
   const jumpToOffer = () =>
     offerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  /* 打开线程时定位到进行中的任务，而不是积压消息的顶部 */
   useEffect(() => {
     if (!open) return;
     const h = setTimeout(() => {
@@ -203,7 +197,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
     const threadBlocked = c.id === "op17"
       ? g.flags.op17_blocked === true
       : c.id === "sablec" ? g.flags.sable_blocked === true : false;
-    /* 与此联系人的所有任务都已了结，且没有等待回复的内容 */
+    
     const mine = CONTRACTS.filter((x) => x.contact === c.id && g.contracts[x.id]);
     const threadClosed =
       mine.length > 0 &&
@@ -252,10 +246,10 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                   </span>
                 </div>
                 <p className={cn("pl-1 text-[10.5px] leading-snug", mine ? "text-[#ddd3ae]" : "text-fog/90")}>
-                  {(lang === "ru" ? m.textRu : m.textEn) ?? m.text}
+                  <RichText text={(lang === "ru" ? m.textRu : m.textEn) ?? m.text} />
                 </p>
 
-                {/* 合同卡片 */}
+                {/* 合同面板 */}
                 {ct && m.action === "offer" && (
                   <div className="mt-1 border border-line2 bg-well p-2">
                     <div className="text-[10px] font-bold tracking-[0.1em] text-phosbrite">
@@ -319,7 +313,17 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                   </button>
                 )}
 
-                {/* 脚本化回复按钮 */}
+                {/* 结算金额：以琥珀色突出显示本次到账 */}
+                {typeof m.payout === "number" && (
+                  <div className="mt-1 flex items-center gap-1.5 border border-amberdim/60 bg-amber/10 px-2 py-[5px]">
+                    <Banknote size={11} className="shrink-0 text-amber" />
+                    <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-amber">
+                      {t("co.paid", { n: m.payout })}
+                    </span>
+                  </div>
+                )}
+
+                {/* 脚本回复按钮 */}
                 {m.choices && !m.picked && (
                   <div className="mt-1 flex flex-col gap-1">
                     {m.choices.map((ch) => (
@@ -373,7 +377,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
         const activeCt = CONTRACTS.filter(
           (ct) => ct.contact === c.id && g.contracts[ct.id] && g.contracts[ct.id].state !== "COMPLETED"
         );
-        /* 离开期间收到了新消息，或仍有问题未回答 */
+        
         const missed = (g.threadRead?.[c.id] ?? 0) < thread.length;
         const awaiting =
           thread.some((m) => m.choices && !m.picked) ||
@@ -446,9 +450,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
   );
 }
 
-/* ================================================================== */
-/* STATUS                                                              */
-/* ================================================================== */
+/* 状态 */
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (

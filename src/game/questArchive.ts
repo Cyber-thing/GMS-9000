@@ -1,8 +1,4 @@
-/* ==================================================================
-   “LOCKED OUT”：operator_17 的档案任务。
-   一段手写的对话：每个节拍在其触发条件
-   满足时推送，操作员通过选择按钮作答。
-   ================================================================== */
+
 
 export interface Line {
   en: string;
@@ -11,19 +7,19 @@ export interface Line {
 
 export interface Beat {
   id: string;
-  /** 任意联系人 id，或 "OP" 表示操作员自己的回复 */
+  /** 结算金额，会在消息下方以醒目的方式显示。 */
+  payout?: number;
+  
   from: string;
   line: Line;
-  /** 渲染在此消息下方的回复按钮 */
+  
   choices?: { id: string; en: string; ru: string }[];
-  /** 将合同卡片 / 移交按钮附加到这一行 */
+  
   contract?: string;
   action?: "offer" | "deliver" | "done";
 }
 
 export const L = (en: string, ru: string): Line => ({ en, ru });
-
-/* ---------------- operator_17 开场 ---------------- */
 
 export const OP17_INTRO: Beat[] = [
   {
@@ -54,13 +50,12 @@ export const OP17_ACCEPTED: Beat[] = [
     id: "q3",
     from: "op17",
     line: L(
-      "Good. He works in the Northline sector. And please — do not get caught. I would rather management never learned we hired a hacker to clean up our own mess.",
-      "Хорошо. Он работает в секторе Northline. И пожалуйста, не попадись. Не хочу, чтобы начальство узнало что мы наняли хакера закрывать наши косяки."
+      "Good. He works in the **NORTHLINE** sector. And please — do not get caught. I would rather management never learned we hired a hacker to clean up our own mess.",
+      "Хорошо. Он работает в секторе **NORTHLINE**. И пожалуйста, не попадись. Не хочу, чтобы начальство узнало что мы наняли хакера закрывать наши косяки."
     ),
   },
 ];
 
-/** 已拿到访问密钥：他来索要 */
 export const OP17_READY: Beat[] = [
   {
     id: "q3b",
@@ -73,8 +68,6 @@ export const OP17_READY: Beat[] = [
     action: "deliver",
   },
 ];
-
-/* ---------------- 交还访问权限 ---------------- */
 
 export const OP17_DELIVER: Beat[] = [
   {
@@ -92,7 +85,6 @@ export const OP17_DELIVER: Beat[] = [
   },
 ];
 
-/* 分支：操作员会不会提到里面还有别的东西？ */
 export const OP17_FORK: Beat = {
   id: "q6",
   from: "op17",
@@ -104,10 +96,10 @@ export const OP17_FORK: Beat = {
 };
 
 export const ARCHIVE_REL = {
-  /** 手里有文件时告诉他 */
+  
   toldCivic: 18,
   toldIntercell: -30,
-  /** 拿不出东西时告诉他 */
+  
   emptyCivic: -8,
 };
 
@@ -127,7 +119,6 @@ export const OP17_TOLD: Beat[] = [
   },
 ];
 
-/** 告诉了他，但文件已经没了：他不肯相信 */
 export const OP17_DISBELIEF: Beat[] = [
   {
     id: "q12",
@@ -172,11 +163,9 @@ export const SABLE_OFFER: Beat = {
   choices: [{ id: "sendsable", en: "Send the list to sable", ru: "Отправить список sable" }],
 };
 
-/* ---------------- 报酬 ---------------- */
-
 export const ARCHIVE_PAY = {
-  base: 200,        // operator_17，访问权限已恢复
-  sable: 400,       // sable，为了那份列表
+  base: 200,        // operator_17：访问已恢复
+  sable: 400,       // sable：购买名单
   repBase: 12,
   repSable: 8,
   relOp17Told: 18,
@@ -184,10 +173,6 @@ export const ARCHIVE_PAY = {
   relOp17Hidden: 0,
   relSablePunish: -30,
 };
-
-/* ==================================================================
-   FREDDY：两个以对话形式展开的小任务。
-   ================================================================== */
 
 export const FREDDY_IMPLANT: Beat[] = [
   {
@@ -222,11 +207,10 @@ export const FREDDY_IMPLANT_3: Beat[] = [
 export const FREDDY_IMPLANT_4: Beat[] = [
   {
     id: "fi4", from: "freddy",
-    line: L("Excellent! The server is somewhere in GULF!", "Отлично! Сервер где-то в GULF!"),
+    line: L("Excellent! The server is somewhere in **GULF RELAY**!", "Отлично! Сервер где-то в **GULF RELAY**!"),
   },
 ];
 
-/** 已拿到备忘录：主动提出转交 */
 export const FREDDY_IMPLANT_HOLD: Beat[] = [
   {
     id: "fi5", from: "freddy",
@@ -263,10 +247,6 @@ export const FREDDY_IMPLANT_DONE: Beat[] = [
   },
 ];
 
-/* ==================================================================
-   m4rla：一个碰巧并行运行的无关任务。
-   ================================================================== */
-
 export const MARLA_PROJ: Beat[] = [
   {
     id: "mp1", from: "marla",
@@ -282,8 +262,8 @@ export const MARLA_PROJ_2: Beat[] = [
   {
     id: "mp2", from: "marla",
     line: L(
-      "The presentation hall booked through the Takamuri freight desk. My ex is on stage there today, and he has been rehearsing that slide deck for a month.",
-      "Презентационный зал, который бронируют через грузовой отдел Takamuri. Сегодня там на сцене мой бывший, он этот показ репетировал целый месяц."
+      "The presentation hall booked through the Takamuri freight desk in **PACIFIC EXCHANGE**. My ex is on stage there today, and he has been rehearsing that slide deck for a month.",
+      "Презентационный зал, который бронируют через грузовой отдел Takamuri в секторе **PACIFIC EXCHANGE**. Сегодня там на сцене мой бывший, он этот показ репетировал целый месяц."
     ),
     choices: [{ id: "mp_why", en: "And you want the projectors down.", ru: "И ты хочешь, чтобы проекторы вырубились." }],
   },
@@ -307,7 +287,6 @@ export const MARLA_PROJ_READY: Beat[] = [
   },
 ];
 
-/** 当主机在她开口之前就已被入侵时，她会作出反应 */
 export const MARLA_PROJ_ALREADY: Beat[] = [
   {
     id: "mp5", from: "marla",
@@ -327,8 +306,6 @@ export const MARLA_PROJ_DONE: Beat[] = [
     ),
   },
 ];
-
-/* ---------------- operator_17 拒绝一个卖家 ---------------- */
 
 export const OP17_SOLD_REFUSAL: Beat[] = [
   {

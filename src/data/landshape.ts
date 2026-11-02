@@ -1,15 +1,13 @@
 import type { LandGrid } from "./world";
 
-/* ================================================================== */
-/* 将粗糙的陆地位图转换为连续的海岸线轮廓。    */
-/* 与水域相邻的格子边缘被串联成闭合的环，然后    */
-/* 将阶梯状的拐角磨圆，使大陆看起来    */
-/* 是实心形状，而不是方块拼成的马赛克。                        */
-/* ================================================================== */
+/* 将粗略陆地位图转换为连续海岸线轮廓。 */
+/* 将与水域相邻的单元边连接成闭合环。 */
+/* 对阶梯状边角进行圆滑处理。 */
+/* 使大陆显示为连续形状而非方块拼图。 */
 
 export type Pt = [number, number];
 
-/** 沿着格子边界行走并将其串联成闭合的环（陆地在右侧） */
+/** 遍历单元边界并连接成闭合轮廓，陆地位于右侧。 */
 export function traceRings(grid: LandGrid): Pt[][] {
   const { cols, rows, land } = grid;
   const isLand = (c: number, r: number) =>
@@ -57,7 +55,7 @@ export function traceRings(grid: LandGrid): Pt[][] {
   return rings;
 }
 
-/** 移除位于直线段上的点，只保留真正的拐角 */
+/** 删除直线段中的冗余点，仅保留海岸线拐角。 */
 function corners(ring: Pt[]): Pt[] {
   const n = ring.length;
   const out: Pt[] = [];
@@ -71,7 +69,6 @@ function corners(ring: Pt[]): Pt[] {
   return out.length > 2 ? out : ring;
 }
 
-/** Chaikin 切角：把阶梯状变成有机的海岸线 */
 function chaikin(ring: Pt[], iterations: number): Pt[] {
   let cur = ring;
   for (let it = 0; it < iterations; it++) {
@@ -88,7 +85,7 @@ function chaikin(ring: Pt[], iterations: number): Pt[] {
   return cur;
 }
 
-/** 穿过多边形各边中点的闭合二次样条 */
+/** 使用闭合二次样条连接多边形中点。 */
 function splinePath(ring: Pt[]): string {
   const n = ring.length;
   if (n < 3) return "";
@@ -106,17 +103,13 @@ function splinePath(ring: Pt[]): string {
 }
 
 export interface LandShape {
-  /** 所有陆块的填充轮廓，包含孔洞 */
+  /** 所有陆地的填充轮廓，包含内部孔洞。 */
   path: string;
-  /** 追踪到的独立环的数量 */
+  /** 记录生成的独立闭合轮廓数量。 */
   rings: number;
 }
 
-/**
- * 为缩放到 `w x h` 方框中的网格构建大陆轮廓。
- * `smooth` 是切角处理的遍数：0 保留硬像素边缘，
- * 2-3 可生成自然的海岸线。
- */
+/** 在指定尺寸内生成大陆轮廓。 */
 export function landShape(grid: LandGrid, w: number, h: number, smooth = 2): LandShape {
   const sx = w / grid.cols;
   const sy = h / grid.rows;

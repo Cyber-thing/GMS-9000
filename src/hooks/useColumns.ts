@@ -7,17 +7,12 @@ export const COL = {
   minSide: 210,
   maxSide: 680,
   minMap: 300,
-  gap: 8, // 列间的 tailwind gap-2
-  handle: 7, // 分隔条宽度
+  gap: 8, // 列之间使用 Tailwind 的 gap-2 间距
+  handle: 7, // 调整条宽度
 };
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
-/**
- * 三栏宽度（左 / 地图 / 右）。
- * 左右两栏是明确的像素宽度；地图占用剩余空间，
- * 且永远不会缩小到 COL.minMap 以下。
- */
 export function useColumns() {
   const hostRef = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(() => store.get("col.left", COL.leftDefault));
@@ -32,14 +27,13 @@ export function useColumns() {
   useEffect(() => void store.set("col.left", left), [left]);
   useEffect(() => void store.set("col.right", right), [right]);
 
-  /** 在不挤占地图的前提下，给定一侧可以达到的最大宽度 */
   const sideCap = useCallback((other: number) => {
     const total = hostRef.current?.clientWidth ?? window.innerWidth;
     const chrome = COL.gap * 2 + COL.handle * 2;
     return clamp(total - other - COL.minMap - chrome, COL.minSide, COL.maxSide);
   }, []);
 
-  /* 窗口缩小时保持列宽合法 */
+  /* 窗口变窄时自动收缩侧栏，优先保证地图的最小宽度。 */
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
@@ -51,7 +45,7 @@ export function useColumns() {
       let r = rightRef.current;
       let over = l + r + COL.minMap + chrome - total;
       if (over > 0) {
-        /* 先裁剪较宽的列，再裁剪另一列 */
+        
         const takeR = Math.min(over, r - COL.minSide);
         if (takeR > 0) { r -= takeR; over -= takeR; }
         const takeL = Math.min(over, l - COL.minSide);
@@ -105,7 +99,6 @@ export function useColumns() {
     else setRight(COL.rightDefault);
   }, []);
 
-  /** 用于无障碍的键盘微调 */
   const nudge = useCallback(
     (which: "left" | "right", dir: -1 | 1) => {
       const step = 16 * dir;

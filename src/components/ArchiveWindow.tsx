@@ -62,7 +62,7 @@ export default function ArchiveWindow({
   return (
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[92vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.78)]">
-        {/* 标题 */}
+        {/* 标题栏 */}
         <div className="flex h-[26px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <Archive size={11} className="text-steel" />
           <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
@@ -73,7 +73,7 @@ export default function ArchiveWindow({
           </button>
         </div>
 
-        {/* 队列列表 */}
+        {/* 卷宗列表 */}
         <div className="min-h-0 flex-1 overflow-y-auto bg-well px-2 py-1.5">
           {SPOOLS.map((name, i) => {
             const active = phase === "scanning" && i === cursor;

@@ -3,12 +3,6 @@ import {
 } from "react";
 import { store } from "../lib/util";
 
-/* ================================================================== */
-/* TUTORIAL：首次会话中来自 Ghost_404 的脚本化通话。     */
-/* 各步骤要么等待游戏事件，要么等待操作员点击     */
-/* 继续。每个步骤可以聚光一个界面元素。             */
-/* ================================================================== */
-
 export type TutEvent =
   | "tab:CONTACTS"
   | "accept:ct_payroll"
@@ -24,7 +18,6 @@ export type TutEvent =
   | "thread:ghost"
   | "anonymity";
 
-/** 由 UI 组件读取的聚光键 */
 export type TutHighlight =
   | "sidepanel"
   | "tab:CONTACTS"
@@ -44,15 +37,15 @@ export interface TutStep {
   en: string;
   ru: string;
   highlight?: TutHighlight[];
-  /** 该事件触发时自动前进；否则点击继续 */
+  
   waitFor?: TutEvent;
-  /** 渲染是 / 否 分支 */
+  /** 是／否分支。 */
   choice?: boolean;
-  /** 最后一行：结束通话 */
+  
   final?: boolean;
-  /** 在通话背后播放黑客交易所列表动画 */
+  
   listing?: boolean;
-  /** 在这个节拍中，只有通话窗口可以点击 */
+  
   lockAll?: boolean;
 }
 
@@ -113,8 +106,8 @@ export const TUT_STEPS: TutStep[] = [
   },
   {
     id: "locked",
-    en: "Damn — access is closed. Fine, deal with that first.",
-    ru: "Чёрт, доступ закрыт. Ладно, разберись с этим.",
+    en: "Damn — access is closed. Find the node that opens the way in and deal with it.",
+    ru: "Чёрт, доступ закрыт. Найди узел, с которого можно получить доступ, и разберись с ним.",
     highlight: ["node:w1p_acc", "connect"],
     waitFor: "node:w1p_acc",
   },
@@ -155,9 +148,7 @@ export const TUT_STEPS: TutStep[] = [
     id: "send",
     en: "I can see you have the file. Good. Throw it over to me — and do not you dare fence it on the black market before I get it.",
     ru: "Вижу файл у тебя. Отлично. Бросай его мне. И не вздумай продать его на чёрном рынке до того как пришлёшь мне!",
-    /* 仍在卷标内：点亮出路、要返回的 CONTACTS 标签页，
-       以及转账按钮本身，否则在此节拍中离开标签页
-       会让操作员陷入困境 */
+    
     highlight: ["vault:close", "tab:CONTACTS", "thread:ghost", "deliver"],
     waitFor: "deliver:ct_payroll",
   },
@@ -202,16 +193,14 @@ export const DECLINE_STEPS: TutStep[] = [
   },
 ];
 
-/** 为仍期望单个步骤的调用方保留 */
 export const DECLINE_STEP = DECLINE_STEPS[0];
 
 export const CALLER = { nick: "Ghost_404" };
 
-/** 当操作员扫描那份并非他目标的备忘录时，Ghost 会发表评论。 */
 export const MEMO_ASIDE = {
   before: {
-    en: "That is not what I need. Looks like something you could sell, though.",
-    ru: "Это мне не нужно. Но выглядит как то, что можно продать.",
+    en: "I do not need that one. Take it anyway — it will come in handy.",
+    ru: "Мне это не нужно, но забери себе, пригодится.",
   },
   after: {
     en: "Looks like something you could sell. Keep it. Now bring me my documents, quickly!",
@@ -219,9 +208,7 @@ export const MEMO_ASIDE = {
   },
 };
 
-/* ------------------------------------------------------------------ */
-/* 剧情通话：复用通话窗口的脚本化独白        */
-/* ------------------------------------------------------------------ */
+/* 剧情通话。 */
 
 export type Avatar = "skull" | "cage";
 
@@ -269,16 +256,14 @@ export const CALL_SCRIPTS: Record<string, CallScript> = {
   },
 };
 
-/* ------------------------------------------------------------------ */
-
 type Phase = "idle" | "ringing" | "talking" | "over";
 
 interface Ctx {
   phase: Phase;
   step: TutStep | null;
-  /** 当前的剧情通话（如果有） */
+  /** 剧情通话。 */
   call: { script: CallScript; idx: number } | null;
-  /** 代替当前节拍显示的临时台词 */
+  
   aside: string | null;
   sayAside: (text: string) => void;
   playCall: (id: string) => void;
@@ -288,9 +273,9 @@ interface Ctx {
   hl: TutHighlight | null;
   hls: TutHighlight[];
   isHl: (h: TutHighlight) => boolean;
-  /** 脚本化通话进行期间为 true */
+  /** 对应流程运行时为真。 */
   active: boolean;
-  /** 当除聚光元素外的一切都必须变暗且不可交互时为 true */
+  
   gating: boolean;
   answer: () => void;
   next: () => void;
@@ -312,7 +297,7 @@ const loadTut = (): TutSave =>
 
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const saved = loadTut();
-  /* 标签页关闭时正在响铃的通话，恢复后仍为响铃状态 */
+  
   const [call, setCall] = useState<{ script: CallScript; idx: number } | null>(null);
   const [callRinging, setCallRinging] = useState(false);
   const [aside, setAside] = useState<string | null>(null);
@@ -324,7 +309,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   const idxRef = useRef(saved.idx);
   idxRef.current = idx;
 
-  /* 在重新加载之间保持脚本位置 */
+  /* 持久化教程阶段，刷新页面后从原步骤继续。 */
   useEffect(() => {
     if (phase === "over") store.set("tut.state", { phase: "over", idx: 0, declined: false });
     else store.set("tut.state", { phase, idx, declined });
@@ -358,21 +343,17 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
     else setDeclined(true);
   }, []);
 
-  /** 当当前步骤在等待游戏事件时，由游戏事件推动脚本前进 */
   const fire = useCallback((e: TutEvent) => {
     if (phase !== "talking" || declined) return;
     const cur = TUT_STEPS[idxRef.current];
     if (cur?.waitFor === e) setIdx((i) => Math.min(i + 1, TUT_STEPS.length - 1));
   }, [phase, declined]);
 
-  /** 直接跳转到指定的步骤 id：用于修复重新加载的会话 */
   const seekTo = useCallback((stepId: string) => {
     const i = TUT_STEPS.findIndex((x) => x.id === stepId);
     if (i >= 0) setIdx((cur) => (i > cur ? i : cur));
   }, []);
 
-  /** 当到达某一步骤时，若其目标已经成立，则视为满足
-      （例如在脚本要求之前就已拾取了载荷） */
   const satisfy = useCallback((e: TutEvent) => {
     if (phase !== "talking" || declined) return;
     const cur = TUT_STEPS[idxRef.current];
@@ -426,5 +407,4 @@ export function useTut() {
   return c;
 }
 
-/** 便捷函数：聚光元素的光环样式类 */
 export const ring = (on: boolean) => (on ? "tut-ring" : "");

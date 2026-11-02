@@ -12,14 +12,14 @@ export interface ChatMsg {
 
 export const CHANNELS: ChannelId[] = ["GLOBAL", "OPERATORS", "MARKET", "CORPORATE", "PRIVATE"];
 
-/* 柔和的昵称调色板：按昵称哈希取色 */
+/* 低饱和昵称调色板，通过昵称哈希选择颜色。 */
 export const NICK_COLORS = [
-  "#8fb56d", // 柔和的绿色
+  "#8fb56d", // 低饱和绿色
   "#cfa04b", // 琥珀色
   "#7f95a8", // 钢蓝色
-  "#8f86b8", // 柔和的紫色
-  "#a8ad96", // 淡鼠尾草色
-  "#b36a52", // 氧化色
+  "#8f86b8", // 低饱和紫色
+  "#a8ad96", // 浅鼠尾草绿
+  "#b36a52", // 氧化红
 ];
 
 export const nickColor = (nick: string): string => {
@@ -27,8 +27,6 @@ export const nickColor = (nick: string): string => {
   for (let i = 0; i < nick.length; i++) h = (h * 31 + nick.charCodeAt(i)) >>> 0;
   return NICK_COLORS[h % NICK_COLORS.length];
 };
-
-/* ------------------------------------------------------------------ */
 
 interface PoolEntry {
   nick: string;
@@ -154,7 +152,7 @@ export const CHAT_POOL: Record<ChannelId, { nicks: string[]; msgs: PoolEntry[] }
   },
 };
 
-/* 针对操作员自己消息的现成赛博俚语回复：{op} = 操作员用户名 */
+/* 用于回复操作员消息的预设网络俚语，{op} 表示操作员代号。 */
 export const REPLY_POOL: { ch: ChannelId | "ANY"; nick: string; text: string }[] = [
   { ch: "ANY", nick: "irq0", text: "ack" },
   { ch: "ANY", nick: "koma", text: "ack ack" },
@@ -193,7 +191,7 @@ export const REPLY_POOL: { ch: ChannelId | "ANY"; nick: string; text: string }[]
   { ch: "CORPORATE", nick: "SYSTEM", text: "your input has been routed to the void. reference #0042." },
 ];
 
-/* 问候连发：操作员打招呼时触发 */
+/* 操作员打招呼时触发的一组问候回复。 */
 export const GREETING_POOL: { nick: string; text: string }[] = [
   { nick: "koma", text: "o7" },
   { nick: "coldboot", text: "yo, {op}" },
@@ -210,8 +208,6 @@ export const GREETING_POOL: { nick: string; text: string }[] = [
   { nick: "lilith_x", text: "hello hello" },
   { nick: "operator_17", text: "welcome aboard, {op}. mind the restricted zones." },
 ];
-
-/* ------------------------------------------------------------------ */
 
 export interface AmbientEvent {
   text: string;

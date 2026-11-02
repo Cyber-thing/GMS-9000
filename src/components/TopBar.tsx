@@ -50,7 +50,7 @@ export default function TopBar({
   const tutAnon = isHl("anonymity");
   const now = useClock();
 
-  /* 持久化的启动时间，使运行时长在重新加载后得以保留 */
+  /* 持久化启动时间，使运行时长在刷新后仍能延续。 */
   const [boot] = useState(() => {
     const b = store.get<number | null>("boot", null);
     if (b) return b;
@@ -64,7 +64,7 @@ export default function TopBar({
     return () => clearInterval(t);
   }, [boot]);
 
-  /* 网络活动：波动的吞吐量 + 条形电平 */
+  /* 网络活动：吞吐量和柱状指示器会持续波动。 */
   const [kb, setKb] = useState(4.2);
   const [bars, setBars] = useState<number[]>([3, 5, 2, 6, 4, 7, 3]);
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function TopBar({
     return () => clearInterval(t);
   }, []);
 
-  /* 操作员用户名内联编辑 */
+  /* 内联编辑操作员代号。 */
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(operator);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -94,7 +94,7 @@ export default function TopBar({
 
   return (
     <div className="relative z-30 flex h-[38px] shrink-0 items-stretch border-b border-line2 bg-header">
-      {/* 身份标签：反色显示 */}
+      {/* 身份标识块采用反色视频。 */}
       <div className="flex items-center gap-2.5 border-r border-line2 bg-phos px-3 text-ink">
         <ScanEye size={14} strokeWidth={2.2} />
         <div className="leading-none">
@@ -150,7 +150,7 @@ export default function TopBar({
         />
       </div>
 
-      {/* 活动计量表 */}
+      {/* 活动指示器 */}
       <div className="hidden items-center gap-2 border-l border-line2 px-3 sm:flex">
         <Activity size={12} className="text-phosdim" />
         <div className="flex h-[14px] items-end gap-[2px]" aria-hidden>
@@ -165,7 +165,7 @@ export default function TopBar({
         <span className="w-[52px] tabular-nums text-[10px] text-dim">{kb.toFixed(1)}kb/s</span>
       </div>
 
-      {/* 操作员用户名 */}
+      {/* 操作员代号 */}
       <div className="flex items-center gap-2 border-l border-line2 px-3">
         <span className="hidden text-[8.5px] uppercase tracking-[0.2em] text-faint md:inline">{t("top.operator")}</span>
         {editing ? (
@@ -205,7 +205,7 @@ export default function TopBar({
         )}
       </div>
 
-      {/* GENIUS 操作缓冲区 */}
+      {/* GENIUS 操作缓冲区。 */}
       <div className="flex shrink-0 items-center gap-2 border-l border-line2 px-2.5">
         <div className="leading-none">
           <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("genius.title")}</div>

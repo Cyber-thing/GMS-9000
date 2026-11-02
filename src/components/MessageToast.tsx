@@ -4,7 +4,7 @@ import { useT } from "../i18n";
 import { useGame } from "../game/state";
 import { contactById } from "../game/data";
 
-/** 右下角弹出提示，通知联系人线程中有新消息。 */
+/** 右下角弹窗用于提示联系人会话中的新消息。 */
 export default function MessageToast({ onOpen }: { onOpen: () => void }) {
   const { t } = useT();
   const { g, isThreadOpen } = useGame();
@@ -14,7 +14,7 @@ export default function MessageToast({ onOpen }: { onOpen: () => void }) {
   const hide = useRef<number | null>(null);
 
   useEffect(() => {
-    /* 首次只记录基线，因此重新加载不会触发提示 */
+    /* 首次运行仅记录基线，避免刷新页面时重复弹出提示。 */
     if (!primed.current) {
       Object.entries(g.threads).forEach(([k, v]) => (seen.current[k] = v.length));
       primed.current = true;
@@ -26,7 +26,7 @@ export default function MessageToast({ onOpen }: { onOpen: () => void }) {
       seen.current[contact] = list.length;
       const last = list[list.length - 1];
       if (!last || last.from === "OP") continue;
-      /* 已经显示在屏幕上，无需再通知 */
+      /* 当前会话已在屏幕上，因此无需再次提示。 */
       if (isThreadOpen(contact)) continue;
       setShown({ nick: contactById(contact)?.nick ?? contact, text: last.text });
       if (hide.current) clearTimeout(hide.current);

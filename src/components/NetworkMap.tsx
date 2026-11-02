@@ -21,8 +21,6 @@ import { useTut } from "../game/tutorial";
 import { useGame } from "../game/state";
 import { useMapView, ZOOM } from "../hooks/useMapView";
 
-/* ------------------------------------------------------------------ */
-
 const CH_COLORS = { phos: "#8fb56d", amber: "#cfa04b" };
 
 export function shapeClass(glyph: string) {
@@ -159,10 +157,6 @@ function NodeMarker({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* 特殊区域状态的斜纹填充                                   */
-/* ------------------------------------------------------------------ */
-
 function SectorHatch({ status }: { status: Sector["status"] }) {
   if (status === "ONLINE") return null;
   const cfg =
@@ -173,8 +167,6 @@ function SectorHatch({ status }: { status: Sector["status"] }) {
         : "repeating-linear-gradient(45deg, rgba(143,134,184,0.1) 0 1.5px, transparent 1.5px 8px)";
   return <div className="pointer-events-none absolute inset-0" style={{ background: cfg }} />;
 }
-
-/* ------------------------------------------------------------------ */
 
 export default function NetworkMap({
   region,
@@ -207,7 +199,7 @@ export default function NetworkMap({
   const { isHl, gating } = useTut();
   const { g } = useGame();
   const { frameRef, view, dragging, onPointerDown, zoomBy, reset, consumedDrag } = useMapView();
-  /* ---- 按比例适配 1200x760 的舞台 ---- */
+  
   const hostRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 300, h: 190 });
   useEffect(() => {
@@ -222,13 +214,12 @@ export default function NetworkMap({
     return () => ro.disconnect();
   }, []);
 
-  /* ---- 示意图后方的大陆轮廓 ---- */
   const land = useMemo(
     () => landShape(regionGrid(region.box, 2), MAP_W, MAP_H, 2),
     [region]
   );
 
-  /* ---- 十字准线 + 坐标读数 ---- */
+  /* ---- 十字准星 + 坐标读数 ---- */
   const stageRef = useRef<HTMLDivElement>(null);
   const hLine = useRef<HTMLDivElement>(null);
   const vLine = useRef<HTMLDivElement>(null);
@@ -236,12 +227,12 @@ export default function NetworkMap({
   const onMove = (e: React.MouseEvent) => {
     const st = stageRef.current;
     if (!st) return;
-    const r = st.getBoundingClientRect();           // 已经反映了缩放
-    const fx = (e.clientX - r.left) / r.width;      // 横跨棋盘的 0..1 范围
+    const r = st.getBoundingClientRect();           // 该矩形已经包含缩放效果
+    const fx = (e.clientX - r.left) / r.width;      // 在面板范围内归一化为 0 到 1
     const fy = (e.clientY - r.top) / r.height;
     const ux = Math.round(fx * MAP_W);
     const uy = Math.round(fy * MAP_H);
-    /* 十字准线位于缩放后的舞台内，因此按布局像素定位 */
+    
     if (hLine.current) hLine.current.style.top = `${fy * st.offsetHeight}px`;
     if (vLine.current) vLine.current.style.left = `${fx * st.offsetWidth}px`;
     if (readout.current)
@@ -253,7 +244,6 @@ export default function NetworkMap({
     if (readout.current) readout.current.textContent = "X:---- Y:----";
   };
 
-  /* ---- 成功爆发效果追踪 ---- */
   const [bursts, setBursts] = useState<Record<string, number>>({});
   const prevConn = useRef<Set<string>>(connected);
   useEffect(() => {
@@ -282,7 +272,6 @@ export default function NetworkMap({
     prevConn.current = connected;
   }, [connected]);
 
-  /* ---- 带有实时端点状态的链路 ---- */
   const nodeIdx = useMemo(() => Object.fromEntries(nodes.map((n) => [n.id, n])), [nodes]);
   const wired = useMemo(
     () =>
@@ -386,7 +375,7 @@ export default function NetworkMap({
             cursor: dragging ? "grabbing" : "crosshair",
           }}
         >
-          {/* ======== SVG 图层：大陆 + 网格 + 链路 ======== */}
+          {}
           <svg
             className="absolute inset-0 h-full w-full"
             viewBox={`0 0 ${MAP_W} ${MAP_H}`}
@@ -403,7 +392,7 @@ export default function NetworkMap({
               </clipPath>
             </defs>
 
-            {/* 大陆背景：示意图下方淡淡的水印 */}
+            {}
             <g opacity={0.5}>
               <path d={land.path} fillRule="evenodd" fill="#141b10" />
               <g clipPath="url(#regionLand)">
@@ -427,7 +416,7 @@ export default function NetworkMap({
               <line key={`gy${i}`} x1={0} y1={(i + 1) * 95} x2={MAP_W} y2={(i + 1) * 95} stroke="#1a1e14" strokeWidth={0.5} opacity={0.65} />
             ))}
 
-            {/* 链路 */}
+            {/* 连接线 */}
             {wired.map((l, i) => {
               if (!l.na || !l.nb) return null;
               const active = l.touchSelected || l.touchConnecting;
@@ -464,11 +453,11 @@ export default function NetworkMap({
             })}
           </svg>
 
-          {/* ======== 区域板块 ======== */}
+          {/* ======== 扇区 区域 ======== */}
           {sectors.map((s) => {
             const sel = selectedSector === s.id;
             const col = STATUS_COLOR[s.status];
-            /* 保持包含聚光节点的区域清晰可读 */
+            /* 教程期间保留目标节点所在扇区的可读性。 */
             const holdsTarget = nodes.some(
               (n) => n.sector === s.id && isHl(`node:${n.id}` as never)
             );
@@ -503,7 +492,7 @@ export default function NetworkMap({
                   />
                 )}
                 {sel && <Brackets color={col} size={10} />}
-                {/* 标签芯片 */}
+                {/* 标签块 */}
                 <div className="pointer-events-none absolute left-[16px] top-[15px] flex items-center gap-1.5">
                   <span
                     className="px-1 py-[1px] text-[7.5px] font-bold tracking-[0.16em]"
@@ -539,7 +528,7 @@ export default function NetworkMap({
             );
           })}
 
-          {/* ======== 标尺 ======== */}
+          {}
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[11px] justify-between px-[1px] text-[7px] leading-[11px] text-faint sm:flex">
             {rulerX.map((x) => (
               <span key={x} className="tabular-nums">{pad(x, 3)}</span>
@@ -551,11 +540,11 @@ export default function NetworkMap({
             ))}
           </div>
 
-          {/* ======== 十字准线 ======== */}
+          {/* ======== 十字准星 ======== */}
           <div ref={hLine} className="pointer-events-none absolute left-0 right-0 top-[-10px] z-[5] h-px bg-phos/15" />
           <div ref={vLine} className="pointer-events-none absolute bottom-0 left-[-10px] top-0 z-[5] w-px bg-phos/15" />
 
-          {/* ======== 缓慢的扫描扫掠 ======== */}
+          {/* ======== 缓慢扫描线 ======== */}
           <div className="pointer-events-none absolute inset-0 z-[6] overflow-hidden">
             <div
               className="net-sweep absolute left-0 right-0 h-[3px]"
@@ -584,7 +573,7 @@ export default function NetworkMap({
             />
           ))}
 
-          {/* ======== 图例（悬停展开） ======== */}
+          {/* ======== 图例 (悬停展开) ======== */}
           <div
             className={cn("absolute bottom-[5px] left-[16px] z-[15] hidden md:block", gating && "tut-dim")}
             style={{

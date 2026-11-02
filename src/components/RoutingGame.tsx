@@ -3,6 +3,7 @@ import { Play, RotateCw, Unplug } from "lucide-react";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
 import { StatusDot } from "./chrome";
+import WardenClock from "./WardenClock";
 import {
   generateRouting, liveSides, signalPath, traceCircuit,
   type Cell, type RoutingBoard, type RoutingTier, type Side,
@@ -10,8 +11,6 @@ import {
 
 const TILE = 58;
 const GAP = 6;
-
-/* ------------------------------------------------------------------ */
 
 function Segment({
   cell, lit, flowing, onRotate, disabled,
@@ -24,7 +23,7 @@ function Segment({
   const col = flowing ? "#b3d98d" : lit ? "#8fb56d" : terminal ? "#7f95a8" : "#56624a";
   const c = TILE / 2;
 
-  /* 从中心向每个开放侧延伸的短线 */
+  /* 从中心向每个开放方向绘制连接段。 */
   const stub = (s: Side) => {
     const to: Record<Side, [number, number]> = {
       0: [c, 0], 1: [TILE, c], 2: [c, TILE], 3: [0, c],
@@ -45,7 +44,7 @@ function Segment({
       )}
       style={{ width: TILE, height: TILE }}
     >
-      {/* 机箱 */}
+      {/* 外壳 */}
       <span
         className="absolute inset-0 border transition-colors"
         style={{
@@ -56,7 +55,7 @@ function Segment({
           boxShadow: flowing ? "0 0 14px rgba(143,181,109,0.35)" : "none",
         }}
       />
-      {/* 角部缺口 */}
+      {/* 边角缺口 */}
       {[["left-0 top-0", "border-l border-t"], ["right-0 top-0", "border-r border-t"],
         ["left-0 bottom-0", "border-l border-b"], ["right-0 bottom-0", "border-r border-b"]].map(([pos, b]) => (
         <span key={pos} className={cn("pointer-events-none absolute h-[5px] w-[5px]", pos, b)}
@@ -82,14 +81,14 @@ function Segment({
   );
 }
 
-/* ------------------------------------------------------------------ */
-
 export default function RoutingGame({
-  nodeCode, tier, onWin, onAbort,
+  nodeCode, warden, tier, onWin, onLose, onAbort,
 }: {
   nodeCode: string;
+  warden: number;
   tier: RoutingTier;
   onWin: () => void;
+  onLose: () => void;
   onAbort: () => void;
 }) {
   const { t } = useT();
@@ -97,6 +96,7 @@ export default function RoutingGame({
   const [running, setRunning] = useState(false);
   const [front, setFront] = useState(0);
   const [done, setDone] = useState(false);
+  const [ejected, setEjected] = useState(false);
   const timers = useRef<number[]>([]);
 
   useEffect(() => () => timers.current.forEach((h) => { clearTimeout(h); clearInterval(h); }), []);
@@ -105,19 +105,19 @@ export default function RoutingGame({
   const path = useMemo(() => (solved ? signalPath(board) : []), [board, solved]);
 
   const rotate = useCallback((id: string) => {
-    if (running || done) return;
+    if (running || done || ejected) return;
     setBoard((b) => ({
       ...b,
       cells: b.cells.map((c) => (c.id === id && !c.fixed ? { ...c, turns: (c.turns + 1) % 4 } : c)),
     }));
-  }, [running, done]);
+  }, [running, done, ejected]);
 
   const run = () => {
-    if (running || done) return;
+    if (running || done || ejected) return;
     setRunning(true);
     setFront(0);
     if (!solved) {
-      /* 脉冲在电路断开处消失 */
+      /* 信号脉冲会在断路位置停止。 */
       timers.current.push(window.setTimeout(() => setRunning(false), 900));
       return;
     }
@@ -141,7 +141,7 @@ export default function RoutingGame({
   return (
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[94vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
-        {/* 标题 */}
+        {/* 标题栏 */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color={done ? "#8fb56d" : "#7f95a8"} pulse={!done} />
           <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
@@ -155,15 +155,31 @@ export default function RoutingGame({
           </button>
         </div>
 
-        {/* 提示条 */}
-        <div className="flex h-[24px] shrink-0 items-center gap-2 border-b border-line bg-soot px-2.5 text-[8px] uppercase tracking-[0.14em]">
-          <span className="truncate text-faint">{t("rt.hint")}</span>
-          <span className="ml-auto shrink-0" style={{ color: solved ? "#8fb56d" : "#77806b" }}>
-            {solved ? t("rt.ready") : t("rt.broken")}
-          </span>
+        <WardenClock
+          seconds={tier.timerSec}
+          warden={warden}
+          running={!done && !ejected}
+          onExpire={() => {
+            setEjected(true);
+            setRunning(false);
+            timers.current.push(window.setTimeout(onLose, 1500));
+          }}
+          right={
+            <span
+              className="text-[8px] uppercase tracking-[0.14em]"
+              style={{ color: solved ? "#8fb56d" : "#77806b" }}
+            >
+              {solved ? t("rt.ready") : t("rt.broken")}
+            </span>
+          }
+        />
+
+        {/* 操作提示 */}
+        <div className="flex h-[20px] shrink-0 items-center border-b border-line bg-soot px-2.5">
+          <span className="truncate text-[8px] uppercase tracking-[0.14em] text-faint">{t("rt.hint")}</span>
         </div>
 
-        {/* 棋盘 */}
+        {/* 面板 */}
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-well p-3">
           <div
             className="relative"
@@ -175,7 +191,7 @@ export default function RoutingGame({
               gap: GAP,
             }}
           >
-            {/* 空插槽 */}
+            {}
             {Array.from({ length: tier.cols * tier.rows }, (_, i) => (
               <span
                 key={`s${i}`}
@@ -199,6 +215,15 @@ export default function RoutingGame({
               </span>
             ))}
 
+            {ejected && (
+              <div className="absolute inset-0 flex items-center justify-center bg-ink/80">
+                <div className="anim-msgin border border-oxide bg-oxide/12 px-5 py-3 text-center">
+                  <div className="pixel text-[28px] leading-none text-[#e0634a]">{t("wc.ejected")}</div>
+                  <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-dim">{t("wc.ejectedSub")}</div>
+                </div>
+              </div>
+            )}
+
             {done && (
               <div className="absolute inset-0 flex items-center justify-center bg-ink/75">
                 <div className="anim-msgin border border-phosdim bg-phos/12 px-5 py-3 text-center">
@@ -210,17 +235,17 @@ export default function RoutingGame({
           </div>
         </div>
 
-        {/* 运行栏 */}
+        {}
         <div className="flex shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5 py-[6px]">
           <span className="text-[8px] uppercase tracking-[0.14em] text-faint">
             {t("rt.inlet")} → {t("rt.outlet")}
           </span>
           <button
             onClick={run}
-            disabled={running || done}
+            disabled={running || done || ejected}
             className={cn(
               "ml-auto flex items-center gap-1.5 border px-4 py-[6px] text-[9.5px] font-bold uppercase tracking-[0.18em] transition-colors",
-              running || done
+              running || done || ejected
                 ? "cursor-not-allowed border-line text-faint"
                 : "border-phosdim bg-phos/12 text-phosbrite hover:bg-phos hover:text-ink"
             )}

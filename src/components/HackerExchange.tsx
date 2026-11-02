@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Database } from "lucide-react";
 import { useT } from "../i18n";
 
-/* 滚动的用户名名单，最终停在操作员自己的名字上。 */
+/* 滚动显示代号列表，最后停在当前操作员的代号上。 */
 
 const POOL = [
   "NULLBYTE","Ghost_404","deadlink","rootkit","SYNTH","coldboot","BlackRelay","koma","irq0",
@@ -26,7 +26,7 @@ export default function HackerExchange({
   const [badge, setBadge] = useState(false);
   const timers = useRef<number[]>([]);
 
-  /* 名单很长，让滚动看起来像“成千上万个名字” */
+  /* 使用较长的列表来营造大量代号滚动的效果。 */
   const rows = useMemo(() => {
     const out: string[] = [];
     for (let i = 0; i < 90; i++) out.push(POOL[(i * 7 + 3) % POOL.length] + (i % 5 === 0 ? `_${i}` : ""));
@@ -37,7 +37,7 @@ export default function HackerExchange({
   useEffect(() => {
     const total = rows.length - 9;
     let i = 0;
-    /* 起初很快，随后逐渐减速，停在操作员所在的那一行 */
+    /* 滚动先快后慢，最终停在操作员所在行。 */
     const tick = () => {
       i += 1;
       setOffset(Math.min(i, total));
@@ -53,7 +53,6 @@ export default function HackerExchange({
     };
     timers.current.push(window.setTimeout(tick, 300));
     return () => timers.current.forEach(clearTimeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const view = rows.slice(offset, offset + 10);

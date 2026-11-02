@@ -8,7 +8,7 @@ export interface TermLine {
   t: string;
   text: string;
   tone?: "ok" | "warn" | "err" | "dim";
-  /** 可选的事件标签，例如 "NEW CODEX ENTRY" */
+  /** 可选事件标签，例如“NEW CODEX ENTRY”。 */
   tag?: string;
 }
 
@@ -35,7 +35,7 @@ export default function TerminalBar({
     if (el) el.scrollTop = el.scrollHeight;
   }, [lines.length, expanded]);
 
-  /* 统计控制台折叠期间滚过的流量 */
+  /* 统计控制台折叠期间经过的消息数量。 */
   const [missed, setMissed] = useState(0);
   const seen = useRef(lines.length);
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function TerminalBar({
 
   return (
     <div className="relative z-30 shrink-0 border-t border-line2 bg-[#0d100a]">
-      {/* 页头条 */}
+      {/* 标题条 */}
       <div className="flex h-[24px] items-center gap-2 border-b border-line px-2">
         <TerminalSquare size={11} className="shrink-0 text-phosdim" />
         <span className="truncate text-[9px] font-bold uppercase tracking-[0.22em] text-dim">{t("term.title")}</span>

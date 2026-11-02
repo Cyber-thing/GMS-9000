@@ -16,8 +16,6 @@ type CellState = "idle" | "ready" | "loading" | "done" | "current";
 
 const DIAL_KEYS = ["bg.dial1", "bg.dial2", "bg.dial3", "bg.dial4", "bg.dial5"];
 
-/* ------------------------------------------------------------------ */
-
 function Cell({
   cell, cols, boardW, state, pct, onPick,
 }: {
@@ -40,7 +38,7 @@ function Cell({
   const h = terminal ? 30 : 30;
   const lit = state !== "idle";
 
-  /* 每种节点类别的微型示意图标 */
+  /* 按节点类型绘制小型电路图标。 */
   const Glyph = () => {
     const c = color;
     if (cell.kind === "RELAY")
@@ -89,7 +87,7 @@ function Cell({
             : "polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px)",
         }}
       >
-        {/* 左侧引脚栏 */}
+        {}
         <span className="flex shrink-0 flex-col justify-center gap-[2px] px-[2px]" aria-hidden>
           {[0, 1, 2].map((i) => (
             <span key={i} className="block h-[1px] w-[4px]" style={{ background: lit ? color : "#2f3726", opacity: 0.8 }} />
@@ -120,7 +118,7 @@ function Cell({
           )}
         </span>
 
-        {/* 右侧引脚栏 + 状态灯 */}
+        {}
         <span className="flex shrink-0 flex-col items-center justify-between py-[2px] pr-[2px]" aria-hidden>
           <span
             className={cn("block h-[3px] w-[3px]", state === "loading" && "animate-softpulse")}
@@ -147,8 +145,6 @@ function Cell({
     </button>
   );
 }
-
-/* ------------------------------------------------------------------ */
 
 export default function BreachGame({
   nodeCode, warden, tier, onWin, onLose, onAbort, onLog,
@@ -191,7 +187,7 @@ export default function BreachGame({
 
   const owned = SCRIPTS.filter((s) => g.market.scripts.includes(s.id));
 
-  /* ---------------- 拨号连接 ---------------- */
+  /* ---------------- 拨号阶段 ---------------- */
   useEffect(() => {
     DIAL_KEYS.forEach((_, i) =>
       add(window.setTimeout(() => setDialStep(i + 1), 200 + i * (tier.dialMs / DIAL_KEYS.length)))
@@ -205,10 +201,8 @@ export default function BreachGame({
       setDialPct(100);
       setPhase("RUN");
     }, tier.dialMs));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ---------------- WARDEN 按自己的计时器苏醒 ---------------- */
   useEffect(() => {
     if (phase !== "RUN" || timerOn) return;
     const h = window.setTimeout(() => setTimerOn(true), tier.alarmMs);
@@ -216,7 +210,6 @@ export default function BreachGame({
     return () => clearTimeout(h);
   }, [phase, timerOn, tier.alarmMs]);
 
-  /* ---------------- 倒计时 ---------------- */
   useEffect(() => {
     if (!timerOn || phase !== "RUN") return;
     const iv = window.setInterval(() => {
@@ -235,7 +228,7 @@ export default function BreachGame({
     return () => clearInterval(iv);
   }, [timerOn, phase]);
 
-  /* 冷却也会在警报之前计时 */
+  /* 冷却时间，单位为秒。 */
   useEffect(() => {
     if (phase !== "RUN" || timerOn) return;
     const iv = window.setInterval(() => {
@@ -258,10 +251,8 @@ export default function BreachGame({
   useEffect(() => {
     if (phase === "WIN") add(window.setTimeout(onWin, 1400));
     if (phase === "LOSE") add(window.setTimeout(() => onLose("timeout"), 1700));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  /* ---------------- 跳转 ---------------- */
   const land = useCallback(
     (id: string) => {
       setLoadingId(null);
@@ -270,7 +261,7 @@ export default function BreachGame({
       setCurrent(id);
       setDone((d) => (d.includes(id) ? d : [...d, id]));
       setDepth((v) => v + 1);
-      setTimerOn(true); // 第一个解出的格子总会唤醒 WARDEN
+      setTimerOn(true); // 第一个完成的单元会立即唤醒 WARDEN
       if (id === map.access && !settled.current) {
         settled.current = true;
         setPhase("WIN");
@@ -298,7 +289,7 @@ export default function BreachGame({
     [phase, loadingId, map.cells, land]
   );
 
-  /* ---------------- 脚本 ---------------- */
+  /* 脚本。 */
   const fire = (id: string) => {
     if (phase !== "RUN" || cool[id]) return;
     const sc = scriptById(id);
@@ -362,7 +353,7 @@ export default function BreachGame({
           </button>
         </div>
 
-        {/* 拨号连接 */}
+        {/* 拨号阶段 */}
         {phase === "DIAL" && (
           <div className="px-4 py-5 sm:px-6">
             <div className="min-h-[104px]">
@@ -385,7 +376,7 @@ export default function BreachGame({
 
         {(phase === "RUN" || phase === "WIN" || phase === "LOSE") && (
           <>
-            {/* warden 状态条 */}
+            {/* WARDEN 状态条 */}
             <div
               className={cn(
                 "flex h-[30px] shrink-0 items-center gap-2 border-b px-2.5 transition-colors",
@@ -427,7 +418,7 @@ export default function BreachGame({
               </span>
             </div>
 
-            {/* 棋盘 */}
+            {/* 面板 */}
             <div className="min-h-0 flex-1 overflow-auto bg-well px-2 py-2">
               <div
                 className="relative mx-auto"
@@ -466,7 +457,7 @@ export default function BreachGame({
                     const mid = (x1 + x2) / 2;
                     const bend = 7;
                     const dir = Math.sign(p2.y - p1.y);
-                    /* 带倒角的直角走线，就像真实的电路板 */
+                    
                     const d =
                       Math.abs(p2.y - p1.y) < 2
                         ? `M${x1} ${p1.y} L${x2} ${p2.y}`
@@ -486,7 +477,7 @@ export default function BreachGame({
                           strokeDasharray={arming ? "6 4" : open ? "5 4" : "none"}
                           className={cn(arming && "anim-dashflow")}
                         />
-                        {/* 两端的过孔焊盘 */}
+                        {}
                         <circle cx={x1} cy={p1.y} r={1.9} fill="#0c0f09" stroke={col} strokeWidth={0.9} />
                         <circle cx={x2} cy={p2.y} r={1.9} fill="#0c0f09" stroke={col} strokeWidth={0.9} />
                       </g>
@@ -528,7 +519,7 @@ export default function BreachGame({
               </div>
             </div>
 
-            {/* 脚本栏 + 提示 */}
+            {}
             <div className="flex shrink-0 items-center gap-2 border-t border-line bg-soot px-2.5 py-[5px]">
               <span className="hidden truncate text-[8px] uppercase tracking-[0.14em] text-faint md:inline">
                 {t("bg.hintHex")}

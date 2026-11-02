@@ -90,7 +90,7 @@ export default function ChatPage({
         </div>
       </div>
 
-      {/* ---- 对话 ---- */}
+      {/* ---- 会话 ---- */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex shrink-0 items-center gap-2 border-b border-line bg-panel2 px-2 py-[4px]">
           <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-phosbrite">

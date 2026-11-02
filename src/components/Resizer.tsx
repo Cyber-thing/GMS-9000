@@ -1,9 +1,6 @@
 import { cn } from "../utils/cn";
 
-/**
- * 两列之间的垂直拖动手柄。
- * 拖动以调整大小 · 双击恢复默认宽度。
- */
+/** 两列之间的垂直拖拽条；拖动可调整宽度，双击恢复默认值。 */
 export default function Resizer({
   side,
   active,
@@ -37,14 +34,14 @@ export default function Resizer({
         className
       )}
     >
-      {/* 热区为完整的 7px；导轨是细的可见线 */}
+      {/* 完整的七像素区域都可拖拽，中央细线仅用于视觉提示。 */}
       <span
         className={cn(
           "pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors",
           active ? "bg-phos" : "bg-line group-hover:bg-line3 group-focus:bg-phosdim"
         )}
       />
-      {/* 握持点 */}
+      {/* 拖拽点 */}
       <span
         className={cn(
           "pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-[3px] transition-opacity",
@@ -59,7 +56,7 @@ export default function Resizer({
           />
         ))}
       </span>
-      {/* 拖动时实时显示的宽度光晕 */}
+      {/* 拖拽时显示实时宽度高亮。 */}
       {active && (
         <span className="pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 bg-phos/25" />
       )}

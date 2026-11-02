@@ -3,19 +3,13 @@ import { ChevronDown, ChevronUp, Grid2x2, PhoneCall, PhoneOff, Skull } from "luc
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
 import { CALLER, useTut } from "../game/tutorial";
+import RichText from "./RichText";
 
-/* ------------------------------------------------------------------
-   层级刻度：通话始终优先：
-     90  CRT 叠加层        94  黑市      95  确认对话框
-     96  入侵 / 保险库     97  保险库阅读器
-    110  通话窗口       112  来电振铃
-   ------------------------------------------------------------------ */
+/* 图层层级：通话窗口始终位于最上方。 */
 const Z_CALL = 110;
 const Z_RING = 112;
 
-/* ------------------------------------------------------------------ */
-/* 打字机效果：逐字显示该行，点击可跳过  */
-/* ------------------------------------------------------------------ */
+/* 打字机效果逐字显示文本，点击可立即完成。 */
 
 function Typed({ text, onDone }: { text: string; onDone: () => void }) {
   const [shown, setShown] = useState(0);
@@ -38,13 +32,11 @@ function Typed({ text, onDone }: { text: string; onDone: () => void }) {
 
   return (
     <span>
-      {text.slice(0, shown)}
+      <RichText text={text.slice(0, shown)} />
       {!done && <span className="ml-[1px] inline-block h-[10px] w-[5px] translate-y-[1px] animate-blink bg-phosdim" />}
     </span>
   );
 }
-
-/* ------------------------------------------------------------------ */
 
 function Portrait({ size = 34, avatar = "skull" }: { size?: number; avatar?: "skull" | "cage" }) {
   const cage = avatar === "cage";
@@ -73,10 +65,10 @@ export default function TutorialCall() {
   useEffect(() => {
     setTyped(false);
     setSkip(false);
-    setFolded(false); // 新的一行总会展开面板
+    setFolded(false); // 出现新台词时自动展开面板
   }, [step?.id]);
 
-  /* ---------------- 剧情通话 ---------------- */
+  /* 剧情通话。 */
   if (call) {
     const line = lang === "ru" ? call.script.lines[call.idx].ru : call.script.lines[call.idx].en;
     const last = call.idx + 1 >= call.script.lines.length;
@@ -127,7 +119,7 @@ export default function TutorialCall() {
           <div className="flex gap-2.5 px-2.5 py-2.5">
             <Portrait avatar={call.script.avatar} />
             <div className="min-w-0 flex-1">
-              <p className="min-h-[32px] text-[11px] leading-relaxed text-fog/95">
+              <p className="min-h-[32px] text-[13px] leading-snug text-fog/95">
                 {skip ? line : <Typed key={call.idx} text={line} onDone={() => setTyped(true)} />}
               </p>
               {(skip || typed) && (
@@ -150,7 +142,7 @@ export default function TutorialCall() {
     );
   }
 
-  /* ---------------- 来电 ---------------- */
+  /* 来电界面。 */
   if (phase === "ringing") {
     return (
       <div
@@ -189,10 +181,10 @@ export default function TutorialCall() {
     );
   }
 
-  /* ---------------- 通话中 ---------------- */
+  /* 通话进行中。 */
   if (phase !== "talking" || !step) return null;
 
-  /* 临时的插话会暂时替换脚本台词 */
+  /* 临时插话会暂时替换当前脚本台词。 */
   const line = aside ?? (lang === "ru" ? step.ru : step.en);
   const waiting = !!step.waitFor;
 
@@ -205,7 +197,7 @@ export default function TutorialCall() {
         className="anim-msgin pointer-events-auto w-[min(620px,100%)] border-2 border-amberdim bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(207,160,75,0.18)]"
         onClick={() => !folded && setSkip(true)}
       >
-        {/* 来电者条 */}
+        {/* 来电者信息栏。 */}
         <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
           <span className="h-[5px] w-[5px] animate-softpulse bg-amber" />
           <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-amber">
@@ -222,13 +214,13 @@ export default function TutorialCall() {
             {folded ? <ChevronUp size={8} /> : <ChevronDown size={8} />}
             {folded ? t("tut.unfold") : t("tut.fold")}
           </button>
-          {/* 简报期间不能挂断：由脚本驱动会话 */}
+          {/* 教程进行时不可挂断，由脚本控制会话。 */}
           <span className="flex items-center gap-1 border border-line px-1.5 py-[1px] text-[7.5px] font-bold uppercase tracking-[0.12em] text-faint">
             <PhoneOff size={8} /> {t("tut.locked")}
           </span>
         </div>
 
-        {/* 主体 */}
+        {}
         {folded ? (
           <div className="flex items-center gap-2 px-2.5 py-[5px]">
             <Portrait size={16} />
@@ -239,11 +231,11 @@ export default function TutorialCall() {
         <div className="flex gap-2.5 px-2.5 py-2.5">
           <Portrait />
           <div className="min-w-0 flex-1">
-            <p className="min-h-[32px] text-[11px] leading-relaxed text-fog/95">
+            <p className="min-h-[32px] text-[13px] leading-snug text-fog/95">
               {skip && !aside ? line : <Typed key={aside ?? step.id} text={line} onDone={() => setTyped(true)} />}
             </p>
 
-            {/* 是 / 否 分支 */}
+            {/* 是／否分支。 */}
             {step.choice && (skip || typed) && (
               <div className="mt-2 flex gap-1.5">
                 <button
@@ -261,7 +253,7 @@ export default function TutorialCall() {
               </div>
             )}
 
-            {/* 继续 / 等待 */}
+            {/* 继续或等待状态。 */}
             {!step.choice && (skip || typed) && (
               waiting ? (
                 <div className="mt-1.5 flex items-center gap-1.5 text-[8px] uppercase tracking-[0.18em] text-amber">

@@ -4,7 +4,7 @@ import { cn } from "../utils/cn";
 import { useT } from "../i18n";
 import { StatusDot } from "./chrome";
 
-/** WARDEN PASS：守卫节点的字面密码提示。 */
+/** WARDEN PASS：保护节点的字面密码输入窗口。 */
 export default function WardenPass({
   nodeCode,
   expected,
@@ -76,7 +76,7 @@ export default function WardenPass({
             </div>
           </div>
 
-          {/* 输入框 */}
+          {/* 输入字段 */}
           <label className="mt-3 block text-[9px] uppercase tracking-[0.24em] text-faint">
             {t("wp.prompt")}
           </label>
@@ -101,7 +101,7 @@ export default function WardenPass({
             <span className="h-[13px] w-[7px] shrink-0 animate-blink bg-phosdim" />
           </div>
 
-          {/* 判定 */}
+          {/* 验证结果 */}
           <div className="mt-2 min-h-[16px] text-[10px] uppercase tracking-[0.16em]">
             {state === "checking" && <span className="animate-softpulse text-amber">{t("wp.checking")}</span>}
             {state === "denied" && (
