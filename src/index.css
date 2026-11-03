@@ -3,6 +3,9 @@
 @theme {
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", monospace;
   --font-pixel: "VT323", "IBM Plex Mono", "Noto Sans SC", "PingFang SC", monospace;
+  /* Псевдографика (█ ░) — только моноширинные латинские шрифты.
+     CJK-шрифты рисуют эти блоки на полную ширину и ломают полосы прогресса. */
+  --font-blocks: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --color-ink: #0b0d09;
   --color-soot: #0e110c;
@@ -299,9 +302,20 @@ body {
 /* ---------- ASCII 进度块 ---------- */
 .blocksbar {
   letter-spacing: 1px;
-  font-family: var(--font-pixel);
+  font-family: var(--font-blocks);
   font-size: 15px;
   line-height: 1;
+  /* полоса никогда не переносится и не вылезает за свой контейнер */
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+/* инлайновые полосы (внутри строки с текстом) */
+span.blocksbar {
+  display: inline-block;
+  vertical-align: baseline;
 }
 
 /* 文本辅助样式 */
@@ -321,7 +335,7 @@ input[type="text"] {
    拉丁字距（tracking-[0.2em] 之类）在西文是装饰，遇到方块字
    会按字膨胀宽度。中文模式下统一夹紧字距，保证切换语言时
    所有面板、顶栏、按钮的尺寸丝毫不差。 */
-html[lang="zh-CN"] * {
+html[lang="zh-CN"] *:not(.blocksbar):not(.blocksbar *) {
   letter-spacing: 0.04em !important;
 }
 html[lang="zh-CN"] body {
@@ -330,6 +344,11 @@ html[lang="zh-CN"] body {
 }
 html[lang="zh-CN"] ::placeholder {
   letter-spacing: 0.04em !important;
+}
+/* псевдографика считается по символам — её метрики трогать нельзя */
+html[lang="zh-CN"] .blocksbar {
+  letter-spacing: 1px !important;
+  font-family: var(--font-blocks) !important;
 }
 
 @keyframes tutpulse {
