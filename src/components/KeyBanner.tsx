@@ -52,7 +52,7 @@ export default function KeyBanner() {
               <span
                 className="pixel text-[19px] leading-none tracking-[0.14em]"
                 style={{
-                  color: k.open ? "#b3d98d" : "#e8c478",
+                  color: k.open ? "var(--color-phosbrite)" : "#e8c478",
                   textShadow: k.open ? "none" : "0 0 10px rgba(207,160,75,0.45)",
                 }}
               >

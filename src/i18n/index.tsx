@@ -1,9 +1,14 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { store } from "../lib/util";
+import { ZH } from "./zh";
 
-export type Lang = "en" | "ru";
+export type Lang = "en" | "ru" | "zh";
 
-type Entry = { en: string; ru: string };
+/** 从多语字段中按当前语言挑一条值，中文缺失时回落到英文。 */
+export const pickL = <T,>(lang: Lang, en: T, ru: T, zh?: T): T =>
+  lang === "zh" ? zh ?? en : lang === "ru" ? ru : en;
+
+type Entry = { en: string; ru: string; zh?: string };
 
 export const DICT: Record<string, Entry> = {
   
@@ -19,6 +24,13 @@ export const DICT: Record<string, Entry> = {
   "top.stable": { en: "STABLE", ru: "СТАБИЛЬНА" },
   "top.globalgrid": { en: "WORLD", ru: "WORLD" },
   "top.crtTip": { en: "toggle CRT scanlines", ru: "переключить развёртку ЭЛТ" },
+  "top.phosTip": { en: "switch phosphor color scheme", ru: "сменить цветовую схему люминофора" },
+
+  "phos.green": { en: "GREEN P1", ru: "ЗЕЛЁНЫЙ P1" },
+  "phos.magenta": { en: "MAGENTA", ru: "МАДЖЕНТА" },
+  "phos.blue": { en: "ELECTRIC BLUE", ru: "ЭЛЕКТРИК-ГОЛУБОЙ" },
+  "phos.red": { en: "RED", ru: "КРАСНЫЙ" },
+  "phos.amber": { en: "AMBER P3", ru: "ЯНТАРНЫЙ P3" },
   "top.handleTip": { en: "set operator handle", ru: "сменить позывной оператора" },
   "top.save": { en: "save handle", ru: "сохранить" },
   "top.cancel": { en: "cancel", ru: "отмена" },
@@ -279,6 +291,7 @@ export const DICT: Record<string, Entry> = {
 
   "t.crtOn": { en: "crt overlay enabled", ru: "развёртка ЭЛТ включена" },
   "t.crtOff": { en: "crt overlay disabled", ru: "развёртка ЭЛТ выключена" },
+  "t.phosSet": { en: "phosphor palette → {p}", ru: "палитра люминофора → {p}" },
   "t.handleSet": { en: "operator handle set :: {op}", ru: "позывной оператора задан :: {op}" },
   "e.handleSet": { en: "operator identified as {op}", ru: "оператор опознан как {op}" },
   "t.langSet": { en: "interface language :: ENGLISH", ru: "язык интерфейса :: РУССКИЙ" },
@@ -744,7 +757,8 @@ const interpolate = (s: string, p?: Record<string, string | number>) =>
 export function translate(lang: Lang, key: string, params?: Record<string, string | number>): string {
   const e = DICT[key];
   if (!e) return key;
-  return interpolate(e[lang], params);
+  const s = lang === "zh" ? (e.zh ?? ZH[key] ?? e.en) : e[lang];
+  return interpolate(s, params);
 }
 
 interface Ctx {
@@ -762,10 +776,15 @@ const LangCtx = createContext<Ctx>({
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => store.get<Lang>("lang", "en"));
 
+  /* 刷新后也要恢复 <html lang>，否则中文排版规则不生效。 */
+  useEffect(() => {
+    document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
+  }, [lang]);
+
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
     store.set("lang", l);
-    document.documentElement.lang = l;
+    document.documentElement.lang = l === "zh" ? "zh-CN" : l;
   }, []);
 
   const t = useCallback(

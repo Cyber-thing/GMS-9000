@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-pixel: "VT323", "IBM Plex Mono", monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", monospace;
+  --font-pixel: "VT323", "IBM Plex Mono", "Noto Sans SC", "PingFang SC", monospace;
 
   --color-ink: #0b0d09;
   --color-soot: #0e110c;
@@ -18,6 +18,12 @@
   --color-fog: #bcc4ae;
   --color-dim: #77806b;
   --color-faint: #4c5545;
+  --color-moss: #59604f;
+  --color-sage: #99a18c;
+  --color-sagehi: #a8ad96;
+  --color-land1: #313c24;
+  --color-land2: #3c492c;
+  --color-land3: #4a5c31;
 
   --color-phos: #8fb56d;
   --color-phosdim: #5f7a4b;
@@ -30,6 +36,160 @@
 
   --animate-blink: blink 1.1s steps(2, start) infinite;
   --animate-softpulse: softpulse 1.8s ease-in-out infinite;
+}
+
+/* ---------- 荧光粉主题变量（可被洋红模式覆盖） ---------- */
+:root {
+  --phosrgb: 143 181 109;
+  --sel-fg: #e8eedd;
+  --sb-track: #0d0f0a;
+  --sb-line: #20261a;
+  --sb-thumb: #333b28;
+  --sb-thumb-hover: #47543a;
+}
+
+/* ---------- РЕТРО-СХЕМЫ ЛЮМИНОФОРА ----------
+   Все схемы приглушённые, как настоящие монохромные CRT:
+   никакой кислоты — пыльные поверхности + мягкий свет люминофора. */
+
+/* MAGENTA — пыльная розово-пурпурная */
+html[data-phos="magenta"] {
+  --color-ink: #0e0a0e;
+  --color-soot: #120d12;
+  --color-panel: #160f16;
+  --color-panel2: #1a131c;
+  --color-header: #1e1420;
+  --color-well: #0c090c;
+
+  --color-line: #2b202e;
+  --color-line2: #41304a;
+  --color-line3: #59435f;
+
+  --color-fog: #c6bcc5;
+  --color-dim: #847588;
+  --color-faint: #574b5c;
+  --color-moss: #6b5a6f;
+  --color-sage: #a394a2;
+  --color-sagehi: #b0a3ae;
+  --color-land1: #352838;
+  --color-land2: #41304a;
+  --color-land3: #503b5a;
+
+  --color-phos: #c977b0;
+  --color-phosdim: #8e537e;
+  --color-phosbrite: #e2a5cf;
+
+  --phosrgb: 201 119 176;
+  --sel-fg: #f3e4ef;
+  --sb-track: #110d12;
+  --sb-line: #241927;
+  --sb-thumb: #3c2941;
+  --sb-thumb-hover: #55395b;
+}
+
+/* BLUE — электрический голубой, смягчённый до голубовато-стального */
+html[data-phos="blue"] {
+  --color-ink: #090c10;
+  --color-soot: #0c1014;
+  --color-panel: #0f1318;
+  --color-panel2: #121720;
+  --color-header: #151b26;
+  --color-well: #090b0e;
+
+  --color-line: #1e2633;
+  --color-line2: #2e3a4d;
+  --color-line3: #3f4f66;
+
+  --color-fog: #b9c3ce;
+  --color-dim: #71808f;
+  --color-faint: #48525e;
+  --color-moss: #536373;
+  --color-sage: #93a3b0;
+  --color-sagehi: #a4b3bf;
+  --color-land1: #22303e;
+  --color-land2: #2b3d4f;
+  --color-land3: #364e64;
+
+  --color-phos: #6db3d2;
+  --color-phosdim: #4a7c96;
+  --color-phosbrite: #a5d9ec;
+
+  --phosrgb: 109 179 210;
+  --sel-fg: #e2f0f8;
+  --sb-track: #0d1013;
+  --sb-line: #1c2430;
+  --sb-thumb: #2c3a49;
+  --sb-thumb-hover: #3f5369;
+}
+
+/* RED — мягкий алый, как красный светодиодный индикатор */
+html[data-phos="red"] {
+  --color-ink: #0f0a0a;
+  --color-soot: #130d0c;
+  --color-panel: #16100f;
+  --color-panel2: #1a1312;
+  --color-header: #1f1513;
+  --color-well: #0d0909;
+
+  --color-line: #2e201e;
+  --color-line2: #48322e;
+  --color-line3: #61443f;
+
+  --color-fog: #c9bdbc;
+  --color-dim: #8a7775;
+  --color-faint: #5c4b49;
+  --color-moss: #705d5a;
+  --color-sage: #a39593;
+  --color-sagehi: #b1a3a0;
+  --color-land1: #3a2521;
+  --color-land2: #47302a;
+  --color-land3: #563c34;
+
+  --color-phos: #cf6b62;
+  --color-phosdim: #964c48;
+  --color-phosbrite: #eb9a90;
+
+  --phosrgb: 207 107 98;
+  --sel-fg: #f9e7e4;
+  --sb-track: #120e0d;
+  --sb-line: #271b19;
+  --sb-thumb: #402c28;
+  --sb-thumb-hover: #5a3e38;
+}
+
+/* AMBER — классический янтарный монохром */
+html[data-phos="amber"] {
+  --color-ink: #0e0c08;
+  --color-soot: #121009;
+  --color-panel: #151209;
+  --color-panel2: #191509;
+  --color-header: #1e190c;
+  --color-well: #0c0a06;
+
+  --color-line: #2b2516;
+  --color-line2: #443820;
+  --color-line3: #5d4c2c;
+
+  --color-fog: #c7c0ae;
+  --color-dim: #887e6a;
+  --color-faint: #564f3f;
+  --color-moss: #6d624c;
+  --color-sage: #a2957c;
+  --color-sagehi: #b0a38b;
+  --color-land1: #39301d;
+  --color-land2: #463a22;
+  --color-land3: #55482b;
+
+  --color-phos: #d3a254;
+  --color-phosdim: #97733c;
+  --color-phosbrite: #ecc481;
+
+  --phosrgb: 211 162 84;
+  --sel-fg: #f6ecd5;
+  --sb-track: #100e08;
+  --sb-line: #261f10;
+  --sb-thumb: #41351d;
+  --sb-thumb-hover: #5c4c2a;
 }
 
 html,
@@ -49,30 +209,30 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #333b28 transparent;
+  scrollbar-color: var(--sb-thumb) transparent;
 }
 *::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
 *::-webkit-scrollbar-track {
-  background: #0d0f0a;
-  border-left: 1px solid #20261a;
+  background: var(--sb-track);
+  border-left: 1px solid var(--sb-line);
 }
 *::-webkit-scrollbar-thumb {
-  background: #333b28;
-  border: 2px solid #0d0f0a;
+  background: var(--sb-thumb);
+  border: 2px solid var(--sb-track);
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #47543a;
+  background: var(--sb-thumb-hover);
 }
 *::-webkit-scrollbar-corner {
-  background: #0d0f0a;
+  background: var(--sb-track);
 }
 
 ::selection {
-  background: rgba(143, 181, 109, 0.28);
-  color: #e8eedd;
+  background: rgb(var(--phosrgb) / 0.28);
+  color: var(--sel-fg);
 }
 
 /* ---------- 关键帧 ---------- */
@@ -133,7 +293,7 @@ body {
   );
 }
 .crt-tint {
-  background: linear-gradient(180deg, rgba(143, 181, 109, 0.02), rgba(0, 0, 0, 0.03));
+  background: linear-gradient(180deg, rgb(var(--phosrgb) / 0.02), rgba(0, 0, 0, 0.03));
 }
 
 /* ---------- ASCII 进度块 ---------- */
@@ -145,7 +305,7 @@ body {
 }
 
 /* 文本辅助样式 */
-.txt-glow-green { text-shadow: 0 0 6px rgba(143, 181, 109, 0.45); }
+.txt-glow-green { text-shadow: 0 0 6px rgb(var(--phosrgb) / 0.45); }
 .txt-glow-amber { text-shadow: 0 0 6px rgba(207, 160, 75, 0.4); }
 
 .pixel {
@@ -155,6 +315,21 @@ body {
 
 input[type="text"] {
   outline: none;
+}
+
+/* ---------- 中文模式：尺寸稳定 ----------
+   拉丁字距（tracking-[0.2em] 之类）在西文是装饰，遇到方块字
+   会按字膨胀宽度。中文模式下统一夹紧字距，保证切换语言时
+   所有面板、顶栏、按钮的尺寸丝毫不差。 */
+html[lang="zh-CN"] * {
+  letter-spacing: 0.04em !important;
+}
+html[lang="zh-CN"] body {
+  font-size: 12px;
+  text-rendering: optimizeLegibility;
+}
+html[lang="zh-CN"] ::placeholder {
+  letter-spacing: 0.04em !important;
 }
 
 @keyframes tutpulse {

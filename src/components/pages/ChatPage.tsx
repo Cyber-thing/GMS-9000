@@ -67,7 +67,7 @@ export default function ChatPage({
               onClick={() => onSwitch(ch)}
               className={cn(
                 "group flex items-center gap-1 border-b border-line/60 px-1.5 py-[7px] text-left transition-colors",
-                isActive ? "bg-phos/12 shadow-[inset_2px_0_0_#8fb56d]" : "hover:bg-panel2"
+                isActive ? "bg-phos/12 shadow-[inset_2px_0_0_var(--color-phos)]" : "hover:bg-panel2"
               )}
             >
               <Hash size={9} className={cn("shrink-0", isActive ? "text-phos" : "text-faint")} />

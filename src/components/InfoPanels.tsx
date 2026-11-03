@@ -3,7 +3,7 @@ import { cn } from "../utils/cn";
 import { TYPE_GLYPH, type NetNode, type Sector } from "../data/network";
 import type { NodeState } from "../game/types";
 import { KV, Panel, STATUS_COLOR } from "./chrome";
-import { blockBar, stampNow } from "../lib/util";
+import { alfa, blockBar, stampNow } from "../lib/util";
 import { useT } from "../i18n";
 import { sectorDesc, sectorName } from "../i18n/content";
 import { useTut } from "../game/tutorial";
@@ -35,7 +35,7 @@ export function TypeGlyphShape({ type, color, size = 8, hollow = false }: { type
         width: size,
         height: size,
         borderColor: color,
-        background: hollow ? "transparent" : `${color}44`,
+        background: hollow ? "transparent" : alfa(color, 27),
       }}
     />
   );
@@ -106,7 +106,7 @@ export function SectorPanel({
         </div>
         <div className="mt-2 space-y-px border-y border-line py-1.5">
           <KV k={t("sec.nodes")} v={t("sec.indexed", { n: sectorNodes.length })} />
-          <KV k={t("sec.reach")} v={`${online} / ${sectorNodes.length}`} vc={online > 0 ? "#8fb56d" : "#59604f"} />
+          <KV k={t("sec.reach")} v={`${online} / ${sectorNodes.length}`} vc={online > 0 ? "var(--color-phos)" : "var(--color-moss)"} />
           <KV
             k={t("sec.integrity")}
             v={
@@ -170,8 +170,8 @@ export interface NetEvent {
 }
 
 const EV_COLOR: Record<NetEvent["kind"], string> = {
-  info: "#77806b",
-  good: "#8fb56d",
+  info: "var(--color-dim)",
+  good: "var(--color-phos)",
   warn: "#cfa04b",
   odd: "#8f86b8",
   bad: "#c25b46",

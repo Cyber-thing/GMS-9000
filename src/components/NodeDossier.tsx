@@ -3,8 +3,8 @@ import { cn } from "../utils/cn";
 import type { NetNode } from "../data/network";
 import { KV, Panel, STATUS_COLOR, StatusDot } from "./chrome";
 import { TypeGlyphShape } from "./InfoPanels";
-import { blockBar } from "../lib/util";
-import { useT } from "../i18n";
+import { alfa, blockBar } from "../lib/util";
+import { pickL, useT } from "../i18n";
 import { useGame } from "../game/state";
 import { CFG, NODE_META, factionById, filesOfNode } from "../game/data";
 import { usesVault } from "../game/vault";
@@ -14,8 +14,8 @@ import { ALL_NODES } from "../data/regions";
 import { useTut } from "../game/tutorial";
 
 export const NODE_STATE_COLOR: Record<string, string> = {
-  LOCKED: "#59604f",
-  AVAILABLE: "#8fb56d",
+  LOCKED: "var(--color-moss)",
+  AVAILABLE: "var(--color-phos)",
   COMPROMISED: "#8f86b8",
   RESTRICTED: "#cfa04b",
 };
@@ -28,7 +28,7 @@ function WardenBar({ level }: { level: number }) {
           key={i}
           className="block h-[8px] w-[5px] border"
           style={{
-            borderColor: i <= level ? (level >= 4 ? "#c25b46" : "#cfa04b") : "#39422d",
+            borderColor: i <= level ? (level >= 4 ? "#c25b46" : "#cfa04b") : "var(--color-line2)",
             background: i <= level ? (level >= 4 ? "#c25b4655" : "#cfa04b44") : "transparent",
           }}
         />
@@ -71,7 +71,7 @@ export default function NodeDossier({
 
   if (!node) {
     return (
-      <Panel title={t("panel.node")} className="shrink-0" bodyClassName="p-3" accent="#4c5545">
+      <Panel title={t("panel.node")} className="shrink-0" bodyClassName="p-3" accent="var(--color-faint)">
         <p className="text-[10.5px] leading-relaxed text-faint">
           &gt; {t("node.none")}
           <span className="ml-1 inline-block h-[10px] w-[6px] translate-y-[1px] animate-blink bg-faint" />
@@ -137,7 +137,7 @@ export default function NodeDossier({
           </span>
           <span
             className="shrink-0 border px-1.5 py-[2px] text-[8px] font-bold tracking-[0.14em]"
-            style={{ color, borderColor: `${color}66` }}
+            style={{ color, borderColor: alfa(color, 40) }}
           >
             {t(`nst.${st}`)}
           </span>
@@ -178,7 +178,7 @@ export default function NodeDossier({
             className={cn(
               "mt-2.5 flex w-full items-center justify-center gap-2 border px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.16em] transition-all",
               chk.ok && !breached &&
-                "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink hover:shadow-[0_0_14px_rgba(143,181,109,0.25)]",
+                "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink hover:shadow-[0_0_14px_rgb(var(--phosrgb) / 0.25)]",
               chk.ok && breached &&
                 "border-viole/60 bg-viole/10 text-viole hover:bg-viole/25 hover:text-fog",
               !chk.ok && "cursor-not-allowed border-line text-faint",
@@ -235,14 +235,14 @@ export default function NodeDossier({
           <div
             className="mt-2 border-l-2 py-1 pl-2"
             style={{
-              borderColor: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "#4c5545" : "#5f7a4b",
-              background: st === "RESTRICTED" ? "rgba(207,160,75,0.07)" : "rgba(143,181,109,0.05)",
+              borderColor: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "var(--color-faint)" : "var(--color-phosdim)",
+              background: st === "RESTRICTED" ? "rgba(207,160,75,0.07)" : "rgb(var(--phosrgb) / 0.05)",
             }}
           >
             <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("dos.cond")}</div>
             <div
               className="mt-[2px] text-[10px] leading-snug"
-              style={{ color: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "#77806b" : "#99a18c" }}
+              style={{ color: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "var(--color-dim)" : "var(--color-sage)" }}
             >
               {condition}
             </div>
@@ -258,14 +258,14 @@ export default function NodeDossier({
         {/* ---- 参数 ---- */}
         <div className={cn("mt-2 space-y-px border-y border-line py-1.5", gating && "tut-dim")}>
           <KV k={t("dos.class")} v={t(`ncls.${meta.cls}`)} />
-          <KV k={t("dos.owner")} v={owner ? (lang === "ru" ? owner.nameRu : owner.name) : "—"} vc="#a8ad96" />
-          <KV k={t("dos.region")} v={`${regionName ?? "—"} · ${sectorName ?? "—"}`} vc="#77806b" />
+          <KV k={t("dos.owner")} v={owner ? (pickL(lang, owner.name, owner.nameRu, owner.nameZh)) : "—"} vc="var(--color-sagehi)" />
+          <KV k={t("dos.region")} v={`${regionName ?? "—"} · ${sectorName ?? "—"}`} vc="var(--color-dim)" />
           <KV k={t("dos.warden")} v={<WardenBar level={meta.warden} />} />
           <KV k={t("dos.state")} v={t(`nst.${st}`)} vc={color} />
           <KV
             k={t("dos.reward")}
             v={breached ? t("dos.noReward") : `+${reward} REP`}
-            vc={breached ? "#59604f" : "#8fb56d"}
+            vc={breached ? "var(--color-moss)" : "var(--color-phos)"}
           />
         </div>
 
@@ -288,7 +288,7 @@ export default function NodeDossier({
                       >
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-[10px] text-phosbrite">
-                            {lang === "ru" ? f.nameRu : f.name}
+                            {pickL(lang, f.name, f.nameRu, f.nameZh)}
                           </div>
                           <div className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
                             {t(`dcat.${f.cat}`)} · {f.value}cr
@@ -326,7 +326,7 @@ export default function NodeDossier({
                     >
                       <div className="min-w-0 flex-1">
                         <div className={cn("truncate text-[10px]", owned ? "text-phosbrite" : "text-fog")}>
-                          {lang === "ru" ? f.nameRu : f.name}
+                          {pickL(lang, f.name, f.nameRu, f.nameZh)}
                         </div>
                         <div className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
                           {t(`dcat.${f.cat}`)} · {f.value}cr

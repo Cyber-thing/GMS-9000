@@ -52,7 +52,7 @@ export default function Resizer({
           <span
             key={i}
             className="block h-[3px] w-[3px]"
-            style={{ background: active ? "#b3d98d" : "#4d5940" }}
+            style={{ background: active ? "var(--color-phosbrite)" : "var(--color-line3)" }}
           />
         ))}
       </span>

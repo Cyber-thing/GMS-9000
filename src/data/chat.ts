@@ -14,11 +14,11 @@ export const CHANNELS: ChannelId[] = ["GLOBAL", "OPERATORS", "MARKET", "CORPORAT
 
 /* 低饱和昵称调色板，通过昵称哈希选择颜色。 */
 export const NICK_COLORS = [
-  "#8fb56d", // 低饱和绿色
+  "var(--color-phos)", // 荧光主色（跟随当前配色方案）
   "#cfa04b", // 琥珀色
   "#7f95a8", // 钢蓝色
   "#8f86b8", // 低饱和紫色
-  "#a8ad96", // 浅鼠尾草绿
+  "var(--color-sagehi)", // 浅鼠尾草绿
   "#b36a52", // 氧化红
 ];
 
@@ -37,7 +37,7 @@ const G = (nick: string, text: string): PoolEntry => ({ nick, text });
 
 export const CHAT_POOL: Record<ChannelId, { nicks: string[]; msgs: PoolEntry[] }> = {
   GLOBAL: {
-    nicks: ["NULLBYTE", "Ghost_404", "deadlink", "rootkit", "SYNTH", "coldboot", "BlackRelay", "koma", "irq0", "modemmike", "VHS_girl", "patchbay"],
+    nicks: ["NULLBYTE", "Ghost_404", "deadlink", "rootkit", "SYNTH", "coldboot", "BlackRelay", "koma", "irq0", "modemmike", "VHS_girl", "patchbay", "Grazhdanka", "Gabedan", "AlexMurphy", "Comrakoff", "Nk", "ArkadyParovozov", "Pterich", "Shisoika", "LukeKey", "Vino"],
     msgs: [
       G("NULLBYTE", "anyone else getting packet loss in {sector}?"),
       G("Ghost_404", "found an unregistered relay out past the backbone. not touching it."),
@@ -82,6 +82,33 @@ export const CHAT_POOL: Record<ChannelId, { nicks: string[]; msgs: PoolEntry[] }
       G("rootkit", "./me sips jolt cola"),
       G("SYNTH", "saw someone kerberoses the wrong port. rookie."),
       G("BlackRelay", "the net is alive tonight. keep your scripts short."),
+      G("Grazhdanka", "anyone seen my dialer module? riiight:)"),
+      G("Grazhdanka", "morning begins not with coffee, but with routing. riiight:)"),
+      G("Grazhdanka", "a bit light on packets, hmm? riiight:)"),
+      G("Grazhdanka", "you're poking the wrong port, comrade. riiight:)"),
+      G("Gabedan", "my box overheated — poured beer into the modem's coolant tank. now it hums cheerfully."),
+      G("Gabedan", "beer for breakfast is fine if you've been online since 6 am."),
+      G("Gabedan", "someone asked about honey beer. at 14.4 baud you only get the watered-down kind."),
+      G("Gabedan", "dropped my cable end into a pint — speed went up, warranty went down."),
+      G("AlexMurphy", "the street is no place for a walk. the net, even less so."),
+      G("AlexMurphy", "i have thirty seconds to fix this port. you have thirty to reply."),
+      G("AlexMurphy", "stay calm, zombies don't bite. i, however, bite plenty."),
+      G("AlexMurphy", "someone asking about my old indicator? still glowing. still legal."),
+      G("Comrakoff", "anyone kept schematics for the 1200 baud fax-modem?"),
+      G("Comrakoff", "in my day we diagnosed with a screwdriver. and online."),
+      G("Nk", "…"),
+      G("ArkadyParovozov", "has anyone read the maid-café visual novel? dialogue beats our flood, honestly."),
+      G("ArkadyParovozov", "rewatched episode eight of a slice-of-life. better than any manual."),
+      G("ArkadyParovozov", "if a visual novel doesn't make you cry, you haven't finished it."),
+      G("Pterich", "exactly, pterich. keep that cable wider."),
+      G("Pterich", "has anyone seen my magnetic tape quotas? didn't find them in the mail."),
+      G("Shisoika", "nya nya nya"),
+      G("Shisoika", "brought twenty blank discs from the post with stickers. selling cheap."),
+      G("LukeKey", "hasn't cleaned this channel in ages. dust by weight."),
+      G("LukeKey", "don't poke the kernel. it's empty. very empty."),
+      G("Vino", "know where the best byte is? the french riviera!"),
+      G("Vino", "your lines are all grey here. in marseille the wires are gold."),
+      G("Vino", "on french hosts even the shell smells like coffee and croissants."),
     ],
   },
   OPERATORS: {

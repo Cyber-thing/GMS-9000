@@ -24,6 +24,7 @@ export interface Faction {
   id: string;
   name: string;
   nameRu: string;
+  nameZh?: string;
   kind: FactionKind;
   codex?: string;
 }
@@ -61,6 +62,7 @@ export interface DataFile {
   id: string;
   name: string;
   nameRu: string;
+  nameZh?: string;
   cat: DataCat;
   source: string;       // 节点标识
   owner: string;        // 组织标识
@@ -72,8 +74,10 @@ export interface CodexEntry {
   cat: CodexCat;
   title: string;
   titleRu: string;
+  titleZh?: string;
   body: string;
   bodyRu: string;
+  bodyZh?: string;
   faction?: string;
   start?: boolean;      // 游戏开始时已知
 }
@@ -85,8 +89,10 @@ export interface ContractDef {
   client: string;       // 组织标识
   title: string;
   titleRu: string;
+  titleZh?: string;
   brief: string;
   briefRu: string;
+  briefZh?: string;
   target: string;       // 节点标识
   
   file?: string;
@@ -110,8 +116,10 @@ export interface ScriptDef {
   id: string;
   name: string;
   nameRu: string;
+  nameZh?: string;
   desc: string;
   descRu: string;
+  descZh?: string;
   price: number;
   /** 冷却时间，单位为秒。 */
   cooldown: number;
@@ -125,9 +133,11 @@ export interface ContactDef {
   faction: string;
   role: string;
   roleRu: string;
+  roleZh?: string;
   repReq: number;
   intro: string;
   introRu: string;
+  introZh?: string;
   /** 脚本。 */
   silent?: boolean;
 }
@@ -137,8 +147,10 @@ export interface RegionUpgrade {
   region: string;
   name: string;
   nameRu: string;
+  nameZh?: string;
   desc: string;
   descRu: string;
+  descZh?: string;
   credits: number;
   repReq: number;
 }
@@ -229,11 +241,12 @@ export interface ThreadMsg {
   /** 双语文本，便于切换语言后重新渲染历史消息。 */
   textEn?: string;
   textRu?: string;
+  textZh?: string;
   t: string;
   contract?: string;
   action?: "offer" | "deliver" | "done";
   /** 脚本回复按钮。 */
-  choices?: { id: string; en: string; ru: string }[];
+  choices?: { id: string; en: string; ru: string; zh?: string }[];
   /** 已选择的选项标识。 */
   picked?: string;
   /** 本条消息附带的信用点收入，会以醒目的方式显示。 */

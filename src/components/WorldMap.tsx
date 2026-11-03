@@ -45,8 +45,8 @@ export function RouteTrace({ region }: { region: RegionDef }) {
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center bg-ink/88 backdrop-blur-[1px]">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.05]" style={{ background: "repeating-linear-gradient(to bottom, transparent 0 3px, #8fb56d 3px 4px)" }} />
-      <div className="w-[min(420px,90%)] border border-line2 bg-soot shadow-[0_0_60px_rgba(143,181,109,0.07)]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.05]" style={{ background: "repeating-linear-gradient(to bottom, transparent 0 3px, var(--color-phos) 3px 4px)" }} />
+      <div className="w-[min(420px,90%)] border border-line2 bg-soot shadow-[0_0_60px_rgb(var(--phosrgb) / 0.07)]">
         <div className="flex h-[26px] items-center gap-2 border-b border-line bg-header px-2.5">
           <StatusDot color="#cfa04b" pulse />
           <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-dim">
@@ -123,7 +123,7 @@ export default function WorldMap({
     return out;
   }, []);
 
-  const LAND_FILL = ["#313c24", "#3c492c", "#4a5c31"] as const;
+  const LAND_FILL = ["var(--color-land1)", "var(--color-land2)", "var(--color-land3)"] as const;
 
   const upl = { x: lonToX(UPLINK.lon) * MAP_W, y: latToY(UPLINK.lat) * MAP_H };
   const tracePt = trace ? { x: lonToX(trace.lon) * MAP_W, y: latToY(trace.lat) * MAP_H } : null;
@@ -223,15 +223,15 @@ export default function WorldMap({
                 title={`${r.code} // ${regionContinent(lang, r.id, r.continent)}`}
               >
                 <span className="relative block h-[34px] w-[34px]">
-                  <Brackets color={active ? "#cfa04b" : locked ? "#59604f" : "#8fb56d"} size={10} />
+                  <Brackets color={active ? "#cfa04b" : locked ? "var(--color-moss)" : "var(--color-phos)"} size={10} />
                   <span className={cn("absolute inset-0 m-auto h-[11px] w-[11px] border", active && "animate-softpulse")}
                     style={{
-                      borderColor: active ? "#cfa04b" : locked ? "#59604f" : "#8fb56d",
+                      borderColor: active ? "#cfa04b" : locked ? "var(--color-moss)" : "var(--color-phos)",
                       background: active
                         ? "rgba(207,160,75,0.35)"
                         : locked
                           ? "transparent"
-                          : "rgba(143,181,109,0.22)",
+                          : "rgb(var(--phosrgb) / 0.22)",
                     }}
                   />
                   {!active && !locked && (

@@ -1,23 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Globe2, ScanEye, ShieldAlert, Trash2, TriangleAlert } from "lucide-react";
+import { ChevronRight, Globe2, Palette, ScanEye, ShieldAlert, Trash2, TriangleAlert } from "lucide-react";
 import { cn } from "../utils/cn";
 import { StatusDot } from "./chrome";
 import { useT, type Lang } from "../i18n";
 import { store } from "../lib/util";
+import { PHOS_THEMES, nextPhos } from "../lib/phos";
 
 const BOOT_KEYS = ["login.boot1", "login.boot2", "login.boot3", "login.boot4", "login.boot5"];
 
 const LANGS: { id: Lang; label: string; sub: string }[] = [
   { id: "en", label: "ENGLISH", sub: "en · international" },
   { id: "ru", label: "РУССКИЙ", sub: "ru · русский язык" },
+  { id: "zh", label: "中文", sub: "zh · 简体中文" },
 ];
 
 export default function LoginGate({
   onEnter,
   savedHandle,
+  phos,
+  onSetPhos,
 }: {
   onEnter: (handle: string) => void;
   savedHandle: string;
+  phos: string;
+  onSetPhos: (p: string) => void;
 }) {
   const { t, lang, setLang } = useT();
   const [handle, setHandle] = useState(savedHandle === "UNKNOWN" ? "" : savedHandle);
@@ -25,6 +31,7 @@ export default function LoginGate({
   const [phase, setPhase] = useState<"form" | "grant">("form");
   const [armed, setArmed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const curPhos = PHOS_THEMES.find((p) => p.id === phos) ?? PHOS_THEMES[0];
 
   /* 确认状态会自动解除，避免误触导致存档被清除。 */
   useEffect(() => {
@@ -63,16 +70,16 @@ export default function LoginGate({
         className="pointer-events-none fixed inset-0 opacity-60"
         style={{
           backgroundImage:
-            "linear-gradient(#151a10 1px, transparent 1px), linear-gradient(90deg, #151a10 1px, transparent 1px)",
+            "linear-gradient(var(--color-line) 1px, transparent 1px), linear-gradient(90deg, var(--color-line) 1px, transparent 1px)",
           backgroundSize: "44px 44px",
         }}
       />
 
       <div className="anim-msgin relative my-auto w-full max-w-[520px]">
-        <div className="border border-line2 bg-panel shadow-[0_0_80px_rgba(143,181,109,0.06),inset_0_0_0_1px_rgba(0,0,0,0.6)]">
+        <div className="border border-line2 bg-panel shadow-[0_0_80px_rgb(var(--phosrgb) / 0.06),inset_0_0_0_1px_rgba(0,0,0,0.6)]">
           {/* 标题栏 */}
           <div className="flex h-[30px] items-center gap-2 border-b border-line2 bg-header px-2.5">
-            <StatusDot color="#8fb56d" pulse />
+            <StatusDot color="var(--color-phos)" pulse />
             <span className="truncate text-[9px] font-bold uppercase tracking-[0.26em] text-dim">
               {t("login.title")}
             </span>
@@ -121,7 +128,7 @@ export default function LoginGate({
                   <label className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.26em] text-faint">
                     <Globe2 size={10} /> {t("login.lang")}
                   </label>
-                  <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
                     {LANGS.map((l) => {
                       const active = lang === l.id;
                       return (
@@ -131,7 +138,7 @@ export default function LoginGate({
                           className={cn(
                             "group relative border px-2.5 py-[7px] text-left transition-all",
                             active
-                              ? "border-phosdim bg-phos/15 shadow-[0_0_14px_rgba(143,181,109,0.14)]"
+                              ? "border-phosdim bg-phos/15 shadow-[0_0_14px_rgb(var(--phosrgb) / 0.14)]"
                               : "border-line2 hover:border-line3 hover:bg-panel2"
                           )}
                         >
@@ -139,8 +146,8 @@ export default function LoginGate({
                             <span
                               className="block h-[7px] w-[7px] shrink-0 border"
                               style={{
-                                borderColor: active ? "#b3d98d" : "#4c5545",
-                                background: active ? "#8fb56d" : "transparent",
+                                borderColor: active ? "var(--color-phosbrite)" : "var(--color-faint)",
+                                background: active ? "var(--color-phos)" : "transparent",
                               }}
                             />
                             <span
@@ -187,7 +194,7 @@ export default function LoginGate({
                 <div className="mt-3 flex flex-col gap-1.5 sm:flex-row">
                   <button
                     onClick={() => submit(false)}
-                    className="flex-1 border border-phosdim bg-phos/15 px-4 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink hover:shadow-[0_0_18px_rgba(143,181,109,0.3)]"
+                    className="flex-1 border border-phosdim bg-phos/15 px-4 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink hover:shadow-[0_0_18px_rgb(var(--phosrgb) / 0.3)]"
                   >
                     {t("login.jack")}
                   </button>
@@ -227,7 +234,22 @@ export default function LoginGate({
           <div className="flex items-center gap-3 border-t border-line2 bg-soot px-3 py-[5px] text-[8px] uppercase tracking-[0.16em] text-faint">
             <span>{t("login.f1")}</span>
             <span className="hidden sm:inline">{t("login.f2")}</span>
-            <span className="ml-auto">{t("login.f3")}</span>
+            <span className="ml-auto hidden sm:inline">{t("login.f3")}</span>
+            {/* 单击循环切换配色方案 */}
+            <button
+              onClick={() => onSetPhos(nextPhos(phos))}
+              title={`${t("top.phosTip")} · ${t(`phos.${phos}`)}`}
+              className="group ml-auto flex shrink-0 items-center gap-1.5 border border-line2 bg-panel px-2 py-[3px] transition-colors hover:border-phosdim hover:bg-panel2 sm:ml-2"
+            >
+              <span
+                className="block h-[7px] w-[10px] border border-faint transition-colors"
+                style={{ background: curPhos.swatch }}
+              />
+              <span className="text-[8px] font-bold tracking-[0.18em] text-dim group-hover:text-phosbrite">
+                {curPhos.label}
+              </span>
+              <Palette size={9} className="text-faint transition-colors group-hover:text-phos" />
+            </button>
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import type { ChannelId } from "../data/chat";
 import type { Lang } from "./index";
+import { ZH_REGION, ZH_SECTOR, ZH_NODE, ZH_SEED } from "./zhContent";
 
 /* 区域 */
 
@@ -139,7 +140,7 @@ const G = (nick: string, text: string) => ({ nick, text });
 
 export const RU_CHAT_POOL: Record<ChannelId, { nicks: string[]; msgs: { nick: string; text: string }[] }> = {
   GLOBAL: {
-    nicks: ["NULLBYTE", "Ghost_404", "deadlink", "rootkit", "SYNTH", "coldboot", "BlackRelay", "koma", "irq0", "modemmike", "VHS_girl", "patchbay"],
+    nicks: ["NULLBYTE", "Ghost_404", "deadlink", "rootkit", "SYNTH", "coldboot", "BlackRelay", "koma", "irq0", "modemmike", "VHS_girl", "patchbay", "Grazhdanka", "Gabedan", "AlexMurphy", "Comrakoff", "Nk", "ArkadyParovozov", "Pterich", "Shisoika", "LukeKey", "Vino"],
     msgs: [
       G("NULLBYTE", "у кого ещё потери пакетов в {sector}?"),
       G("Ghost_404", "нашёл незарегистрированный ретранслятор. трогать не буду."),
@@ -184,6 +185,33 @@ export const RU_CHAT_POOL: Record<ChannelId, { nicks: string[]; msgs: { nick: st
       G("rootkit", "./me потягивает колу"),
       G("SYNTH", "видел, как кто-то ломится не в тот порт. новичок."),
       G("BlackRelay", "сеть сегодня живая. держите скрипты короткими."),
+      G("Grazhdanka", "кто-нибудь видел мой дайлер? во-о-от:)"),
+      G("Grazhdanka", "утро начинается не с кофе, а с маршрутизации. во-о-от:)"),
+      G("Grazhdanka", "маловато будет пакетов, что ли. во-о-от:)"),
+      G("Grazhdanka", "не туда вы тыркаете, товарищ. во-о-от:)"),
+      G("Gabedan", "перегрелся мой блок — слил пиво в расширительный бак модема, теперь пищит весело."),
+      G("Gabedan", "пиво на завтрак нормально, если ты в сети с шести утра."),
+      G("Gabedan", "кто-то спрашивал про пиво с мёдом. на 14.4 идёт только разбавленное."),
+      G("Gabedan", "замылил хвост кабеля в стакан — скорость выросла, гарантия пропала."),
+      G("Алекс Мёрфи", "улица не место для прогулок. сеть — тем более."),
+      G("Алекс Мёрфи", "у меня есть тридцать секунд, чтобы починить этот порт. у вас — тридцать, чтобы ответить."),
+      G("Алекс Мёрфи", "спокойно, зомби не кусаются. а вот я — очень даже."),
+      G("Алекс Мёрфи", "кто-то говорил про мой старый индикатор? он ещё светится. ещё долго."),
+      G("Comrakoff", "товарищи, кто-нибудь сохранил чертежи факс-модема 1200 бод?"),
+      G("Comrakoff", "в моё время диагностику делали отвёрткой. и с онлайном."),
+      G("Nk", "…"),
+      G("Аркадий Паровозов", "кто-нибудь читал новеллу про мейд-кафе? там, между прочим, диалог покрепче нашего флуда."),
+      G("Аркадий Паровозов", "пересматривал слойку восьмую серию. лучше любого мануала."),
+      G("Аркадий Паровозов", "если визуальная новелла не заставила вас плакать, значит, вы не читали её до конца."),
+      G("Птерыч", "точно, птерыч. держите кабель дальше."),
+      G("Птерыч", "кто-нибудь подскажет, куда пропали квоты на магнитные ленты, я не вижу их в почте."),
+      G("Shisoika", "ня, ня, ня"),
+      G("Shisoika", "привезла с почты двадцать болванок с наклейками. распродаю."),
+      G("Люк Кедж", "канал давно не чистили. по весу в нём пыль."),
+      G("Люк Кедж", "в ядро не суйся. там пусто. очень пусто."),
+      G("Vino", "знаете, где лучший байт? на средиземноморском побережье!"),
+      G("Vino", "на здешних линиях всё тусклое, мекиоро. а в марселе провода золотые."),
+      G("Vino", "на французских узлах даже шелл кофейный и круассаны."),
     ],
   },
   OPERATORS: {
@@ -279,6 +307,11 @@ export const RU_REPLY_POOL: { ch: ChannelId | "ANY"; nick: string; text: string 
   { ch: "ANY", nick: "koma", text: "скилл ишью, если честно" },
   { ch: "ANY", nick: "irq0", text: "./me молча кивает" },
   { ch: "ANY", nick: "coldboot", text: "выкладывай хекс, {op}" },
+  { ch: "ANY", nick: "Grazhdanka", text: "во-о-от:) да, {op}" },
+  { ch: "ANY", nick: "Gabedan", text: "мне бы сейчас пива. ты тоже, видимо, {op}." },
+  { ch: "ANY", nick: "AlexMurphy", text: "ты слышал, {op}. я вижу индикатор. он мигает." },
+  { ch: "ANY", nick: "ArkadyParovozov", text: "это лучше, чем та новелла, {op}." },
+  { ch: "ANY", nick: "Vino", text: "вот во франции бы сейчас это обсуждали. там кофе лучше." },
   { ch: "GLOBAL", nick: "Ghost_404", text: "осторожнее со словами здесь" },
   { ch: "GLOBAL", nick: "rootkit", text: "они читают этот канал, {op}. просто к сведению." },
   { ch: "OPERATORS", nick: "operator_17", text: "принято." },
@@ -306,6 +339,11 @@ export const RU_GREETING_POOL: { nick: string; text: string }[] = [
   { nick: "Ghost_404", text: "о. оно разговаривает. привет." },
   { nick: "rootkit", text: "хай {op}. сначала почитай, потом пиши." },
   { nick: "lilith_x", text: "привет-привет" },
+  { nick: "Grazhdanka", text: "привет, {op}. во-о-от:) заходи, не стесняйся." },
+  { nick: "Gabedan", text: "заходи, {op}. пиво в холодильнике, модем в морозилке." },
+  { nick: "AlexMurphy", text: "привет. ты на связи. это хорошо." },
+  { nick: "ArkadyParovozov", text: "привет, {op}. как тебе последняя глава той новеллы про модемы?" },
+  { nick: "Vino", text: "приветсвенный сигнал из франции: {op}!" },
   { nick: "operator_17", text: "добро пожаловать, {op}. держитесь подальше от закрытых зон." },
 ];
 
@@ -324,22 +362,26 @@ export const RU_AMBIENT_POOL: { text: string; kind: "info" | "warn" | "good" | "
   { text: "сеть гудит. всё в норме.", kind: "info" },
 ];
 
-/* 查询辅助函数 */
+/* 查询辅助函数：按语言挑对应的本地化覆盖表 */
+
+const SECTORS: Partial<Record<Lang, typeof RU_SECTOR>> = { ru: RU_SECTOR, zh: ZH_SECTOR };
+const NODES: Partial<Record<Lang, typeof RU_NODE>> = { ru: RU_NODE, zh: ZH_NODE };
+const REGIONS: Partial<Record<Lang, typeof RU_REGION>> = { ru: RU_REGION, zh: ZH_REGION };
 
 export const sectorName = (lang: Lang, id: string, fallback: string) =>
-  lang === "ru" ? RU_SECTOR[id]?.name ?? fallback : fallback;
+  SECTORS[lang]?.[id]?.name ?? fallback;
 
 export const sectorDesc = (lang: Lang, id: string, fallback: string) =>
-  lang === "ru" ? RU_SECTOR[id]?.desc ?? fallback : fallback;
+  SECTORS[lang]?.[id]?.desc ?? fallback;
 
 export const nodeDesc = (lang: Lang, id: string, fallback: string) =>
-  lang === "ru" ? RU_NODE[id] ?? fallback : fallback;
+  NODES[lang]?.[id] ?? fallback;
 
 export const regionName = (lang: Lang, id: string, fallback: string) =>
-  lang === "ru" ? RU_REGION[id]?.name ?? fallback : fallback;
+  REGIONS[lang]?.[id]?.name ?? fallback;
 
 export const regionContinent = (lang: Lang, id: string, fallback: string) =>
-  lang === "ru" ? RU_REGION[id]?.continent ?? fallback : fallback;
+  REGIONS[lang]?.[id]?.continent ?? fallback;
 
 /* 预置聊天记录 */
 
@@ -364,4 +406,5 @@ export const SEED_HISTORY: Record<Lang, [ChannelId, string, string][]> = {
     ["CORPORATE", "CORP-NOTICE", "ОБЪЯВЛЕНИЕ: идёт аудит ядра. возможны задержки."],
     ["PRIVATE", "msm_ghost", "посчитай маяки сегодня ночью. скажешь, сколько вышло."],
   ],
+  zh: ZH_SEED,
 };

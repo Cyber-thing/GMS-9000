@@ -20,7 +20,7 @@ function Segment({
 }) {
   const sides = liveSides(cell);
   const terminal = cell.kind !== "pipe";
-  const col = flowing ? "#b3d98d" : lit ? "#8fb56d" : terminal ? "#7f95a8" : "#56624a";
+  const col = flowing ? "var(--color-phosbrite)" : lit ? "var(--color-phos)" : terminal ? "#7f95a8" : "var(--color-moss)";
   const c = TILE / 2;
 
   /* 从中心向每个开放方向绘制连接段。 */
@@ -48,26 +48,26 @@ function Segment({
       <span
         className="absolute inset-0 border transition-colors"
         style={{
-          borderColor: flowing ? "#b3d98d" : lit ? "#5f7a4b" : "#2b3322",
+          borderColor: flowing ? "var(--color-phosbrite)" : lit ? "var(--color-phosdim)" : "var(--color-line)",
           background: flowing
-            ? "rgba(143,181,109,0.14)"
-            : lit ? "rgba(143,181,109,0.07)" : "rgba(12,15,9,0.9)",
-          boxShadow: flowing ? "0 0 14px rgba(143,181,109,0.35)" : "none",
+            ? "rgb(var(--phosrgb) / 0.14)"
+            : lit ? "rgb(var(--phosrgb) / 0.07)" : "rgba(12,15,9,0.9)",
+          boxShadow: flowing ? "0 0 14px rgb(var(--phosrgb) / 0.35)" : "none",
         }}
       />
       {/* 边角缺口 */}
       {[["left-0 top-0", "border-l border-t"], ["right-0 top-0", "border-r border-t"],
         ["left-0 bottom-0", "border-l border-b"], ["right-0 bottom-0", "border-r border-b"]].map(([pos, b]) => (
         <span key={pos} className={cn("pointer-events-none absolute h-[5px] w-[5px]", pos, b)}
-          style={{ borderColor: lit ? "#5f7a4b" : "#39422d" }} />
+          style={{ borderColor: lit ? "var(--color-phosdim)" : "var(--color-line2)" }} />
       ))}
 
       <svg className="absolute inset-0" width={TILE} height={TILE} aria-hidden>
         {sides.map(stub)}
         {terminal ? (
-          <rect x={c - 7} y={c - 7} width={14} height={14} fill={flowing ? "#b3d98d" : col} opacity={0.9} />
+          <rect x={c - 7} y={c - 7} width={14} height={14} fill={flowing ? "var(--color-phosbrite)" : col} opacity={0.9} />
         ) : (
-          <circle cx={c} cy={c} r={sides.length > 2 ? 5 : 4} fill="#0c0f09" stroke={col} strokeWidth={2} />
+          <circle cx={c} cy={c} r={sides.length > 2 ? 5 : 4} fill="var(--color-ink)" stroke={col} strokeWidth={2} />
         )}
       </svg>
 
@@ -143,7 +143,7 @@ export default function RoutingGame({
       <div className="anim-msgin flex max-h-[94vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* 标题栏 */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
-          <StatusDot color={done ? "#8fb56d" : "#7f95a8"} pulse={!done} />
+          <StatusDot color={done ? "var(--color-phos)" : "#7f95a8"} pulse={!done} />
           <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
             {t("rt.title")} :: {nodeCode}
           </span>
@@ -167,7 +167,7 @@ export default function RoutingGame({
           right={
             <span
               className="text-[8px] uppercase tracking-[0.14em]"
-              style={{ color: solved ? "#8fb56d" : "#77806b" }}
+              style={{ color: solved ? "var(--color-phos)" : "var(--color-dim)" }}
             >
               {solved ? t("rt.ready") : t("rt.broken")}
             </span>
@@ -199,7 +199,7 @@ export default function RoutingGame({
                 style={{
                   gridColumn: (i % tier.cols) + 1,
                   gridRow: Math.floor(i / tier.cols) + 1,
-                  borderColor: "#1b2115",
+                  borderColor: "var(--color-panel2)",
                 }}
               />
             ))}

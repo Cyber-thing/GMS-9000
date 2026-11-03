@@ -59,7 +59,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
         className="pointer-events-none fixed inset-0 opacity-40"
         style={{
           backgroundImage:
-            "linear-gradient(#141810 1px, transparent 1px), linear-gradient(90deg, #141810 1px, transparent 1px)",
+            "linear-gradient(var(--color-line) 1px, transparent 1px), linear-gradient(90deg, var(--color-line) 1px, transparent 1px)",
           backgroundSize: "52px 52px",
         }}
       />
@@ -84,7 +84,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
             "text-[5px] leading-[1.05] xs:text-[6px] sm:text-[9px] md:text-[11px]",
             stage >= 2 ? "scale-100 opacity-100" : "scale-[0.97] opacity-0"
           )}
-          style={{ textShadow: "0 0 14px rgba(143,181,109,0.4)", fontFamily: "var(--font-mono)" }}
+          style={{ textShadow: "0 0 14px rgb(var(--phosrgb) / 0.4)", fontFamily: "var(--font-mono)" }}
         >
           {ASCII}
         </pre>

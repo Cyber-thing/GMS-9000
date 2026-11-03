@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Siren, Snowflake, Unplug, Zap } from "lucide-react";
 import { cn } from "../utils/cn";
 import { blockBar, pad } from "../lib/util";
-import { useT } from "../i18n";
+import { pickL, useT } from "../i18n";
 import { StatusDot } from "./chrome";
 import { useGame } from "../game/state";
 import { SCRIPTS, scriptById } from "../game/data";
@@ -29,10 +29,10 @@ function Cell({
   const terminal = isAccess || isEntry;
 
   const color =
-    state === "done" || state === "current" ? "#8fb56d"
+    state === "done" || state === "current" ? "var(--color-phos)"
     : state === "loading" ? "#cfa04b"
-    : state === "ready" ? (isAccess ? "#b3d98d" : "#7f95a8")
-    : "#3e4733";
+    : state === "ready" ? (isAccess ? "var(--color-phosbrite)" : "#7f95a8")
+    : "var(--color-line2)";
 
   const w = terminal ? 74 : 62;
   const h = terminal ? 30 : 30;
@@ -69,14 +69,14 @@ function Cell({
         className={cn(
           "relative flex items-stretch transition-colors",
           state === "ready" && "animate-softpulse",
-          state === "current" && "shadow-[0_0_16px_rgba(143,181,109,0.45)]"
+          state === "current" && "shadow-[0_0_16px_rgb(var(--phosrgb) / 0.45)]"
         )}
         style={{
           width: w, height: h,
           border: `${state === "current" || state === "ready" ? 2 : 1}px solid ${color}`,
           background:
             state === "done" || state === "current"
-              ? "linear-gradient(180deg, rgba(143,181,109,0.2), rgba(143,181,109,0.07))"
+              ? "linear-gradient(180deg, rgb(var(--phosrgb) / 0.2), rgb(var(--phosrgb) / 0.07))"
               : state === "loading"
                 ? "linear-gradient(180deg, rgba(207,160,75,0.2), rgba(207,160,75,0.06))"
                 : state === "ready"
@@ -90,27 +90,27 @@ function Cell({
         {}
         <span className="flex shrink-0 flex-col justify-center gap-[2px] px-[2px]" aria-hidden>
           {[0, 1, 2].map((i) => (
-            <span key={i} className="block h-[1px] w-[4px]" style={{ background: lit ? color : "#2f3726", opacity: 0.8 }} />
+            <span key={i} className="block h-[1px] w-[4px]" style={{ background: lit ? color : "var(--color-line)", opacity: 0.8 }} />
           ))}
         </span>
 
         {/* 核心 */}
         <span className="flex min-w-0 flex-1 flex-col items-center justify-center leading-none">
           {terminal ? (
-            <span className="text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: lit ? color : "#59604f" }}>
+            <span className="text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: lit ? color : "var(--color-moss)" }}>
               {isEntry ? t("bg.entry") : t("bg.access")}
             </span>
           ) : (
             <>
               <span className="flex items-center gap-[3px]">
                 <Glyph />
-                <span className="text-[9px] font-bold tracking-[0.04em]" style={{ color: lit ? color : "#59604f" }}>
+                <span className="text-[9px] font-bold tracking-[0.04em]" style={{ color: lit ? color : "var(--color-moss)" }}>
                   {cell.expr}
                 </span>
               </span>
               <span
                 className="mt-[1px] text-[6.5px] uppercase tracking-[0.1em]"
-                style={{ color: state === "done" || state === "current" ? "#8fb56d" : "#4c5545" }}
+                style={{ color: state === "done" || state === "current" ? "var(--color-phos)" : "var(--color-faint)" }}
               >
                 {state === "done" || state === "current" ? t("bg.cost", { n: cell.cost }) : t(`bg.kind.${cell.kind}`)}
               </span>
@@ -122,11 +122,11 @@ function Cell({
         <span className="flex shrink-0 flex-col items-center justify-between py-[2px] pr-[2px]" aria-hidden>
           <span
             className={cn("block h-[3px] w-[3px]", state === "loading" && "animate-softpulse")}
-            style={{ background: lit ? color : "#2f3726", boxShadow: lit ? `0 0 4px ${color}` : "none" }}
+            style={{ background: lit ? color : "var(--color-line)", boxShadow: lit ? `0 0 4px ${color}` : "none" }}
           />
           <span className="flex flex-col gap-[2px]">
             {[0, 1].map((i) => (
-              <span key={i} className="block h-[1px] w-[4px]" style={{ background: lit ? color : "#2f3726", opacity: 0.7 }} />
+              <span key={i} className="block h-[1px] w-[4px]" style={{ background: lit ? color : "var(--color-line)", opacity: 0.7 }} />
             ))}
           </span>
         </span>
@@ -306,7 +306,7 @@ export default function BreachGame({
       land(loadingId);
     }
     setCool((c) => ({ ...c, [id]: sc.cooldown }));
-    onLog("t.scriptUse", { name: lang === "ru" ? sc.nameRu : sc.name });
+    onLog("t.scriptUse", { name: pickL(lang, sc.name, sc.nameRu, sc.nameZh) });
   };
 
   const abort = () => {
@@ -339,7 +339,7 @@ export default function BreachGame({
       >
         {/* 标题栏 */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
-          <StatusDot color={phase === "LOSE" ? "#c25b46" : phase === "WIN" ? "#8fb56d" : "#cfa04b"} pulse />
+          <StatusDot color={phase === "LOSE" ? "#c25b46" : phase === "WIN" ? "var(--color-phos)" : "#cfa04b"} pulse />
           <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
             {t("bg.title")} :: {nodeCode}
           </span>
@@ -432,17 +432,17 @@ export default function BreachGame({
                 >
                   <defs>
                     <pattern id="bgDots" width="16" height="16" patternUnits="userSpaceOnUse">
-                      <circle cx="1" cy="1" r="0.6" fill="#1e2417" />
+                      <circle cx="1" cy="1" r="0.6" fill="var(--color-panel2)" />
                     </pattern>
                   </defs>
                   <rect x={0} y={0} width={boardW} height={BOARD_H} fill="url(#bgDots)" />
                   {Array.from({ length: Math.floor(boardW / 80) }, (_, i) => (
                     <line key={`v${i}`} x1={(i + 1) * 80} y1={0} x2={(i + 1) * 80} y2={BOARD_H}
-                      stroke="#161a11" strokeWidth={0.6} />
+                      stroke="var(--color-panel2)" strokeWidth={0.6} />
                   ))}
                   {Array.from({ length: 4 }, (_, i) => (
                     <line key={`h${i}`} x1={0} y1={(i + 1) * 76} x2={boardW} y2={(i + 1) * 76}
-                      stroke="#161a11" strokeWidth={0.6} />
+                      stroke="var(--color-panel2)" strokeWidth={0.6} />
                   ))}
                   {map.links.map((l, i) => {
                     const A = map.cells.find((c) => c.id === l.a)!;
@@ -452,7 +452,7 @@ export default function BreachGame({
                     const live = done.includes(l.a) && done.includes(l.b);
                     const arming = l.a === current && loadingId === l.b;
                     const open = l.a === current && reachable.includes(l.b);
-                    const col = live ? "#8fb56d" : arming ? "#cfa04b" : open ? "#7f95a8" : "#2b3322";
+                    const col = live ? "var(--color-phos)" : arming ? "#cfa04b" : open ? "#7f95a8" : "var(--color-line)";
                     const x1 = p1.x + 32, x2 = p2.x - 32;
                     const mid = (x1 + x2) / 2;
                     const bend = 7;
@@ -478,8 +478,8 @@ export default function BreachGame({
                           className={cn(arming && "anim-dashflow")}
                         />
                         {}
-                        <circle cx={x1} cy={p1.y} r={1.9} fill="#0c0f09" stroke={col} strokeWidth={0.9} />
-                        <circle cx={x2} cy={p2.y} r={1.9} fill="#0c0f09" stroke={col} strokeWidth={0.9} />
+                        <circle cx={x1} cy={p1.y} r={1.9} fill="var(--color-ink)" stroke={col} strokeWidth={0.9} />
+                        <circle cx={x2} cy={p2.y} r={1.9} fill="var(--color-ink)" stroke={col} strokeWidth={0.9} />
                       </g>
                     );
                   })}
@@ -502,12 +502,12 @@ export default function BreachGame({
                     <div
                       className="anim-msgin border px-5 py-3 text-center"
                       style={{
-                        borderColor: phase === "WIN" ? "#8fb56d" : "#c25b46",
-                        background: phase === "WIN" ? "rgba(143,181,109,0.12)" : "rgba(194,91,70,0.12)",
+                        borderColor: phase === "WIN" ? "var(--color-phos)" : "#c25b46",
+                        background: phase === "WIN" ? "rgb(var(--phosrgb) / 0.12)" : "rgba(194,91,70,0.12)",
                       }}
                     >
                       <div className="pixel text-[30px] leading-none"
-                        style={{ color: phase === "WIN" ? "#b3d98d" : "#e0634a" }}>
+                        style={{ color: phase === "WIN" ? "var(--color-phosbrite)" : "#e0634a" }}>
                         {phase === "WIN" ? t("bg.granted") : t("bg.lockout")}
                       </div>
                       <div className="mt-1 text-[9px] uppercase tracking-[0.2em] text-dim">
@@ -539,7 +539,7 @@ export default function BreachGame({
                       key={sc.id}
                       onClick={() => fire(sc.id)}
                       disabled={!usable}
-                      title={lang === "ru" ? sc.descRu : sc.desc}
+                      title={pickL(lang, sc.desc, sc.descRu, sc.descZh)}
                       className={cn(
                         "flex items-center gap-1 border px-1.5 py-[3px] text-[8px] font-bold uppercase tracking-[0.1em] transition-colors",
                         usable
@@ -548,7 +548,7 @@ export default function BreachGame({
                       )}
                     >
                       {sc.id === "sc_freeze" ? <Snowflake size={9} /> : <Zap size={9} />}
-                      <span className="hidden sm:inline">{lang === "ru" ? sc.nameRu : sc.name}</span>
+                      <span className="hidden sm:inline">{pickL(lang, sc.name, sc.nameRu, sc.nameZh)}</span>
                       {cd > 0 && <span className="tabular-nums">{t("bg.cooldown", { n: cd })}</span>}
                     </button>
                   );

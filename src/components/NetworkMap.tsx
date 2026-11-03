@@ -14,14 +14,14 @@ import { regionGrid } from "../data/world";
 import { landShape } from "../data/landshape";
 import type { RegionDef } from "../data/world";
 import { Brackets, Panel, STATUS_COLOR, StatusDot } from "./chrome";
-import { pad } from "../lib/util";
+import { alfa, pad } from "../lib/util";
 import { useT } from "../i18n";
 import { regionContinent, sectorName } from "../i18n/content";
 import { useTut } from "../game/tutorial";
 import { useGame } from "../game/state";
 import { useMapView, ZOOM } from "../hooks/useMapView";
 
-const CH_COLORS = { phos: "#8fb56d", amber: "#cfa04b" };
+const CH_COLORS = { phos: "var(--color-phos)", amber: "#cfa04b" };
 
 export function shapeClass(glyph: string) {
   switch (glyph) {
@@ -110,7 +110,7 @@ function NodeMarker({
         {connected && (
           <span
             className="pointer-events-none absolute inset-[-3px] animate-[spin_7s_linear_infinite] border border-dashed"
-            style={{ borderColor: `${color}99` }}
+            style={{ borderColor: alfa(color, 60) }}
           />
         )}
         {selected && <Brackets color={connecting ? CH_COLORS.amber : CH_COLORS.phos} size={9} />}
@@ -293,7 +293,7 @@ export default function NetworkMap({
   return (
     <Panel
       title={t("panel.regional")}
-      accent="#8fb56d"
+      accent="var(--color-phos)"
       className="h-full"
       bodyClassName="relative bg-well"
       right={
@@ -365,7 +365,7 @@ export default function NetworkMap({
           ref={stageRef}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
-          className="relative border border-line2 bg-[#0c0f09]"
+          className="relative border border-line2 bg-[var(--color-ink)]"
           style={{
             width: box.w,
             height: box.h,
@@ -384,8 +384,8 @@ export default function NetworkMap({
           >
             <defs>
               <pattern id="regionGrain" width="12" height="12" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="0.7" fill="#2a3620" opacity="0.4" />
-                <circle cx="8" cy="8" r="0.5" fill="#242e1b" opacity="0.32" />
+                <circle cx="2" cy="2" r="0.7" fill="var(--color-line)" opacity="0.4" />
+                <circle cx="8" cy="8" r="0.5" fill="var(--color-line)" opacity="0.32" />
               </pattern>
               <clipPath id="regionLand">
                 <path d={land.path} fillRule="evenodd" />
@@ -394,7 +394,7 @@ export default function NetworkMap({
 
             {}
             <g opacity={0.5}>
-              <path d={land.path} fillRule="evenodd" fill="#141b10" />
+              <path d={land.path} fillRule="evenodd" fill="var(--color-panel2)" />
               <g clipPath="url(#regionLand)">
                 <rect x={0} y={0} width={MAP_W} height={MAP_H} fill="url(#regionGrain)" />
               </g>
@@ -402,7 +402,7 @@ export default function NetworkMap({
                 d={land.path}
                 fillRule="evenodd"
                 fill="none"
-                stroke="#2b3720"
+                stroke="var(--color-line)"
                 strokeWidth={1}
                 strokeLinejoin="round"
                 opacity={0.7}
@@ -410,10 +410,10 @@ export default function NetworkMap({
             </g>
             {/* 次级网格 */}
             {Array.from({ length: MAP_W / 90 - 1 }, (_, i) => (
-              <line key={`gx${i}`} x1={(i + 1) * 90} y1={0} x2={(i + 1) * 90} y2={MAP_H} stroke="#1a1e14" strokeWidth={0.5} opacity={0.65} />
+              <line key={`gx${i}`} x1={(i + 1) * 90} y1={0} x2={(i + 1) * 90} y2={MAP_H} stroke="var(--color-panel2)" strokeWidth={0.5} opacity={0.65} />
             ))}
             {Array.from({ length: Math.floor(MAP_H / 95) }, (_, i) => (
-              <line key={`gy${i}`} x1={0} y1={(i + 1) * 95} x2={MAP_W} y2={(i + 1) * 95} stroke="#1a1e14" strokeWidth={0.5} opacity={0.65} />
+              <line key={`gy${i}`} x1={0} y1={(i + 1) * 95} x2={MAP_W} y2={(i + 1) * 95} stroke="var(--color-panel2)" strokeWidth={0.5} opacity={0.65} />
             ))}
 
             {/* 连接线 */}
@@ -425,10 +425,10 @@ export default function NetworkMap({
                 : l.touchSelected
                   ? CH_COLORS.phos
                   : l.backbone
-                    ? "#4e5a49"
+                    ? "var(--color-moss)"
                     : l.dead === "down"
                       ? "#3a332b"
-                      : "#3c4531";
+                      : "var(--color-line2)";
               return (
                 <line
                   key={i}
@@ -475,20 +475,20 @@ export default function NetworkMap({
                   top: `${(s.y / MAP_H) * 100}%`,
                   width: `${(s.w / MAP_W) * 100}%`,
                   height: `${(s.h / MAP_H) * 100}%`,
-                  border: `1px solid ${sel ? col : `${col}4d`}`,
+                  border: `1px solid ${sel ? col : alfa(col, 30)}`,
                   background: sel
-                    ? `${col}1f`
-                    : `${col}0d`,
+                    ? alfa(col, 12)
+                    : alfa(col, 5),
                   boxShadow: sel
-                    ? `inset 0 0 26px ${col}22, 0 0 0 1px ${col}55`
-                    : `inset 0 0 18px ${col}0f`,
+                    ? `inset 0 0 26px ${alfa(col, 13)}, 0 0 0 1px ${alfa(col, 33)}`
+                    : `inset 0 0 18px ${alfa(col, 6)}`,
                 }}
               >
                 <SectorHatch status={s.status} />
                 {!sel && (
                   <span
                     className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-                    style={{ background: `${col}12`, boxShadow: `inset 0 0 0 1px ${col}99` }}
+                    style={{ background: alfa(col, 7), boxShadow: `inset 0 0 0 1px ${alfa(col, 60)}` }}
                   />
                 )}
                 {sel && <Brackets color={col} size={10} />}
@@ -498,8 +498,8 @@ export default function NetworkMap({
                     className="px-1 py-[1px] text-[7.5px] font-bold tracking-[0.16em]"
                     style={
                       sel
-                        ? { background: col, color: "#0b0d09" }
-                        : { background: "rgba(11,13,9,0.85)", color: col, boxShadow: `inset 0 0 0 1px ${col}66` }
+                        ? { background: col, color: "var(--color-ink)" }
+                        : { background: "rgba(11,13,9,0.85)", color: col, boxShadow: `inset 0 0 0 1px ${alfa(col, 40)}` }
                     }
                   >
                     {s.code}
@@ -507,8 +507,8 @@ export default function NetworkMap({
                   <span
                     className="pixel text-[15px] uppercase leading-none tracking-[0.1em] transition-colors"
                     style={{
-                      color: sel ? col : "#9aa589",
-                      textShadow: sel ? `0 0 10px ${col}66` : "0 1px 2px rgba(0,0,0,0.9)",
+                      color: sel ? col : "var(--color-sage)",
+                      textShadow: sel ? `0 0 10px ${alfa(col, 40)}` : "0 1px 2px rgba(0,0,0,0.9)",
                     }}
                   >
                     {sectorName(lang, s.id, s.name)}
@@ -520,7 +520,7 @@ export default function NetworkMap({
                 </div>
                 <span
                   className="pointer-events-none absolute bottom-[4px] right-[6px] bg-ink/70 px-[3px] text-[8px] tracking-[0.14em]"
-                  style={{ color: sel ? col : "#6b7460" }}
+                  style={{ color: sel ? col : "var(--color-dim)" }}
                 >
                   {t("map.nd", { n: nodes.filter((n) => n.sector === s.id).length })}
                 </span>
@@ -550,7 +550,7 @@ export default function NetworkMap({
               className="net-sweep absolute left-0 right-0 h-[3px]"
               style={{
                 background:
-                  "linear-gradient(to bottom, transparent, rgba(143,181,109,0.09), rgba(143,181,109,0.16), rgba(143,181,109,0.09), transparent)",
+                  "linear-gradient(to bottom, transparent, rgb(var(--phosrgb) / 0.09), rgb(var(--phosrgb) / 0.16), rgb(var(--phosrgb) / 0.09), transparent)",
               }}
             />
           </div>

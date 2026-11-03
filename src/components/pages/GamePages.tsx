@@ -4,7 +4,7 @@ import {
   FileLock2, Handshake, Star, TrendingUp, Upload, UserRound, Zap,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
-import { useT } from "../../i18n";
+import { pickL, useT } from "../../i18n";
 import { useGame } from "../../game/state";
 import {
   CODEX, CONTACTS, CONTRACTS, FACTIONS, SCRIPTS, UPGRADES,
@@ -43,13 +43,13 @@ export function CodexPage() {
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
           <div className="flex items-start justify-between gap-2">
             <h3 className="pixel text-[22px] leading-none text-phosbrite">
-              {lang === "ru" ? entry.titleRu : entry.title}
+              {pickL(lang, entry.title, entry.titleRu, entry.titleZh)}
             </h3>
             <span
               className="shrink-0 border px-1.5 py-[2px] text-[7.5px] font-bold tracking-[0.14em]"
               style={{
-                color: stt === "UPDATED" ? "#cfa04b" : stt === "DISCOVERED" ? "#8fb56d" : "#59604f",
-                borderColor: stt === "UNKNOWN" ? "#39422d" : "currentColor",
+                color: stt === "UPDATED" ? "#cfa04b" : stt === "DISCOVERED" ? "var(--color-phos)" : "var(--color-moss)",
+                borderColor: stt === "UNKNOWN" ? "var(--color-line2)" : "currentColor",
               }}
             >
               {t(`cx.state.${stt}`)}
@@ -57,7 +57,7 @@ export function CodexPage() {
           </div>
           {fac && (
             <div className="mt-1 text-[8px] uppercase tracking-[0.16em] text-faint">
-              {t("cx.src")}: {lang === "ru" ? fac.nameRu : fac.name}
+              {t("cx.src")}: {pickL(lang, fac.name, fac.nameRu, fac.nameZh)}
             </div>
           )}
           <div className="mt-2 border-t border-line pt-2">
@@ -69,7 +69,7 @@ export function CodexPage() {
               </p>
             ) : (
               <p className="text-[11px] leading-relaxed text-fog/90">
-                {lang === "ru" ? entry.bodyRu : entry.body}
+                {pickL(lang, entry.body, entry.bodyRu, entry.bodyZh)}
               </p>
             )}
           </div>
@@ -88,7 +88,7 @@ export function CodexPage() {
             onClick={() => setCat(c)}
             className={cn(
               "shrink-0 border-r border-line px-2 py-[6px] text-[7.5px] font-bold uppercase tracking-[0.1em] transition-colors",
-              c === cat ? "bg-phos/12 text-phosbrite shadow-[inset_0_-2px_0_#8fb56d]" : "text-faint hover:text-dim"
+              c === cat ? "bg-phos/12 text-phosbrite shadow-[inset_0_-2px_0_var(--color-phos)]" : "text-faint hover:text-dim"
             )}
           >
             {t(`cx.cat.${c}`)}
@@ -115,7 +115,7 @@ export function CodexPage() {
               <BookLock
                 size={11}
                 className="shrink-0"
-                style={{ color: stt === "UNKNOWN" ? "#4c5545" : stt === "UPDATED" ? "#cfa04b" : "#8fb56d" }}
+                style={{ color: stt === "UNKNOWN" ? "var(--color-faint)" : stt === "UPDATED" ? "#cfa04b" : "var(--color-phos)" }}
               />
               <span
                 className={cn(
@@ -123,7 +123,7 @@ export function CodexPage() {
                   stt === "UNKNOWN" ? "text-faint" : "text-fog"
                 )}
               >
-                {stt === "UNKNOWN" ? "████████ ███████" : lang === "ru" ? e.titleRu : e.title}
+                {stt === "UNKNOWN" ? "████████ ███████" : pickL(lang, e.title, e.titleRu, e.titleZh)}
               </span>
               {unseen && (
                 <span className="shrink-0 bg-amber px-[3px] text-[7px] font-bold text-ink">{t("tab.new")}</span>
@@ -142,8 +142,8 @@ export function CodexPage() {
                 return (
                   <div key={i} className="flex items-baseline gap-1.5 text-[9.5px]">
                     <span className="tabular-nums text-faint">{l.t}</span>
-                    <span style={{ color: l.updated ? "#cfa04b" : "#8fb56d" }}>{l.updated ? "~" : "+"}</span>
-                    <span className="truncate text-dim">{e ? (lang === "ru" ? e.titleRu : e.title) : l.id}</span>
+                    <span style={{ color: l.updated ? "#cfa04b" : "var(--color-phos)" }}>{l.updated ? "~" : "+"}</span>
+                    <span className="truncate text-dim">{e ? (pickL(lang, e.title, e.titleRu, e.titleZh)) : l.id}</span>
                   </div>
                 );
               })}
@@ -216,7 +216,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
           </button>
           <span className="text-[10px] font-bold tracking-[0.1em] text-phosbrite">{c.nick}</span>
           <span className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
-            {lang === "ru" ? c.roleRu : c.role} · {fac ? (lang === "ru" ? fac.nameRu : fac.name) : ""}
+            {pickL(lang, c.role, c.roleRu, c.roleZh)} · {fac ? (pickL(lang, fac.name, fac.nameRu, fac.nameZh)) : ""}
           </span>
           {hasLiveJob && (
             <button
@@ -246,14 +246,14 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                   </span>
                 </div>
                 <p className={cn("pl-1 text-[10.5px] leading-snug", mine ? "text-[#ddd3ae]" : "text-fog/90")}>
-                  <RichText text={(lang === "ru" ? m.textRu : m.textEn) ?? m.text} />
+                  <RichText text={(pickL(lang, m.textEn, m.textRu, m.textZh)) ?? m.text} />
                 </p>
 
                 {/* 合同面板 */}
                 {ct && m.action === "offer" && (
                   <div className="mt-1 border border-line2 bg-well p-2">
                     <div className="text-[10px] font-bold tracking-[0.1em] text-phosbrite">
-                      {lang === "ru" ? ct.titleRu : ct.title}
+                      {pickL(lang, ct.title, ct.titleRu, ct.titleZh)}
                     </div>
                     <div className="mt-1 space-y-[2px] text-[9px] text-dim">
                       <div>
@@ -332,7 +332,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                         onClick={() => pickChoice(m.id, ch.id)}
                         className="border border-phosdim/70 bg-phos/8 px-2 py-[6px] text-left text-[9.5px] font-bold uppercase tracking-[0.1em] text-phosbrite transition-colors hover:bg-phos hover:text-ink"
                       >
-                        ▸ {lang === "ru" ? ch.ru : ch.en}
+                        ▸ {pickL(lang, ch.en, ch.ru, ch.zh)}
                       </button>
                     ))}
                   </div>
@@ -407,12 +407,12 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[11px] font-bold tracking-[0.08em] text-phosbrite">{c.nick}</span>
                 <span className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
-                  {fac ? (lang === "ru" ? fac.nameRu : fac.name) : ""}
+                  {fac ? (pickL(lang, fac.name, fac.nameRu, fac.nameZh)) : ""}
                 </span>
               </div>
               {last && (
                 <p className="mt-[1px] truncate text-[9.5px] text-dim">
-                  {(lang === "ru" ? last.textRu : last.textEn) ?? last.text}
+                  {(pickL(lang, last.textEn, last.textRu, last.textZh)) ?? last.text}
                 </p>
               )}
               <span className="mt-[3px] flex items-center gap-1.5">
@@ -487,13 +487,13 @@ export function StatusPage({ operator }: { operator: string }) {
 
   const relLabel = (v: number) =>
     v <= -20 ? t("sp.hostile") : v >= 20 ? t("sp.friendly") : t("sp.neutral");
-  const relColor = (v: number) => (v <= -20 ? "#c25b46" : v >= 20 ? "#8fb56d" : "#77806b");
+  const relColor = (v: number) => (v <= -20 ? "#c25b46" : v >= 20 ? "var(--color-phos)" : "var(--color-dim)");
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <Section title={t("sp.profile")} icon={<UserRound size={10} />}>
-        <Row k={t("sp.handle")} v={operator} vc="#b3d98d" />
-        <Row k={t("sp.uid")} v={uid} vc="#77806b" />
+        <Row k={t("sp.handle")} v={operator} vc="var(--color-phosbrite)" />
+        <Row k={t("sp.uid")} v={uid} vc="var(--color-dim)" />
       </Section>
 
       <div className="grid grid-cols-2 border-b border-line">
@@ -518,7 +518,7 @@ export function StatusPage({ operator }: { operator: string }) {
           return (
             <div key={f.id} className="py-[3px]">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="truncate text-[10px] text-fog">{lang === "ru" ? f.nameRu : f.name}</span>
+                <span className="truncate text-[10px] text-fog">{pickL(lang, f.name, f.nameRu, f.nameZh)}</span>
                 <span className="shrink-0 text-[9.5px] tabular-nums" style={{ color: relColor(v) }}>
                   {v > 0 ? "+" : ""}
                   {v} · {relLabel(v)}
@@ -544,14 +544,14 @@ export function StatusPage({ operator }: { operator: string }) {
               <div key={sc.id} className="border border-viole/40 bg-viole/5 px-2 py-[5px]">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="truncate text-[10px] text-viole">
-                    {lang === "ru" ? sc.nameRu : sc.name}
+                    {pickL(lang, sc.name, sc.nameRu, sc.nameZh)}
                   </span>
                   <span className="shrink-0 text-[8px] uppercase tracking-[0.12em] text-faint">
                     {t("bm.cd", { n: sc.cooldown })}
                   </span>
                 </div>
                 <p className="mt-[2px] text-[9px] leading-snug text-faint">
-                  {lang === "ru" ? sc.descRu : sc.desc}
+                  {pickL(lang, sc.desc, sc.descRu, sc.descZh)}
                 </p>
               </div>
             ))}
@@ -560,7 +560,7 @@ export function StatusPage({ operator }: { operator: string }) {
       </Section>
 
       <Section title={t("sp.stats")} icon={<TrendingUp size={10} />}>
-        <Row k={t("sp.hacks")} v={g.stats.hacks} vc="#8fb56d" />
+        <Row k={t("sp.hacks")} v={g.stats.hacks} vc="var(--color-phos)" />
         <Row k={t("sp.contracts")} v={g.stats.contracts} vc="#cfa04b" />
         <Row k={t("sp.files")} v={g.stats.files} vc="#7f95a8" />
         <Row k={t("sp.nodes")} v={g.stats.nodes} vc="#8f86b8" />
@@ -581,7 +581,7 @@ export function StatusPage({ operator }: { operator: string }) {
                 <div key={id} className="flex items-center gap-2 border border-line bg-well px-2 py-[4px]">
                   <Database size={9} className="shrink-0 text-steel" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[10px] text-fog">{lang === "ru" ? f.nameRu : f.name}</div>
+                    <div className="truncate text-[10px] text-fog">{pickL(lang, f.name, f.nameRu, f.nameZh)}</div>
                     <div className="truncate text-[7.5px] uppercase tracking-[0.12em] text-faint">
                       {t(`dcat.${f.cat}`)}
                     </div>
@@ -603,11 +603,11 @@ export function StatusPage({ operator }: { operator: string }) {
             <div key={u.id} className="border border-line bg-well p-2">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[10px] font-bold tracking-[0.08em] text-phosbrite">
-                  {lang === "ru" ? u.nameRu : u.name}
+                  {pickL(lang, u.name, u.nameRu, u.nameZh)}
                 </span>
                 <span className="shrink-0 text-[10px] tabular-nums text-amber">{u.credits}cr</span>
               </div>
-              <p className="mt-1 text-[9.5px] leading-snug text-dim">{lang === "ru" ? u.descRu : u.desc}</p>
+              <p className="mt-1 text-[9.5px] leading-snug text-dim">{pickL(lang, u.desc, u.descRu, u.descZh)}</p>
               {owned ? (
                 <div className="mt-1.5 border border-phosdim/50 bg-phos/10 py-[5px] text-center text-[9px] font-bold uppercase tracking-[0.16em] text-phos">
                   ✓ {t("sp.owned")}

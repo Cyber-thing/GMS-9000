@@ -32,11 +32,15 @@ import {
   type ChannelId, type ChatMsg,
 } from "./data/chat";
 import { fillTemplate, pick, randInt, stampNow, clockNow, store } from "./lib/util";
-import { useT } from "./i18n";
+import { nextPhos } from "./lib/phos";
+import { pickL, useT } from "./i18n";
 import {
   RU_AMBIENT_POOL, RU_CHAT_POOL, RU_GREETING_POOL, RU_REPLY_POOL,
   SEED_HISTORY, regionContinent, sectorName as locSectorName,
 } from "./i18n/content";
+import {
+  ZH_AMBIENT_POOL, ZH_CHAT_POOL, ZH_GREETING_POOL, ZH_REPLY_POOL,
+} from "./i18n/zhContent";
 import { useGame } from "./game/state";
 import { NODE_META, factionById, resolveFile } from "./game/data";
 import { Lock, ShoppingBag } from "lucide-react";
@@ -75,7 +79,7 @@ const mkChat = (ch: ChannelId, nick: string, text: string, self = false, corp = 
   id: nid(), ch, nick, text, t: stampNow(), self, corp,
 });
 
-const GREET_RE = /\b(hi+|hello+|hey[ay]*|yo\b|sup\b|greetings?|hola|allo|hallo|привет|здоров|ку)\b/i;
+const GREET_RE = /\b(hi+|hello+|hey[ay]*|yo\b|sup\b|greetings?|hola|allo|hallo|привет|здоров|ку)\b|^[你您]好|嗨|^在吗/i;
 
 export default function App() {
   const { t, lang } = useT();
@@ -94,19 +98,21 @@ export default function App() {
   langRef.current = lang;
   useEffect(() => game.setLangRef(lang), [lang, game]);
 
-  const pools = useCallback(
-    () =>
-      langRef.current === "ru"
-        ? { chat: RU_CHAT_POOL, reply: RU_REPLY_POOL, greet: RU_GREETING_POOL, amb: RU_AMBIENT_POOL }
-        : { chat: CHAT_POOL, reply: REPLY_POOL, greet: GREETING_POOL, amb: AMBIENT_POOL },
-    []
-  );
+  const pools = useCallback(() => {
+    if (langRef.current === "ru")
+      return { chat: RU_CHAT_POOL, reply: RU_REPLY_POOL, greet: RU_GREETING_POOL, amb: RU_AMBIENT_POOL };
+    if (langRef.current === "zh")
+      return { chat: ZH_CHAT_POOL, reply: ZH_REPLY_POOL, greet: ZH_GREETING_POOL, amb: ZH_AMBIENT_POOL };
+    return { chat: CHAT_POOL, reply: REPLY_POOL, greet: GREETING_POOL, amb: AMBIENT_POOL };
+  }, []);
 
   /* ---------- 会话 ---------- */
   const [splash, setSplash] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [operator, setOperator] = useState(() => store.get("operator", "UNKNOWN"));
   const [fx, setFx] = useState(() => store.get("fx", true));
+  /* Цвет интерфейса: зелёный фосфор либо маджента. */
+  const [phos, setPhos] = useState<string>(() => store.get("phos", "green"));
   const operatorRef = useRef(operator);
   operatorRef.current = operator;
 
@@ -170,6 +176,10 @@ export default function App() {
   );
   useEffect(() => void store.set("operator", operator), [operator]);
   useEffect(() => void store.set("fx", fx), [fx]);
+  useEffect(() => {
+    document.documentElement.dataset.phos = phos;
+    store.set("phos", phos);
+  }, [phos]);
 
   /* 地图使用的节点状态。 */
   const nodeStates = useMemo(() => {
@@ -389,7 +399,7 @@ export default function App() {
 
       const own = factionById(res.owner);
       if (res.relation !== 0 && own) {
-        pushEvent(t("hk.rel", { owner: lang === "ru" ? own.nameRu : own.name, n: res.relation }), "bad");
+        pushEvent(t("hk.rel", { owner: pickL(lang, own.name, own.nameRu, own.nameZh), n: res.relation }), "bad");
       }
       res.unlocked.forEach((nb) => {
         const nn = ALL_NODES.find((x) => x.id === nb);
@@ -492,10 +502,10 @@ export default function App() {
       if (fileId === "f_icx_memo" && tut.phase === "talking") {
         const gotTarget = g.files.includes("f_icx_payroll");
         const l = gotTarget ? MEMO_ASIDE.after : MEMO_ASIDE.before;
-        tut.sayAside(lang === "ru" ? l.ru : l.en);
+        tut.sayAside(pickL(lang, l.en, l.ru, l.zh));
       }
       const f = resolveFile(fileId);
-      if (f) pushEvent(t("hk.download", { name: lang === "ru" ? f.nameRu : f.name }), "good");
+      if (f) pushEvent(t("hk.download", { name: pickL(lang, f.name, f.nameRu, f.nameZh) }), "good");
     },
     [download, pushEvent, t, lang, tutFire, tut, g.files]
   );
@@ -772,6 +782,8 @@ export default function App() {
       <>
         <LoginGate
           savedHandle={operator}
+          phos={phos}
+          onSetPhos={setPhos}
           onEnter={(h) => {
             setOperator(h);
             const seed: Record<ChannelId, ChatMsg[]> = {
@@ -804,6 +816,14 @@ export default function App() {
           print(fx ? t("t.crtOff") : t("t.crtOn"), "dim");
           setFx((f) => !f);
         }}
+        phos={phos}
+        onTogglePhos={() => {
+          const next = nextPhos(phos);
+          setPhos(next);
+          const msg = t("t.phosSet", { p: t(`phos.${next}`) });
+          print(msg, "ok");
+          pushEvent(msg, "info");
+        }}
         operator={operator}
         onSetOperator={(v) => {
           setOperator(v);
@@ -833,7 +853,7 @@ export default function App() {
                 className={cn(
                   "flex-1 px-2 py-[6px] text-[8.5px] font-bold uppercase tracking-[0.18em] transition-colors",
                   pane === id
-                    ? "bg-phos/15 text-phosbrite shadow-[inset_0_-2px_0_#8fb56d]"
+                    ? "bg-phos/15 text-phosbrite shadow-[inset_0_-2px_0_var(--color-phos)]"
                     : "text-faint hover:bg-panel2 hover:text-dim"
                 )}
               >
@@ -1030,7 +1050,7 @@ export default function App() {
             key={vaultId}
             nodeId={vaultId}
             nodeCode={vn.code}
-            ownerName={own ? (lang === "ru" ? own.nameRu : own.name) : ""}
+            ownerName={own ? (pickL(lang, own.name, own.nameRu, own.nameZh)) : ""}
             ownedFiles={g.files}
             burnedFiles={g.burned}
             onAcquire={(fid) => runDownload(vaultId, fid)}

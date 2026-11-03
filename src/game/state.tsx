@@ -2,6 +2,7 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode,
 } from "react";
 import { store, stampNow } from "../lib/util";
+import { pickL, type Lang } from "../i18n";
 import { ALL_NODES } from "../data/regions";
 import {
   OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_READY, OP17_DELIVER, OP17_FORK,
@@ -125,8 +126,8 @@ interface Ctx {
   isAnyThreadOpen: () => boolean;
   markCodexSeen: (id: string) => void;
   reset: () => void;
-  lang: "en" | "ru";
-  setLangRef: (l: "en" | "ru") => void;
+  lang: Lang;
+  setLangRef: (l: Lang) => void;
 }
 
 const GameCtx = createContext<Ctx | null>(null);
@@ -159,7 +160,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const gRef = useRef<GameState>(null as unknown as GameState);
   const [lastHack, setLastHack] = useState<HackResult | null>(null);
-  const langRef = useRef<"en" | "ru">("en");
+  const langRef = useRef<Lang>("en");
   
   const activeTab = useRef<TabId>("CHAT");
   
@@ -171,7 +172,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   gRef.current = g;
   useEffect(() => void store.set("game", g), [g]);
 
-  const ru = () => langRef.current === "ru";
+  const at = <T,>(en: T, ru: T, zh?: T): T => pickL(langRef.current, en, ru, zh);
 
   const notify = useCallback((kind: NotifKind, text: string, tab?: TabId) => {
     setNotifs((n) => [...n.slice(-39), { id: nid.current++, kind, text, tab, t: stampNow() }]);
@@ -181,12 +182,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   /** 同时保存双语文本，使已存在的消息也能随语言切换重新渲染。 */
   const say = useCallback(
-    (contact: string, en: string, ru_: string, extra: Partial<ThreadMsg> = {}) => {
+    (contact: string, en: string, ru_: string, zh_: string, extra: Partial<ThreadMsg> = {}) => {
       setG((s) => {
         const list = [
           ...(s.threads[contact] ?? []),
-          { id: nid.current++, from: extra.from ?? contact, text: ru() ? ru_ : en,
-            textEn: en, textRu: ru_, t: stampNow(), ...extra },
+          { id: nid.current++, from: extra.from ?? contact, text: at(en, ru_, zh_),
+            textEn: en, textRu: ru_, textZh: zh_, t: stampNow(), ...extra },
         ];
         const seen = activeThread.current === contact && activeTab.current === "CONTACTS";
         return {
@@ -224,13 +225,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
                   ...s.threads,
                   [c.id]: [
                     ...(s.threads[c.id] ?? []),
-                    { id: nid.current++, from: c.id, text: ru() ? c.introRu : c.intro,
-                      textEn: c.intro, textRu: c.introRu, t: stampNow() },
+                    { id: nid.current++, from: c.id, text: at(c.intro, c.introRu, c.introZh),
+                      textEn: c.intro, textRu: c.introRu, textZh: c.introZh, t: stampNow() },
                   ],
                 },
               }
         );
-        notify("NEW CONTACT MESSAGE", `${c.nick} :: ${ru() ? "новое сообщение" : "new message"}`, "CONTACTS");
+        notify("NEW CONTACT MESSAGE", `${c.nick} :: ${at("new message", "новое сообщение", "新消息")}`, "CONTACTS");
       }
     });
     
@@ -267,9 +268,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
                       {
                         id: nid.current++,
                         from: ct.contact,
-                        text: ru() ? ct.briefRu : ct.brief,
+                        text: at(ct.brief, ct.briefRu, ct.briefZh),
                         textEn: ct.brief,
                         textRu: ct.briefRu,
+                        textZh: ct.briefZh,
                         t: stampNow(),
                         contract: ct.id,
                         action: "offer",
@@ -278,7 +280,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                   },
             }
       );
-      notify("NEW CONTRACT", `${ru() ? ct.titleRu : ct.title}`, "CONTACTS");
+      notify("NEW CONTRACT", `${at(ct.title, ct.titleRu, ct.titleZh)}`, "CONTACTS");
       break; // 每轮最多发布一个新订单，使任务逐步出现
     }
 
@@ -383,12 +385,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (repGain > 0) notify("REP INCREASED", `+${repGain} REP`, "STATUS");
       if (relHit !== 0) {
         const own = factionById(m.owner);
-        const nm = own ? (ru() ? own.nameRu : own.name) : m.owner.toUpperCase();
+        const nm = own ? at(own.name, own.nameRu, own.nameZh) : m.owner.toUpperCase();
         notify("FACTION RELATIONS CHANGED", `${nm} ${relHit}`, "STATUS");
       }
       const cxName = (cid: string) => {
         const e = codexById(cid);
-        return e ? (ru() ? e.titleRu : e.title) : cid;
+        return e ? at(e.title, e.titleRu, e.titleZh) : cid;
       };
       newCodex.forEach((c) => notify("NEW CODEX ENTRY", cxName(c), "CODEX"));
       updCodex.forEach((c) => notify("CODEX UPDATED", cxName(c), "CODEX"));
@@ -413,9 +415,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         {
           id: nid.current++,
           from: b.from === "OP" ? "OP" : b.from,
-          text: ru() ? b.line.ru : b.line.en,
+          text: at(b.line.en, b.line.ru, b.line.zh),
           textEn: b.line.en,
           textRu: b.line.ru,
+          textZh: b.line.zh,
           t: stampNow(),
           choices: b.choices,
           contract: b.contract,
@@ -495,7 +498,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           threads[k] = threads[k].map((m) => {
             if (m.id !== msgId) return m;
             const c = m.choices?.find((x) => x.id === choiceId);
-            label = c ? (ru() ? c.ru : c.en) : "";
+            label = c ? at(c.en, c.ru, c.zh) : "";
             return { ...m, picked: choiceId };
           });
         });
@@ -505,13 +508,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
 
       if (choiceId === "listen") {
-        pushBeat({ id: "a1", from: "OP", line: { en: "I am listening.", ru: "Я слушаю." } });
+        pushBeat({ id: "a1", from: "OP", line: { en: "I am listening.", ru: "Я слушаю.", zh: "我听着。" } });
         later(() => OP17_BRIEF.forEach((b) => pushBeat(b, "op17")), 700);
         return;
       }
 
       if (choiceId === "accept") {
-        pushBeat({ id: "a2", from: "OP", line: { en: "Taking the contract.", ru: "Принимаю контракт." } });
+        pushBeat({ id: "a2", from: "OP", line: { en: "Taking the contract.", ru: "Принимаю контракт.", zh: "接了合同。" } });
         setG((s) => ({ ...s, contracts: { ...s.contracts, ct_archive: { state: "ACCEPTED", accepted: true } } }));
         later(() => OP17_ACCEPTED.forEach((b) => pushBeat(b, "op17")), 800);
         return;
@@ -579,37 +582,37 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       if (choiceId === "fi_what") {
-        pushBeat({ id: "a4", from: "OP", line: { en: "What do you need?", ru: "Что нужно?" } }, "freddy");
+        pushBeat({ id: "a4", from: "OP", line: { en: "What do you need?", ru: "Что нужно?", zh: "你需要什么？" } }, "freddy");
         later(() => FREDDY_IMPLANT_2.forEach((b) => pushBeat(b, "freddy")), 800);
         return;
       }
       if (choiceId === "fi_ask") {
-        pushBeat({ id: "a5", from: "OP", line: { en: "What do you want from me?", ru: "От меня что требуется?" } }, "freddy");
+        pushBeat({ id: "a5", from: "OP", line: { en: "What do you want from me?", ru: "От меня что требуется?", zh: "需要我干嘛？" } }, "freddy");
         later(() => FREDDY_IMPLANT_3.forEach((b) => pushBeat(b, "freddy")), 800);
         return;
       }
       if (choiceId === "fi_ok") {
-        pushBeat({ id: "a6", from: "OP", line: { en: "All right.", ru: "Хорошо." } }, "freddy");
+        pushBeat({ id: "a6", from: "OP", line: { en: "All right.", ru: "Хорошо.", zh: "行。" } }, "freddy");
         setG((s) => ({ ...s, contracts: { ...s.contracts, ct_implant: { state: "ACCEPTED", accepted: true } } }));
         later(() => FREDDY_IMPLANT_4.forEach((b) => pushBeat(b, "freddy")), 800);
         return;
       }
 
       if (choiceId === "mp_which") {
-        pushBeat({ id: "a7", from: "OP", line: { en: "Which room?", ru: "Какой зал?" } }, "marla");
+        pushBeat({ id: "a7", from: "OP", line: { en: "Which room?", ru: "Какой зал?", zh: "哪个厅？" } }, "marla");
         later(() => MARLA_PROJ_2.forEach((b) => pushBeat(b, "marla")), 800);
         return;
       }
       if (choiceId === "mp_why") {
         pushBeat({
           id: "a9", from: "OP",
-          line: { en: "And you want the projectors down.", ru: "И ты хочешь, чтобы проекторы вырубились." },
+          line: { en: "And you want the projectors down.", ru: "И ты хочешь, чтобы проекторы вырубились.", zh: "所以你想让投影全灭。" },
         }, "marla");
         later(() => MARLA_PROJ_3.forEach((b) => pushBeat(b, "marla")), 800);
         return;
       }
       if (choiceId === "mp_ok") {
-        pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь." } }, "marla");
+        pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь.", zh: "接了。" } }, "marla");
         const already = gRef.current.nodeStates["w1p_crp2"] === "COMPROMISED";
         setG((s) => ({
           ...s,
@@ -643,7 +646,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (choiceId === "sendsable") {
         
         setFlag("sable-ok", true);
-        pushBeat({ id: "a3", from: "OP", line: { en: "Sending the list.", ru: "Отправляю список." } }, "sablec");
+        pushBeat({ id: "a3", from: "OP", line: { en: "Sending the list.", ru: "Отправляю список.", zh: "名单发你了。" } }, "sablec");
         setG((s) => ({
           ...s,
           credits: s.credits + ARCHIVE_PAY.sable,
@@ -684,7 +687,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         files: [...s.files, fileId],
         stats: { ...s.stats, files: s.stats.files + 1 },
       }));
-      notify("DATA ACQUIRED", `${ru() ? f.nameRu : f.name} → DATA STORED`, "STATUS");
+      notify("DATA ACQUIRED", `${at(f.name, f.nameRu, f.nameZh)} → DATA STORED`, "STATUS");
 
       if (fileId === "f_access_restored") {
         const st = g.contracts.ct_archive?.state;
@@ -729,6 +732,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             say(ct.contact,
               "i see you have it. transfer the file and the credits move.",
               "вижу, файл у тебя. передавай — перевод готов.",
+              "看到东西在你手上了。传过来，钱就动。",
               { contract: ct.id, action: "deliver" });
             notify("NEW CONTACT MESSAGE", `${c.nick}`, "CONTACTS");
           }
@@ -754,7 +758,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           : hasFile ? "DATA ACQUIRED" : breached ? "TARGET ACCESSED" : "ACCEPTED";
 
       setG((s) => ({ ...s, contracts: { ...s.contracts, [id]: { state: next, accepted: true } } }));
-      say(ct.contact, "taking the contract.", "принимаю контракт.", { from: "OP" });
+      say(ct.contact, "taking the contract.", "принимаю контракт.", "单子我接了。", { from: "OP" });
 
       const tgt = ALL_NODES.find((n) => n.id === ct.target);
       const code = tgt?.code ?? ct.target;
@@ -765,22 +769,26 @@ export function GameProvider({ children }: { children: ReactNode }) {
           say(ct.contact,
             `${code} is already dark? You work ahead of me. Confirm it and I will pay.`,
             `${code} уже погашен? Ты работаешь на опережение. Подтверди, и я заплачу.`,
+            `${code} 已经黑了？你手比我还快。确认一下，我转钱。`,
             { contract: id, action: "deliver" });
         } else {
           say(ct.contact,
             `target: ${code}. breach it and run SABOTAGE. no files required.`,
             `цель: ${code}. вскрой её и запусти ДИВЕРСИЮ. файлы не нужны.`,
+            `目标：${code}。破进去跑破坏，不用拿文件。`,
             { contract: id });
         }
       } else if (hasFile) {
         say(ct.contact,
           "you already have it? fast. transfer the file and the credits move.",
           "уже держишь файл? быстро. передавай — перевод готов.",
+          "你已经拿到了？挺快。传过来，钱就动。",
           { contract: id, action: "deliver" });
       } else {
         say(ct.contact,
           `target: ${code}. pull ${ct.file?.toUpperCase()} and come back.`,
           `цель: ${code}. достань ${ct.file?.toUpperCase()} и возвращайся.`,
+          `目标：${code}。把 ${ct.file?.toUpperCase()} 薅出来就回来。`,
           { contract: id });
       }
     },
@@ -814,7 +822,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
               relations: { ...s.relations, [ct.client]: (s.relations[ct.client] ?? 0) + ct.relation },
               stats: { ...s.stats, contracts: s.stats.contracts + 1 },
             }));
-            notify("CONTRACT COMPLETED", ru() ? ct.titleRu : ct.title, "CONTACTS");
+            notify("CONTRACT COMPLETED", at(ct.title, ct.titleRu, ct.titleZh), "CONTACTS");
             notify("REP INCREASED", `+${ct.rep} REP`, "STATUS");
             
             setG((s) => {
@@ -833,6 +841,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       say(ct.contact,
         ct.kind === "SABOTAGE" ? "done. the host is dark." : `transferring ${ct.file?.toUpperCase()}`,
         ct.kind === "SABOTAGE" ? "готово. узел погашен." : `передаю ${ct.file?.toUpperCase()}`,
+        ct.kind === "SABOTAGE" ? "搞定。那台机黑了。" : `正在传 ${ct.file?.toUpperCase()}`,
         { from: "OP" });
 
       const t = window.setTimeout(() => {
@@ -857,8 +866,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         say(ct.contact,
           `clean. ${ct.credits} credits sent. i will find you when i need you again.`,
           `чисто. ${ct.credits} кредитов ушло. будешь нужен — найду.`,
+          `干净。${ct.credits} 信用点已转。再有活儿我来捞你。`,
           { contract: id, action: "done", payout: ct.credits });
-        notify("CONTRACT COMPLETED", ru() ? ct.titleRu : ct.title, "CONTACTS");
+        notify("CONTRACT COMPLETED", at(ct.title, ct.titleRu, ct.titleZh), "CONTACTS");
         notify("REP INCREASED", `+${ct.rep} REP`, "STATUS");
       }, 1400);
       timers.current.push(t);
@@ -938,9 +948,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
         if (pr?.state !== "ACCEPTED" && pr?.state !== "TARGET ACCESSED") return;
         pushThread(ct.contact, {
           from: ct.contact,
-          text: ru()
-            ? "вижу, оно погасло. подтверди, и я переведу деньги."
-            : "i can see it go dark from here. confirm and the credits move.",
+          text: at(
+            "i can see it go dark from here. confirm and the credits move.",
+            "вижу, оно погасло. подтверди, и я переведу деньги.",
+            "我在这儿都看见它黑了。确认一下，钱就转你。"
+          ),
+          textEn: "i can see it go dark from here. confirm and the credits move.",
+          textRu: "вижу, оно погасло. подтверди, и я переведу деньги.",
+          textZh: "我在这儿都看见它黑了。确认一下，钱就转你。",
           contract: ct.id,
           action: "deliver",
         });
@@ -973,7 +988,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         credits: s.credits - sc.price,
         market: { ...s.market, scripts: [...s.market.scripts, id] },
       }));
-      notify("SCRIPT ACQUIRED", ru() ? sc.nameRu : sc.name, "STATUS");
+      notify("SCRIPT ACQUIRED", at(sc.name, sc.nameRu, sc.nameZh), "STATUS");
       return true;
     },
     [g.market, g.credits, notify]
@@ -1033,12 +1048,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
         };
       });
 
-      notify("DATA SOLD", `${ru() ? f.nameRu : f.name} · +${credits}cr`, "STATUS");
+      notify("DATA SOLD", `${at(f.name, f.nameRu, f.nameZh)} · +${credits}cr`, "STATUS");
       if (owed) {
-        notify("CONTRACT FAILED", ru() ? owed.titleRu : owed.title, "CONTACTS");
+        notify("CONTRACT FAILED", at(owed.title, owed.titleRu, owed.titleZh), "CONTACTS");
         say(owed.contact,
           "you fenced my file. i know to whom. you get nothing else from me.",
           "ты продал мой файл. я знаю, кому. больше я тебе ничего не дам.",
+          "你把我的文件销了。卖给谁我都知道。以后从我这儿你什么都别想拿到。",
           { contract: owed.id });
       }
       return { credits, betrayed: owed?.client };
@@ -1059,7 +1075,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         upgrades: [...s.upgrades, id],
         regions: s.regions.includes(up.region) ? s.regions : [...s.regions, up.region],
       }));
-      notify("NEW REGION AVAILABLE", `${up.region.toUpperCase()} · ${ru() ? up.nameRu : up.name}`);
+      notify("NEW REGION AVAILABLE", `${up.region.toUpperCase()} · ${at(up.name, up.nameRu, up.nameZh)}`);
       return true;
     },
     [g.credits, g.rep, g.upgrades, notify]
@@ -1105,7 +1121,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setNotifs([]);
   }, []);
 
-  const setLangRef = useCallback((l: "en" | "ru") => {
+  const setLangRef = useCallback((l: Lang) => {
     langRef.current = l;
   }, []);
 

@@ -4,13 +4,13 @@ import { cn } from "../utils/cn";
 /* 状态颜色——唯一数据源 */
 
 export const STATUS_COLOR: Record<string, string> = {
-  LOCKED: "#59604f",
-  AVAILABLE: "#8fb56d",
+  LOCKED: "var(--color-moss)",
+  AVAILABLE: "var(--color-phos)",
   COMPROMISED: "#8f86b8",
-  ONLINE: "#8fb56d",
-  CONNECTED: "#b3d98d",
+  ONLINE: "var(--color-phos)",
+  CONNECTED: "var(--color-phosbrite)",
   CONNECTING: "#cfa04b",
-  OFFLINE: "#59604f",
+  OFFLINE: "var(--color-moss)",
   RESTRICTED: "#cfa04b",
   UNKNOWN: "#7f95a8",
   DEGRADED: "#8f86b8",
@@ -28,7 +28,7 @@ export function StatusDot({ color, pulse = false, className }: { color: string; 
 
 /* 角标——目标框高亮 */
 
-export function Brackets({ color = "#8fb56d", size = 7 }: { color?: string; size?: number }) {
+export function Brackets({ color = "var(--color-phos)", size = 7 }: { color?: string; size?: number }) {
   const b = `1px solid ${color}`;
   const s = { width: size, height: size };
   return (
@@ -49,7 +49,7 @@ export function Panel({
   children,
   className,
   bodyClassName,
-  accent = "#8fb56d",
+  accent = "var(--color-phos)",
   scroll = false,
 }: {
   title: string;
@@ -91,12 +91,12 @@ export function KV({ k, v, vc }: { k: string; v: ReactNode; vc?: string }) {
   );
 }
 
-export function Led({ on = true, color = "#8fb56d" }: { on?: boolean; color?: string }) {
+export function Led({ on = true, color = "var(--color-phos)" }: { on?: boolean; color?: string }) {
   return (
     <span
       className="inline-block h-[5px] w-[5px]"
       style={{
-        background: on ? color : "#2a3122",
+        background: on ? color : "var(--color-line)",
         boxShadow: on ? `0 0 5px ${color}` : "none",
       }}
     />

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Banknote, Lock, ShoppingBag, Skull, TriangleAlert, X, Zap } from "lucide-react";
 import { cn } from "../utils/cn";
-import { useT } from "../i18n";
+import { pickL, useT } from "../i18n";
 import { useGame } from "../game/state";
 import { CFG, CONTRACTS, SCRIPTS, factionById, resolveFile } from "../game/data";
 import { ALL_NODES } from "../data/regions";
@@ -99,7 +99,7 @@ export default function BlackMarket({
                 <div className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[10.5px] text-fog">
-                      {lang === "ru" ? f.nameRu : f.name}
+                      {pickL(lang, f.name, f.nameRu, f.nameZh)}
                     </div>
                     <div className="truncate text-[7.5px] uppercase tracking-[0.12em] text-faint">
                       {t(`dcat.${f.cat}`)}
@@ -110,8 +110,8 @@ export default function BlackMarket({
                     onClick={() => {
                       const r = sellFile(id);
                       if (!r) return;
-                      onLog("t.sold", { name: lang === "ru" ? f.nameRu : f.name, n: r.credits });
-                      if (owed) onLog("t.betray", { title: lang === "ru" ? owed.titleRu : owed.title });
+                      onLog("t.sold", { name: pickL(lang, f.name, f.nameRu, f.nameZh), n: r.credits });
+                      if (owed) onLog("t.betray", { title: pickL(lang, owed.title, owed.titleRu, owed.titleZh) });
                     }}
                     className="shrink-0 border border-[#c25b46] bg-[#c25b46]/15 px-2 py-[4px] text-[9px] font-bold uppercase tracking-[0.12em] text-[#e0634a] transition-colors hover:bg-[#c25b46] hover:text-ink"
                   >
@@ -128,7 +128,7 @@ export default function BlackMarket({
                     <TriangleAlert size={10} className="mt-[1px] shrink-0" style={{ color: RED }} />
                     <div className="min-w-0">
                       <div className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: RED }}>
-                        {t("bm.owed", { who: client ? (lang === "ru" ? client.nameRu : client.name) : "" })}
+                        {t("bm.owed", { who: client ? (pickL(lang, client.name, client.nameRu, client.nameZh)) : "" })}
                       </div>
                       <div className="text-[8.5px] leading-snug text-dim">{t("bm.owedWarn")}</div>
                     </div>
@@ -152,7 +152,7 @@ export default function BlackMarket({
                   <span className="flex items-center gap-1.5">
                     {sc.freeze ? <Skull size={11} style={{ color: RED }} /> : <Zap size={11} style={{ color: RED }} />}
                     <span className="text-[10.5px] font-bold tracking-[0.06em] text-fog">
-                      {lang === "ru" ? sc.nameRu : sc.name}
+                      {pickL(lang, sc.name, sc.nameRu, sc.nameZh)}
                     </span>
                   </span>
                   <span className="shrink-0 text-[9px] uppercase tracking-[0.12em] text-faint">
@@ -160,7 +160,7 @@ export default function BlackMarket({
                   </span>
                 </div>
                 <p className="mt-1 text-[9.5px] leading-snug text-dim">
-                  {lang === "ru" ? sc.descRu : sc.desc}
+                  {pickL(lang, sc.desc, sc.descRu, sc.descZh)}
                 </p>
                 {have ? (
                   <div className="mt-1.5 border border-phosdim/50 bg-phos/10 py-[5px] text-center text-[9px] font-bold uppercase tracking-[0.14em] text-phos">
@@ -170,7 +170,7 @@ export default function BlackMarket({
                   <button
                     disabled={!afford}
                     onClick={() => {
-                      if (buyScript(sc.id)) onLog("t.script", { name: lang === "ru" ? sc.nameRu : sc.name });
+                      if (buyScript(sc.id)) onLog("t.script", { name: pickL(lang, sc.name, sc.nameRu, sc.nameZh) });
                     }}
                     className={cn(
                       "mt-1.5 w-full border py-[5px] text-[9px] font-bold uppercase tracking-[0.14em] transition-colors",
@@ -205,7 +205,7 @@ export default function BlackMarket({
               <div key={ct.id} className="mb-1.5 border border-[#c25b46]/40 bg-[#c25b46]/6 p-2">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="truncate text-[10.5px] font-bold tracking-[0.06em]" style={{ color: "#e0634a" }}>
-                    {lang === "ru" ? ct.titleRu : ct.title}
+                    {pickL(lang, ct.title, ct.titleRu, ct.titleZh)}
                   </span>
                   <span className="shrink-0 border px-1 text-[7.5px] font-bold uppercase tracking-[0.1em]"
                     style={{ color: RED, borderColor: `${RED}66` }}>
@@ -213,7 +213,7 @@ export default function BlackMarket({
                   </span>
                 </div>
                 <p className="mt-1 text-[9.5px] leading-snug text-dim">
-                  {lang === "ru" ? ct.briefRu : ct.brief}
+                  {pickL(lang, ct.brief, ct.briefRu, ct.briefZh)}
                 </p>
                 <div className="mt-1 space-y-[2px] border-t border-line pt-1 text-[9px] text-faint">
                   <div>{t("co.target")}: <span className="text-fog">{node?.code}</span></div>
@@ -223,14 +223,14 @@ export default function BlackMarket({
                   </div>
                   <div>
                     {t("co.cstate")}: <span className="text-viole">{t(`cs.${pr.state}`)}</span>
-                    {client && <span className="ml-1 text-faint">· {lang === "ru" ? client.nameRu : client.name}</span>}
+                    {client && <span className="ml-1 text-faint">· {pickL(lang, client.name, client.nameRu, client.nameZh)}</span>}
                   </div>
                 </div>
                 {pr.state === "AVAILABLE" && (
                   <button
                     onClick={() => {
                       acceptContract(ct.id);
-                      onLog("t.jobTaken", { title: lang === "ru" ? ct.titleRu : ct.title });
+                      onLog("t.jobTaken", { title: pickL(lang, ct.title, ct.titleRu, ct.titleZh) });
                     }}
                     className="mt-1.5 w-full border border-[#c25b46] bg-[#c25b46]/15 py-[6px] text-[9px] font-bold uppercase tracking-[0.14em] text-[#e0634a] transition-colors hover:bg-[#c25b46] hover:text-ink"
                   >

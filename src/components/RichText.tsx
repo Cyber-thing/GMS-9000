@@ -15,7 +15,7 @@ export default function RichText({ text }: { text: string }) {
         <strong
           key={i}
           className="font-bold tracking-[0.08em] text-phosbrite"
-          style={{ textShadow: "0 0 8px rgba(143,181,109,0.45)" }}
+          style={{ textShadow: "0 0 8px rgb(var(--phosrgb) / 0.45)" }}
         >
           {part}
         </strong>

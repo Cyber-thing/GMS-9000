@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Activity, Check, Languages, LogOut, MonitorDot, Pencil, ScanEye, X } from "lucide-react";
+import { Activity, Check, Languages, LogOut, MonitorDot, Palette, Pencil, ScanEye, X } from "lucide-react";
 import { clockNow, fmtUptime, randInt, store } from "../lib/util";
+import { phosLabel } from "../lib/phos";
 import { StatusDot } from "./chrome";
 import { useT } from "../i18n";
 import { useGame, CFG } from "../game/state";
@@ -16,7 +17,7 @@ function useClock() {
   return now;
 }
 
-function Field({ label, value, color = "#bcc4ae" }: { label: string; value: React.ReactNode; color?: string }) {
+function Field({ label, value, color = "var(--color-fog)" }: { label: string; value: React.ReactNode; color?: string }) {
   return (
     <div className="flex items-baseline gap-1.5 whitespace-nowrap">
       <span className="text-[8.5px] uppercase tracking-[0.2em] text-faint">{label}</span>
@@ -31,6 +32,8 @@ export default function TopBar({
   sessions,
   fx,
   onToggleFx,
+  phos,
+  onTogglePhos,
   operator,
   onSetOperator,
   networkName,
@@ -39,6 +42,8 @@ export default function TopBar({
   sessions: number;
   fx: boolean;
   onToggleFx: () => void;
+  phos: string;
+  onTogglePhos: () => void;
   operator: string;
   onSetOperator: (v: string) => void;
   networkName: string;
@@ -112,17 +117,17 @@ export default function TopBar({
           label={t("top.system")}
           value={
             <span className="inline-flex items-center gap-1.5">
-              <StatusDot color="#8fb56d" pulse /> {t("top.online")}
+              <StatusDot color="var(--color-phos)" pulse /> {t("top.online")}
             </span>
           }
-          color="#b3d98d"
+          color="var(--color-phosbrite)"
         />
         <span className="hidden h-3 w-px bg-line2 sm:block" />
         <Field label={t("top.network")} value={networkName} />
         <span className="hidden h-3 w-px bg-line2 sm:block" />
-        <Field label={t("top.conn")} value={t("top.stable")} color="#8fb56d" />
+        <Field label={t("top.conn")} value={t("top.stable")} color="var(--color-phos)" />
         <span className="hidden h-3 w-px bg-line2 lg:block" />
-        <Field label="REP" value={String(g.rep)} color="#b3d98d" />
+        <Field label="REP" value={String(g.rep)} color="var(--color-phosbrite)" />
         <span className="hidden h-3 w-px bg-line2 sm:block" />
         <Field label="CR" value={String(g.credits)} color="#cfa04b" />
         <span className="hidden h-3 w-px bg-line2 lg:block" />
@@ -146,7 +151,7 @@ export default function TopBar({
               ))}
             </span>
           }
-          color="#8fb56d"
+          color="var(--color-phos)"
         />
       </div>
 
@@ -158,7 +163,7 @@ export default function TopBar({
             <span
               key={i}
               className="w-[3px] transition-all duration-500"
-              style={{ height: `${(v / 8) * 100}%`, background: i === bars.length - 1 ? "#b3d98d" : "#5f7a4b" }}
+              style={{ height: `${(v / 8) * 100}%`, background: i === bars.length - 1 ? "var(--color-phosbrite)" : "var(--color-phosdim)" }}
             />
           ))}
         </div>
@@ -215,7 +220,7 @@ export default function TopBar({
                 key={i}
                 className="block h-[7px] w-[6px] border"
                 style={{
-                  borderColor: i < g.ops ? "#c25b46" : "#39422d",
+                  borderColor: i < g.ops ? "#c25b46" : "var(--color-line2)",
                   background: i < g.ops ? "#c25b4688" : "transparent",
                 }}
               />
@@ -248,14 +253,14 @@ export default function TopBar({
         )}
       </div>
 
-      {/* 语言切换 */}
+      {/* 语言切换：EN → RU → 中文 */}
       <button
-        onClick={() => setLang(lang === "en" ? "ru" : "en")}
+        onClick={() => setLang(lang === "en" ? "ru" : lang === "ru" ? "zh" : "en")}
         className="flex w-[58px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-phos"
         title={t("top.langTip")}
       >
         <Languages size={12} />
-        {lang === "en" ? "EN" : "RU"}
+        {lang === "en" ? "EN" : lang === "ru" ? "RU" : "中文"}
       </button>
 
       {/* 特效切换 */}
@@ -268,6 +273,18 @@ export default function TopBar({
       >
         <MonitorDot size={12} />
         CRT
+      </button>
+
+      {/* 界面配色切换：循环 绿色 → 洋红 → 蓝色 → 红色 → 琥珀 */}
+      <button
+        onClick={onTogglePhos}
+        className={`flex w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+          phos !== "green" ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
+        }`}
+        title={t("top.phosTip")}
+      >
+        <Palette size={12} className={phos === "green" ? "opacity-60" : undefined} />
+        {phosLabel(phos)}
       </button>
 
       {/* 断开连接 */}

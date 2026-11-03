@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Grid2x2, PhoneCall, PhoneOff, Skull } from "lucide-react";
 import { cn } from "../utils/cn";
-import { useT } from "../i18n";
+import { pickL, useT } from "../i18n";
 import { CALLER, useTut } from "../game/tutorial";
 import RichText from "./RichText";
 
@@ -70,7 +70,7 @@ export default function TutorialCall() {
 
   /* 剧情通话。 */
   if (call) {
-    const line = lang === "ru" ? call.script.lines[call.idx].ru : call.script.lines[call.idx].en;
+    const line = pickL(lang, call.script.lines[call.idx].en, call.script.lines[call.idx].ru, call.script.lines[call.idx].zh);
     const last = call.idx + 1 >= call.script.lines.length;
 
     if (callRinging) {
@@ -185,7 +185,7 @@ export default function TutorialCall() {
   if (phase !== "talking" || !step) return null;
 
   /* 临时插话会暂时替换当前脚本台词。 */
-  const line = aside ?? (lang === "ru" ? step.ru : step.en);
+  const line = aside ?? pickL(lang, step.en, step.ru, step.zh);
   const waiting = !!step.waitFor;
 
   return (

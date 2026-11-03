@@ -76,8 +76,8 @@ export default function HackerExchange({
                   key={`${n}_${offset}_${i}`}
                   className="flex items-baseline gap-2 py-[2px] text-[11px] leading-tight"
                   style={{
-                    color: isMe ? "#b3d98d" : "#5b6450",
-                    textShadow: isMe ? "0 0 10px rgba(143,181,109,0.6)" : "none",
+                    color: isMe ? "var(--color-phosbrite)" : "var(--color-moss)",
+                    textShadow: isMe ? "0 0 10px rgb(var(--phosrgb) / 0.6)" : "none",
                     opacity: isMe ? 1 : landed ? 0.4 : 0.75,
                   }}
                 >
@@ -107,7 +107,7 @@ export default function HackerExchange({
           <div className="text-[9px] uppercase tracking-[0.4em] text-faint">{t("ex.statusLabel")}</div>
           <div
             className="pixel mt-1 text-[46px] leading-none text-phosbrite"
-            style={{ textShadow: "0 0 22px rgba(143,181,109,0.45)" }}
+            style={{ textShadow: "0 0 22px rgb(var(--phosrgb) / 0.45)" }}
           >
             {t("ex.rookie")}
           </div>

@@ -13,10 +13,10 @@ export interface TermLine {
 }
 
 const TONE_COLOR: Record<NonNullable<TermLine["tone"]>, string> = {
-  ok: "#8fb56d",
+  ok: "var(--color-phos)",
   warn: "#cfa04b",
   err: "#b36a52",
-  dim: "#5c6553",
+  dim: "var(--color-moss)",
 };
 
 export default function TerminalBar({
@@ -50,7 +50,7 @@ export default function TerminalBar({
   const last = lines[lines.length - 1];
 
   return (
-    <div className="relative z-30 shrink-0 border-t border-line2 bg-[#0d100a]">
+    <div className="relative z-30 shrink-0 border-t border-line2 bg-[var(--color-ink)]">
       {/* 标题条 */}
       <div className="flex h-[24px] items-center gap-2 border-b border-line px-2">
         <TerminalSquare size={11} className="shrink-0 text-phosdim" />
@@ -89,7 +89,7 @@ export default function TerminalBar({
         {(expanded ? lines.slice(-90) : lines.slice(-1)).map((l) => (
           <div key={l.id} className="flex items-baseline gap-2 whitespace-nowrap text-[10.5px] leading-[1.65]">
             <span className="shrink-0 tabular-nums text-faint">[{l.t}]</span>
-            <span style={{ color: l.tone ? TONE_COLOR[l.tone] : "#99a18c" }}>
+            <span style={{ color: l.tone ? TONE_COLOR[l.tone] : "var(--color-sage)" }}>
               <span className="text-faint">&gt; </span>
               {l.tag && <span className="font-bold">[{l.tag}] </span>}
               {l.text}

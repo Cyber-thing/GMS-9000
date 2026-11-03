@@ -50,10 +50,10 @@ export default function WardenPass({
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div
         className="anim-msgin w-[min(420px,96%)] border bg-panel shadow-[0_0_70px_rgba(0,0,0,0.8)]"
-        style={{ borderColor: state === "granted" ? "#8fb56d" : "#cfa04b88" }}
+        style={{ borderColor: state === "granted" ? "var(--color-phos)" : "#cfa04b88" }}
       >
         <div className="flex h-[26px] items-center gap-2 border-b border-line2 bg-header px-2.5">
-          <StatusDot color={state === "granted" ? "#8fb56d" : "#cfa04b"} pulse />
+          <StatusDot color={state === "granted" ? "var(--color-phos)" : "#cfa04b"} pulse />
           <span className="truncate text-[9px] font-bold uppercase tracking-[0.2em] text-dim">
             {nodeCode}
           </span>
@@ -82,7 +82,7 @@ export default function WardenPass({
           </label>
           <div
             className="mt-1.5 flex items-center gap-2 border bg-well px-2.5"
-            style={{ borderColor: state === "denied" ? "#c25b46" : "#4d5940" }}
+            style={{ borderColor: state === "denied" ? "#c25b46" : "var(--color-line3)" }}
           >
             <KeyRound size={12} className="shrink-0 text-phosdim" />
             <input

@@ -38,7 +38,7 @@ export const store = {
     }
   },
   /** 清除游戏进度，同时默认保留语言、CRT 和列宽等界面设置。 */
-  wipe(keep: string[] = ["lang", "fx", "col.left", "col.right"]) {
+    wipe(keep: string[] = ["lang", "fx", "phos", "col.left", "col.right"]) {
     try {
       const spared = new Set(keep.map((k) => "netgrid." + k));
       const doomed: string[] = [];
@@ -59,6 +59,10 @@ export const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.leng
 
 export const fillTemplate = (tpl: string, ctx: Record<string, string>) =>
   tpl.replace(/\{(\w+)\}/g, (_, k) => ctx[k] ?? k);
+
+/** Смешать цвет с прозрачностью — работает и для hex, и для CSS-переменных var(--…). */
+export const alfa = (color: string, pct: number) =>
+  `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
 export const blockBar = (pct: number, width = 10) => {
   const filled = Math.round((pct / 100) * width);

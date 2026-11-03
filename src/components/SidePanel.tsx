@@ -46,7 +46,7 @@ export default function SidePanel({
   return (
     <Panel
       title={t(`tab.${tab}`)}
-      accent={tab === "CHAT" ? "#cfa04b" : tab === "CODEX" ? "#7f95a8" : tab === "CONTACTS" ? "#8f86b8" : "#8fb56d"}
+      accent={tab === "CHAT" ? "#cfa04b" : tab === "CODEX" ? "#7f95a8" : tab === "CONTACTS" ? "#8f86b8" : "var(--color-phos)"}
       className={cn("h-full", hl === "sidepanel" && "tut-ring")}
       bodyClassName="flex min-h-0 flex-col"
       right={
@@ -70,7 +70,7 @@ export default function SidePanel({
               className={cn(
                 "relative flex flex-1 items-center justify-center gap-1 border-r border-line px-1 py-[7px] text-[8.5px] font-bold uppercase tracking-[0.1em] transition-colors last:border-r-0",
                 active
-                  ? "bg-panel text-phosbrite shadow-[inset_0_-2px_0_#8fb56d]"
+                  ? "bg-panel text-phosbrite shadow-[inset_0_-2px_0_var(--color-phos)]"
                   : "text-faint hover:bg-panel2 hover:text-dim",
                 isHl(`tab:${id}` as never) && "tut-ring",
                 gating && hl !== "sidepanel" && !isHl(`tab:${id}` as never) && "tut-dim"

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, FolderClosed, FolderOpen, HardDrive, Radar, ShieldCheck, X } from "lucide-react";
 import { cn } from "../utils/cn";
 import { blockBar } from "../lib/util";
-import { useT } from "../i18n";
+import { pickL, useT } from "../i18n";
 import { StatusDot } from "./chrome";
 import { resolveFile } from "../game/data";
 import { generateVault, resolveScan, vaultTimer, type VaultFS, type VaultFile, type VaultResult } from "../game/vault";
@@ -20,7 +20,7 @@ function highlightKeys(line: string) {
       <strong
         key={i}
         className="px-[3px] font-bold tracking-[0.1em] text-phosbrite"
-        style={{ background: "rgba(143,181,109,0.16)", textShadow: "0 0 8px rgba(143,181,109,0.5)" }}
+        style={{ background: "rgb(var(--phosrgb) / 0.16)", textShadow: "0 0 8px rgb(var(--phosrgb) / 0.5)" }}
       >
         {part}
       </strong>
@@ -76,7 +76,7 @@ export default function DataVault({
   const fileName = useCallback(
     (id: string) => {
       const f = resolveFile(id);
-      return f ? (lang === "ru" ? f.nameRu : f.name) : id;
+      return f ? (pickL(lang, f.name, f.nameRu, f.nameZh)) : id;
     },
     [lang]
   );
@@ -213,7 +213,7 @@ export default function DataVault({
                   onClick={() => setOpenDir(d.id)}
                   className={cn(
                     "flex w-full items-center gap-1.5 border-b border-line/60 px-2 py-[6px] text-left transition-colors",
-                    active ? "bg-phos/12 shadow-[inset_2px_0_0_#8fb56d]" : "hover:bg-panel2"
+                    active ? "bg-phos/12 shadow-[inset_2px_0_0_var(--color-phos)]" : "hover:bg-panel2"
                   )}
                 >
                   {active ? (
@@ -311,7 +311,7 @@ export default function DataVault({
           ) : (
             <>
               <span className="text-faint">{t("dv.hint")}</span>
-              <span className="ml-auto shrink-0" style={{ color: remaining === 0 ? "#8fb56d" : "#77806b" }}>
+              <span className="ml-auto shrink-0" style={{ color: remaining === 0 ? "var(--color-phos)" : "var(--color-dim)" }}>
                 {remaining === 0 ? t("dv.allFound") : t("dv.remaining", { n: remaining })}
               </span>
             </>
@@ -328,13 +328,13 @@ export default function DataVault({
           <div
             onClick={(e) => e.stopPropagation()}
             className="anim-msgin w-[min(460px,94%)] border bg-panel shadow-[0_0_50px_rgba(0,0,0,0.7)]"
-            style={{ borderColor: reader.kind === "payload" ? "#8fb56d88" : "#7f95a888" }}
+            style={{ borderColor: reader.kind === "payload" ? "color-mix(in srgb, var(--color-phos) 53%, transparent)" : "#7f95a888" }}
           >
             <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
-              <StatusDot color={reader.kind === "payload" ? "#8fb56d" : "#7f95a8"} pulse={reader.kind === "payload"} />
+              <StatusDot color={reader.kind === "payload" ? "var(--color-phos)" : "#7f95a8"} pulse={reader.kind === "payload"} />
               <span
                 className="truncate text-[9px] font-bold uppercase tracking-[0.18em]"
-                style={{ color: reader.kind === "payload" ? "#b3d98d" : "#99a18c" }}
+                style={{ color: reader.kind === "payload" ? "var(--color-phosbrite)" : "var(--color-sage)" }}
               >
                 {reader.kind === "payload" ? t("dv.recovered") : t("dv.document")}
               </span>
@@ -342,7 +342,7 @@ export default function DataVault({
             <div className="px-3 py-3">
               <div
                 className="pixel text-[19px] leading-none"
-                style={{ color: reader.kind === "payload" ? "#b3d98d" : "#bcc4ae" }}
+                style={{ color: reader.kind === "payload" ? "var(--color-phosbrite)" : "var(--color-fog)" }}
               >
                 {reader.title}
               </div>
