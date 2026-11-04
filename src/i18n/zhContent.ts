@@ -47,7 +47,7 @@ export const ZH_NODE: Record<string, string> = {
 
   w1p_acc: "湾区接入集线器。96 条线，全在尖叫。",
   w1p_dsv: "Intercell Synthetics 账务主机。23 号访客端口开着。",
-  w1p_res: "地震实验室节点。每小时倒一次震动日志。",
+  w1p_sec: "挡在 Takamuri 货运台前的外置防火墙。拿下它，CRP-P06 就会直接应答。",
   w1p_prv: "Ware 版 BBS。注册基本没戏，积分是必须的。",
   w1p_rly: "海岸中继。盐蚀得厉害，载波死透了。",
   w1p_crp2: "Takamuri Global 货运部。给每个往西走的箱子上账。",

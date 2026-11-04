@@ -49,7 +49,7 @@ const W1_NODES: NetNode[] = [
   /* 太平洋交换区 */
   { id: "w1p_acc", code: "ACC-P01", type: "ACCESS", sector: "w1_pac", x: 316, y: 308, status: "ONLINE", desc: "Bay area access concentrator. 96 lines, all screeching." },
   { id: "w1p_dsv", code: "DSV-P02", type: "DATA SERVER", sector: "w1_pac", x: 395, y: 340, status: "ONLINE", desc: "Intercell Synthetics west records host. Guest port 23 open." },
-  { id: "w1p_res", code: "RES-P03", type: "RESEARCH", sector: "w1_pac", x: 320, y: 405, status: "ONLINE", desc: "Seismic lab node. Uploads tremor logs hourly." },
+  { id: "w1p_sec", code: "SEC-P03", type: "SECURITY", sector: "w1_pac", x: 302, y: 424, status: "ONLINE", desc: "External firewall appliance fronting the Takamuri freight desk. Breach it and CRP-P06 opens." },
   { id: "w1p_prv", code: "PRV-P04", type: "PRIVATE", sector: "w1_pac", x: 420, y: 418, status: "ONLINE", desc: "Warez BBS. Registration improbable, leech ratio enforced." },
   { id: "w1p_rly", code: "RLY-P05", type: "RELAY", sector: "w1_pac", x: 350, y: 462, status: "OFFLINE", desc: "Coastal relay. Salt corrosion, carrier dead." },
   { id: "w1p_crp2", code: "CRP-P06", type: "CORPORATE", sector: "w1_pac", x: 318, y: 362, status: "ONLINE", desc: "Takamuri Global freight desk. Indexes every crate that moves west." },
@@ -76,12 +76,12 @@ const W1_NODES: NetNode[] = [
   { id: "w1g_prv2", code: "PRV-G05", type: "PRIVATE", sector: "w1_gulf", x: 710, y: 575, status: "RESTRICTED", desc: "Military reservation gateway. Test range traffic only." },
 
   /* Gexogen Medical：每个扇区一处诊所节点 */
-  { id: "w1a_gex", code: "GEX-X07", type: "CORPORATE", sector: "w1_arct", x: 222, y: 60, status: "ONLINE", desc: "Gexogen polar clinic. Two staff, one surgeon, a very warm server room." },
-  { id: "w1n_gex", code: "GEX-N07", type: "CORPORATE", sector: "w1_north", x: 625, y: 168, status: "ONLINE", desc: "Gexogen regional clinic. Books every transplant slot north of the lakes." },
-  { id: "w1p_gex", code: "GEX-P07", type: "CORPORATE", sector: "w1_pac", x: 440, y: 300, status: "ONLINE", desc: "Gexogen coastal clinic. Implant fittings by appointment, scoring by algorithm." },
-  { id: "w1m_gex", code: "GEX-C07", type: "CORPORATE", sector: "w1_mid", x: 745, y: 355, status: "ONLINE", desc: "Gexogen inland clinic. The only one for six hundred kilometres." },
-  { id: "w1e_gex", code: "GEX-A07", type: "ARCHIVE", sector: "w1_atl", x: 1085, y: 212, status: "ONLINE", desc: "Gexogen central patient archive. Every clinic on the grid reports here." },
-  { id: "w1g_gex", code: "GEX-G07", type: "CORPORATE", sector: "w1_gulf", x: 818, y: 540, status: "ONLINE", desc: "Gexogen coastal clinic. Storm season doubles the intake." },
+  { id: "w1a_gex", code: "CRP-X09", type: "CORPORATE", sector: "w1_arct", x: 222, y: 60, status: "ONLINE", desc: "Gexogen polar clinic. Two staff, one surgeon, a very warm server room." },
+  { id: "w1n_gex", code: "DSV-N09", type: "DATA SERVER", sector: "w1_north", x: 625, y: 168, status: "ONLINE", desc: "Gexogen regional clinic. Books every transplant slot north of the lakes." },
+  { id: "w1p_gex", code: "RES-P09", type: "RESEARCH", sector: "w1_pac", x: 440, y: 300, status: "ONLINE", desc: "Gexogen coastal clinic. Implant fittings by appointment, scoring by algorithm." },
+  { id: "w1m_gex", code: "CRP-K09", type: "CORPORATE", sector: "w1_mid", x: 745, y: 355, status: "ONLINE", desc: "Gexogen inland clinic. The only one for six hundred kilometres." },
+  { id: "w1e_gex", code: "ARC-A09", type: "ARCHIVE", sector: "w1_atl", x: 1085, y: 212, status: "ONLINE", desc: "Gexogen central patient archive. Every clinic on the grid reports here." },
+  { id: "w1g_gex", code: "SEC-G09", type: "SECURITY", sector: "w1_gulf", x: 818, y: 540, status: "ONLINE", desc: "Gexogen coastal clinic. Storm season doubles the intake." },
 
   /* 独立网格：与既有节点互不相连，入口位于 MIDLAND 中部 */
   { id: "w1m_z01", code: "ACC-Z01", type: "ACCESS", sector: "w1_mid", x: 670, y: 270, status: "ONLINE", desc: "Unlisted concentrator. It answers, but not to anything on the public map." },
@@ -103,11 +103,10 @@ const W1_LINKS: NetLink[] = [
   { a: "w1n_arc", b: "w1n_rly", state: "weak" },
   /* 太平洋区域 */
   { a: "w1p_acc", b: "w1p_dsv", state: "stable" },
-  { a: "w1p_acc", b: "w1p_res", state: "stable" },
   { a: "w1p_dsv", b: "w1p_prv", state: "weak" },
-  { a: "w1p_res", b: "w1p_rly", state: "down" },
+  { a: "w1p_rly", b: "w1p_sec", state: "weak" },
   { a: "w1p_prv", b: "w1p_rly", state: "weak" },
-  { a: "w1p_res", b: "w1p_crp2", state: "stable" },
+  { a: "w1p_sec", b: "w1p_crp2", state: "stable" },
   { a: "w1p_crp2", b: "w1p_dsv", state: "weak" },
   /* 中央区域 */
   { a: "w1m_rly", b: "w1m_sec", state: "weak" },
@@ -220,12 +219,12 @@ const WL_NODES: NetNode[] = [
   { id: "wlc_res", code: "RES-CA03", type: "RESEARCH", sector: "wl_cape", x: 510, y: 590, status: "UNKNOWN", desc: "Penguin census beacon. Someone taught it to ping." },
 
   /* Gexogen Medical：每个扇区一处诊所节点 */
-  { id: "wlq_gex", code: "GEX-Q07", type: "CORPORATE", sector: "wl_eq", x: 175, y: 165, status: "ONLINE", desc: "Gexogen equatorial clinic. The waiting list is longer than the coastline." },
-  { id: "wlz_gex", code: "GEX-M07", type: "CORPORATE", sector: "wl_amz", x: 560, y: 300, status: "ONLINE", desc: "Gexogen river clinic. Reached by boat, billed by satellite." },
-  { id: "wld_gex", code: "GEX-A07B", type: "CORPORATE", sector: "wl_and", x: 262, y: 430, status: "ONLINE", desc: "Gexogen highland clinic. Altitude surcharge applied to every procedure." },
-  { id: "wls_gex", code: "GEX-S07", type: "CORPORATE", sector: "wl_atl", x: 1100, y: 300, status: "ONLINE", desc: "Gexogen port clinic. Crew physicals, and whatever the crews bring with them." },
-  { id: "wlp_gex", code: "GEX-P07B", type: "CORPORATE", sector: "wl_pam", x: 620, y: 550, status: "ONLINE", desc: "Gexogen grassland clinic. One ambulance, four hundred kilometres of road." },
-  { id: "wlc_gex", code: "GEX-C07", type: "CORPORATE", sector: "wl_cape", x: 300, y: 690, status: "ONLINE", desc: "Gexogen cape clinic. Staffed in summer, uplinked all year." },
+  { id: "wlq_gex", code: "DSV-Q09", type: "DATA SERVER", sector: "wl_eq", x: 175, y: 165, status: "ONLINE", desc: "Gexogen equatorial clinic. The waiting list is longer than the coastline." },
+  { id: "wlz_gex", code: "CRP-M09", type: "CORPORATE", sector: "wl_amz", x: 560, y: 300, status: "ONLINE", desc: "Gexogen river clinic. Reached by boat, billed by satellite." },
+  { id: "wld_gex", code: "RES-D09", type: "RESEARCH", sector: "wl_and", x: 262, y: 430, status: "ONLINE", desc: "Gexogen highland clinic. Altitude surcharge applied to every procedure." },
+  { id: "wls_gex", code: "CRP-S09", type: "CORPORATE", sector: "wl_atl", x: 1100, y: 300, status: "ONLINE", desc: "Gexogen port clinic. Crew physicals, and whatever the crews bring with them." },
+  { id: "wlp_gex", code: "CRP-W09", type: "CORPORATE", sector: "wl_pam", x: 620, y: 550, status: "ONLINE", desc: "Gexogen grassland clinic. One ambulance, four hundred kilometres of road." },
+  { id: "wlc_gex", code: "RLY-V09", type: "RELAY", sector: "wl_cape", x: 300, y: 690, status: "ONLINE", desc: "Gexogen cape clinic. Staffed in summer, uplinked all year." },
 
   /* 独立网格在南半球的延伸 */
   { id: "wlq_z06", code: "ACC-Z06", type: "ACCESS", sector: "wl_eq", x: 60, y: 145, status: "ONLINE", desc: "Southern door of the shadow grid. Opens only for the northern key." },

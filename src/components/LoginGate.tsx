@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, Globe2, Palette, ScanEye, ShieldAlert, Trash2, TriangleAlert } from "lucide-react";
+import { ChevronRight, Globe2, Palette, ScanEye, ShieldAlert, Trash2, TriangleAlert, UserRound } from "lucide-react";
 import { cn } from "../utils/cn";
 import { StatusDot } from "./chrome";
 import { useT, type Lang } from "../i18n";
 import { store } from "../lib/util";
 import { PHOS_THEMES, nextPhos } from "../lib/phos";
+import Avatar, { AvatarPicker } from "./Avatar";
 
 const BOOT_KEYS = ["login.boot1", "login.boot2", "login.boot3", "login.boot4", "login.boot5"];
 
@@ -168,12 +169,21 @@ export default function LoginGate({
                   </div>
                 </div>
 
+                {/* 头像选择 */}
+                <div className="mt-3.5">
+                  <label className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.26em] text-faint">
+                    <UserRound size={10} /> {t("login.avatar")}
+                  </label>
+                  <AvatarPicker size={34} className="mt-1.5 flex-wrap" />
+                </div>
+
                 {/* 操作员代号 */}
                 <div className="mt-3.5">
                   <label className="block text-[9px] uppercase tracking-[0.26em] text-faint">
                     {t("login.handle")}
                   </label>
                   <div className="mt-1.5 flex items-center gap-2 border border-line3 bg-well px-2.5">
+                    <Avatar id="OP" size={22} className="shrink-0" />
                     <ChevronRight size={12} className="shrink-0 text-phos" />
                     <input
                       ref={inputRef}

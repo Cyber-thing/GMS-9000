@@ -6,11 +6,11 @@ import { TypeGlyphShape } from "./InfoPanels";
 import { alfa, blockBar } from "../lib/util";
 import { pickL, useT } from "../i18n";
 import { useGame } from "../game/state";
-import { CFG, NODE_META, factionById, filesOfNode } from "../game/data";
+import { CFG, NODE_META, SECTOR_REP, factionById, filesOfNode } from "../game/data";
+import { ALL_NODES } from "../data/regions";
 import { usesVault } from "../game/vault";
 import { usesRouting } from "../game/routing";
-import { NEIGHBOURS } from "../game/data";
-import { ALL_NODES } from "../data/regions";
+import { usesHexwall } from "../game/hexwall";
 import { useTut } from "../game/tutorial";
 
 export const NODE_STATE_COLOR: Record<string, string> = {
@@ -94,6 +94,7 @@ export default function NodeDossier({
   const corp = node.type === "CORPORATE";
   const sealed = !!meta.password;
   const routing = usesRouting(node.type, meta.warden);
+  const hexwall = usesHexwall(node.type, meta.warden);
   const wrecked = g.sabotaged.includes(node.id);
   const burning = g.burning.includes(node.id);
   /* 部分主机只有在收到对应合同时才会显示破坏操作。 */
@@ -102,22 +103,35 @@ export default function NodeDossier({
     (meta.rep + meta.warden * CFG.repPerWarden) * (breached ? CFG.repeatMult : 1)
   );
 
-  /* 已攻陷的相邻节点，用于说明这个节点为什么还打不开 */
-  const openedBy = (NEIGHBOURS[node.id] ?? [])
-    .map((id) => ALL_NODES.find((x) => x.id === id))
-    .filter((x): x is NonNullable<typeof x> => !!x);
+  /* ---- 访问条件：把所有真实门槛都列出来 ----
+     扇区声望门槛、节点自身的声望/前置要求，以及「需要先攻破邻居」。
+     邻居的具体编号不再公开——玩家应该自己去找路。 */
+  const sectorGate = SECTOR_REP[node.sector] ?? 0;
+  const repNeeded = Math.max(
+    g.rep < sectorGate ? sectorGate : 0,
+    meta.req?.rep && g.rep < meta.req.rep ? meta.req.rep : 0
+  );
+  /* 还没解锁路由（既不是起点，也没有被邻居打开） */
+  const needsRoute = st === "LOCKED" || (!meta.start && g.nodeStates[node.id] !== "AVAILABLE" && st !== "COMPROMISED");
 
-  const condition = meta.req?.rep
-    ? t("dos.condRep", { n: meta.req.rep })
-    : meta.req?.node
-      ? t("dos.condNode", { code: meta.req.node })
-      : st === "LOCKED"
-        ? openedBy.length
-          ? t("dos.condNeighbour", { list: openedBy.slice(0, 3).map((x) => x.code).join(", ") })
-          : t("dos.condLocked")
-        : t("dos.condOpen");
+  const conditions: string[] = [];
+  if (repNeeded > 0) conditions.push(t("dos.condRep", { n: repNeeded }));
+  if (needsRoute) conditions.push(t("dos.condLocked"));
+  if (meta.req?.node && g.nodeStates[meta.req.node] !== "COMPROMISED") {
+    /* 外置防火墙要单独说明：告诉玩家挡路的是哪台 SEC 设备。 */
+    if (meta.firewall) {
+      const fw = ALL_NODES.find((x) => x.id === meta.firewall);
+      conditions.push(t("dos.condFirewall", { code: fw?.code ?? meta.firewall }));
+    } else {
+      conditions.push(t("dos.condPrereq"));
+    }
+  }
+  if (!conditions.length && (st === "RESTRICTED" || st === "LOCKED")) {
+    /* 状态受限但上面没捕捉到原因时，至少说明是声望不足 */
+    conditions.push(t("dos.condRepAny"));
+  }
   /* 仅在存在真实限制或节点暂不可达时显示访问条件。 */
-  const gated = !!meta.req || st === "LOCKED" || st === "RESTRICTED";
+  const gated = conditions.length > 0;
 
   return (
     <Panel
@@ -177,8 +191,7 @@ export default function NodeDossier({
             onClick={() => onHack(node.id)}
             className={cn(
               "mt-2.5 flex w-full items-center justify-center gap-2 border px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.16em] transition-all",
-              chk.ok && !breached &&
-                "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink hover:shadow-[0_0_14px_rgb(var(--phosrgb) / 0.25)]",
+              chk.ok && !breached && "genius-act",
               chk.ok && breached &&
                 "border-viole/60 bg-viole/10 text-viole hover:bg-viole/25 hover:text-fog",
               !chk.ok && "cursor-not-allowed border-line text-faint",
@@ -195,7 +208,9 @@ export default function NodeDossier({
                   ? t("dos.sealed")
                   : routing
                     ? t("dos.routing")
-                    : t("dos.hack")
+                    : hexwall
+                      ? t("dos.hexwall")
+                      : t("dos.hack")
               : chk.reason === "LOCKED"
                 ? t("dos.lockedBtn")
                 : chk.reason === "RESTRICTED"
@@ -241,10 +256,12 @@ export default function NodeDossier({
           >
             <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("dos.cond")}</div>
             <div
-              className="mt-[2px] text-[10px] leading-snug"
+              className="mt-[2px] space-y-[2px] text-[10px] leading-snug"
               style={{ color: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "var(--color-dim)" : "var(--color-sage)" }}
             >
-              {condition}
+              {conditions.map((c, i) => (
+                <div key={i}>· {c}</div>
+              ))}
             </div>
           </div>
         )}

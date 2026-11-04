@@ -54,9 +54,9 @@ export const TYPE_GLYPH: Record<NodeType, string> = {
   ACCESS: "circle",
   RELAY: "trapezoid",
   "DATA SERVER": "box",
-  CORPORATE: "hex",
+  CORPORATE: "pent",
   PRIVATE: "diamond",
   ARCHIVE: "tri",
   RESEARCH: "oct",
-  SECURITY: "pent",
+  SECURITY: "hex",
 };

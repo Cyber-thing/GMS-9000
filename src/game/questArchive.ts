@@ -83,6 +83,7 @@ export const OP17_DELIVER: Beat[] = [
   {
     id: "q5",
     from: "op17",
+    payout: 200,          // = ARCHIVE_PAY.base，金额随消息一起显示
     line: L(
       "Thank you. The payment is yours.",
       "Спасибо. Оплата твоя.",
@@ -94,11 +95,8 @@ export const OP17_DELIVER: Beat[] = [
 export const OP17_FORK: Beat = {
   id: "q6",
   from: "op17",
-  line: L(
-    "Anything else I should know about?",
-    "Что-нибудь ещё, что мне следует знать?",
-    "还有什么我该知道的吗？"
-  ),
+  /* 没有台词——只留两个按钮让玩家自己决定。 */
+  line: L("", "", ""),
   choices: [
     { id: "tell", en: "Tell him about the termination list", ru: "Рассказать о списках на увольнение", zh: "把裁员名单的事告诉他" },
     { id: "hide", en: "Say nothing", ru: "Ничего не говорить", zh: "什么都不说" },

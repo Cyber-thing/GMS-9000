@@ -44,6 +44,7 @@ function NodeMarker({
   connected,
   connecting,
   dimmed,
+  side,
   onSelect,
   burst,
   spot,
@@ -60,6 +61,8 @@ function NodeMarker({
   spot: boolean;
   dim: boolean;
   burning: boolean;
+  /** 标签摆放方向，由上层按邻居密度算好，避免互相压字。 */
+  side: "right" | "left" | "top" | "bottom";
   onSelect: () => void;
 }) {
   const { t } = useT();
@@ -72,8 +75,6 @@ function NodeMarker({
         : STATUS_COLOR[status];
 
   const glyph = TYPE_GLYPH[node.type];
-  const labelLeft = node.x > 1030;
-  const labelTop = node.y < 48;
 
   return (
     <button
@@ -94,7 +95,7 @@ function NodeMarker({
         opacity: dimmed ? 0.32 : 1,
       }}
     >
-      <span className="relative block h-[26px] w-[26px]">
+      <span className="relative block h-[20px] w-[20px]">
         {burst && (
           <span
             className="anim-ringout pointer-events-none absolute inset-0 border"
@@ -113,10 +114,10 @@ function NodeMarker({
             style={{ borderColor: alfa(color, 60) }}
           />
         )}
-        {selected && <Brackets color={connecting ? CH_COLORS.amber : CH_COLORS.phos} size={9} />}
+        {selected && <Brackets color={connecting ? CH_COLORS.amber : CH_COLORS.phos} size={7} />}
         <span
           className={cn(
-            "absolute left-1/2 top-1/2 block h-[12px] w-[12px] -translate-x-1/2 -translate-y-1/2 border transition-transform duration-150 group-hover:scale-125",
+            "absolute left-1/2 top-1/2 block h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 border transition-transform duration-150 group-hover:scale-125",
             shapeClass(glyph),
             connecting && "animate-softpulse",
             status === "RESTRICTED" && !connected && !connecting && "anim-denote"
@@ -127,23 +128,26 @@ function NodeMarker({
             background:
               status === "LOCKED"
                 ? "transparent"
-                : `${color}${connected ? "66" : "2e"}`,
-            boxShadow: selected || connected ? `0 0 9px ${color}59` : "none",
+                : alfa(color, connected ? 40 : 18),
+            boxShadow: selected || connected ? `0 0 7px ${alfa(color, 35)}` : "none",
           }}
         >
           {glyph === "box" && (
-            <span className="absolute inset-[3px]" style={{ background: `${color}59` }} />
+            <span className="absolute inset-[2px]" style={{ background: alfa(color, 35) }} />
           )}
         </span>
       </span>
       <span
         className={cn(
-          "absolute whitespace-nowrap text-[9px] leading-none tracking-[0.12em]",
-          labelTop
-            ? "left-1/2 top-full mt-[7px] -translate-x-1/2"
-            : labelLeft
-              ? "right-full top-1/2 mr-[3px] -translate-y-1/2"
-              : "left-full top-1/2 ml-[3px] -translate-y-1/2",
+          "pointer-events-none absolute whitespace-nowrap rounded-[1px] bg-ink/80 px-[2px] py-[1px] text-[7px] leading-none tracking-[0.06em] transition-colors",
+          "group-hover:z-30 group-hover:bg-ink",
+          side === "bottom"
+            ? "left-1/2 top-full mt-[4px] -translate-x-1/2"
+            : side === "top"
+              ? "bottom-full left-1/2 mb-[4px] -translate-x-1/2"
+              : side === "left"
+                ? "right-full top-1/2 mr-[3px] -translate-y-1/2"
+                : "left-full top-1/2 ml-[3px] -translate-y-1/2",
           selected ? "text-phosbrite" : status === "LOCKED" ? "text-faint" : "text-dim group-hover:text-fog"
         )}
       >
@@ -286,6 +290,29 @@ export default function NetworkMap({
       }),
     [links, nodeIdx, selectedNode, connectingId, statuses]
   );
+
+  /* 标签自动选边：朝邻居最少、且不出画布的一侧展开，避免编号互相压字。 */
+  const labelSides = useMemo(() => {
+    const out: Record<string, "right" | "left" | "top" | "bottom"> = {};
+    const DX = 108, DY = 26;      // 一个标签大致占的范围
+    nodes.forEach((n) => {
+      const score = (dx: number, dy: number) =>
+        nodes.reduce((acc, o) => {
+          if (o.id === n.id) return acc;
+          const tx = n.x + dx, ty = n.y + dy;
+          return Math.abs(o.x - tx) < DX && Math.abs(o.y - ty) < DY ? acc + 1 : acc;
+        }, 0);
+      const cands: { side: "right" | "left" | "top" | "bottom"; pen: number }[] = [
+        { side: "right",  pen: score(DX / 2, 0) + (n.x > MAP_W - 150 ? 6 : 0) },
+        { side: "left",   pen: score(-DX / 2, 0) + (n.x < 150 ? 6 : 0) + 0.3 },
+        { side: "bottom", pen: score(0, DY) + (n.y > MAP_H - 40 ? 6 : 0) + 0.6 },
+        { side: "top",    pen: score(0, -DY) + (n.y < 40 ? 6 : 0) + 0.6 },
+      ];
+      cands.sort((a, b) => a.pen - b.pen);
+      out[n.id] = cands[0].side;
+    });
+    return out;
+  }, [nodes]);
 
   const rulerX = useMemo(() => Array.from({ length: 13 }, (_, i) => i * 100), []);
   const rulerY = useMemo(() => Array.from({ length: 8 }, (_, i) => i * 100), []);
@@ -567,6 +594,7 @@ export default function NetworkMap({
               dimmed={!!selectedSector && n.sector !== selectedSector}
               burst={!!bursts[n.id]}
               burning={g.burning?.includes(n.id) ?? false}
+              side={labelSides[n.id] ?? "right"}
               spot={isHl(`node:${n.id}` as never)}
               dim={gating && !isHl(`node:${n.id}` as never)}
               onSelect={() => { if (!consumedDrag()) onSelectNode(n.id); }}

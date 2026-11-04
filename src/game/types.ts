@@ -56,6 +56,8 @@ export interface NodeMeta {
   passwordFrom?: string;
   /** 仅在满足对应条件时提供。 */
   sabotageGate?: string;
+  /** 外部防火墙节点：必须先攻破它。 */
+  firewall?: string;
 }
 
 export interface DataFile {

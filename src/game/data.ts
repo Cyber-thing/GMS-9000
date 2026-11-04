@@ -91,8 +91,12 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     codex: ["f_intercell", "c_sable"],
     intel: "Payroll routing exposes a shell subsidiary feeding Slayer Incorporated.",
   },
-  w1p_prv: { owner: "scavenger", cls: "UNDERGROUND", warden: 2, rep: 12, files: ["f_scav_list"], codex: ["f_scavenger"] },
-  w1p_res: { owner: "civic", cls: "GOVERNMENT", warden: 2, rep: 10, files: ["f_seismic"] },
+  w1p_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 12, files: ["f_scav_list"], codex: ["f_scavenger"] },
+  w1p_sec: {
+    owner: "takamuri", cls: "CORPORATE", warden: 1, rep: 12,
+    files: ["f_seismic"],
+    intel: "External firewall for the freight desk. Drop it and CRP-P06 answers directly.",
+  },
 
   w1n_rly: { owner: "civic", cls: "PUBLIC", warden: 1, rep: 10 },
   w1n_dsv: {
@@ -117,10 +121,13 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
   w1m_crp: { owner: "intercell", cls: "CORPORATE", warden: 4, rep: 22, codex: ["c_sable"], intel: "Clearing host for the shell subsidiary. Shutting it down would be felt in two boardrooms." },
   w1p_crp2: {
     owner: "takamuri", cls: "CORPORATE", warden: 3, rep: 18, codex: ["f_takamuri"],
+    /* 外层 SEC 防火墙：不先拿下 SEC-P03 就连不进来 */
+    req: { node: "w1p_sec" },
+    firewall: "w1p_sec",
     sabotageGate: "sb_projector",
     intel: "Freight desk and the hall it books. Projector rigs hang off the same controller as the index.",
   },
-  w1m_prv: { owner: "scavenger", cls: "UNDERGROUND", warden: 2, rep: 14, files: ["f_cbgate"], codex: ["c_koma"] },
+  w1m_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 14, files: ["f_cbgate"], codex: ["c_koma"] },
 
   w1e_crp: {
     owner: "agogee", cls: "CORPORATE", warden: 4, rep: 24,
@@ -150,7 +157,7 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     intel: "Mission tapes predate the grid. Someone was already transmitting in 1961.",
   },
   wlz_sec: { owner: "slayer", cls: "CORPORATE", warden: 5, rep: 30, restricted: true, req: { rep: 55 }, files: ["f_concession"], codex: ["n_conflict"] },
-  wlz_prv: { owner: "scavenger", cls: "UNDERGROUND", warden: 3, rep: 16, files: ["f_jungle"], codex: ["c_count"] },
+  wlz_prv: { owner: "indep", cls: "UNDERGROUND", warden: 3, rep: 16, files: ["f_jungle"], codex: ["c_count"] },
   wls_crp: { owner: "harbor", cls: "GOVERNMENT", warden: 3, rep: 16, files: ["f_manifest"], codex: ["f_harbor"] },
   wlc_rly: { owner: "indep", cls: "UNDERGROUND", warden: 4, rep: 24, files: ["f_capeecho"], codex: ["i_reverse"], intel: "Packets return reversed. The cape relay answers in a language nobody typed." },
   wld_res: { owner: "civic", cls: "GOVERNMENT", warden: 3, rep: 14, files: ["f_skydump"] },
@@ -215,6 +222,7 @@ export const NODE_META: Record<string, NodeMeta> = (() => {
       password: o.password,
       passwordFrom: o.passwordFrom,
       sabotageGate: o.sabotageGate,
+      firewall: o.firewall,
     };
   });
   return out;
@@ -268,8 +276,8 @@ const F = (
 export const FILES: DataFile[] = [
   F("f_icx_payroll", "ICX-PAYROLL-Q4", "ICX-ЗАРПЛАТЫ-Q4", "ICX-薪资单-Q4", "CORPORATE DATA", "w1p_dsv", "intercell", 420),
   F("f_icx_memo", "ICX-INTERNAL-MEMO", "ICX-ВНУТР-ЗАПИСКА", "ICX-内部备忘", "CLASSIFIED DATA", "w1p_dsv", "intercell", 560),
-  F("f_scav_list", "SCAV-DROP-LIST", "SCAV-СПИСОК-ТОЧЕК", "SCAV-投放点清单", "INTEL", "w1p_prv", "scavenger", 260),
-  F("f_seismic", "SEISMIC-LOGS-88", "СЕЙСМОЖУРНАЛ-88", "地震日志-88", "INTEL", "w1p_res", "civic", 140),
+  F("f_scav_list", "SCAV-DROP-LIST", "SCAV-СПИСОК-ТОЧЕК", "SCAV-投放点清单", "INTEL", "w1p_prv", "indep", 260),
+  F("f_seismic", "FIREWALL-RULESET-P03", "ПРАВИЛА-ФАЙРВОЛЛА-P03", "防火墙规则集-P03", "INTEL", "w1p_sec", "takamuri", 140),
   F("f_meters", "NORTHLINE-METERS", "NORTHLINE-СЧЁТЧИКИ", "NORTHLINE-电表档", "CORPORATE DATA", "w1n_dsv", "civic", 300),
   F("f_wardenpass", "STAFF-NOTE-DONOTKEEP", "СЛУЖЕБНАЯ-ЗАПИСКА", "内部字条-勿留档", "INTEL", "w1n_dsv", "civic", 180),
   F("f_termlist", "TERMINATION-SCHEDULE-30Y", "ГРАФИК-УВОЛЬНЕНИЙ-30Л", "裁撤时间表-30年", "CLASSIFIED DATA", "w1n_arc", "intercell", 1400),
@@ -277,7 +285,7 @@ export const FILES: DataFile[] = [
   F("f_taparchive", "TAPE-ARCHIVE-93", "ЛЕНТ-АРХИВ-93", "磁带档案-93", "CLASSIFIED DATA", "w1n_arc", "civic", 480),
   F("f_warden_keyset", "WARDEN-KEYSET", "WARDEN-НАБОР-КЛЮЧЕЙ", "WARDEN-密钥组", "CLASSIFIED DATA", "w1m_sec", "slayer", 900),
   F("f_grain", "GRAIN-FUTURES", "ЗЕРНОВЫЕ-ФЬЮЧЕРСЫ", "谷物期货", "CORPORATE DATA", "w1m_dsv", "slayer", 280),
-  F("f_cbgate", "CB-GATE-DUMP", "CB-ШЛЮЗ-ДАМП", "CB网关-转储", "PERSONAL DATA", "w1m_prv", "scavenger", 180),
+  F("f_cbgate", "CB-GATE-DUMP", "CB-ШЛЮЗ-ДАМП", "CB网关-转储", "PERSONAL DATA", "w1m_prv", "indep", 180),
   F("f_agg_ledger", "AGOGEE-LEASE-LEDGER", "AGOGEE-РЕЕСТР-АРЕНДЫ", "AGOGEE-租赁台账", "CORPORATE DATA", "w1e_crp", "agogee", 640),
   F("f_watchlog", "WATCHDOG-LOGS", "ЖУРНАЛ-СТОРОЖА", "看门狗日志", "CLASSIFIED DATA", "w1e_sec", "agogee", 520),
   F("f_fin_mirror", "FIN-MIRROR-0200", "ФИН-ЗЕРКАЛО-0200", "金融镜像-0200", "CORPORATE DATA", "w1e_dsv", "agogee", 340),
@@ -287,7 +295,7 @@ export const FILES: DataFile[] = [
   F("f_aurora", "AURORA-TELEMETRY", "ТЕЛЕМЕТРИЯ-СИЯНИЯ", "极光遥测", "INTEL", "w1a_res", "civic", 200),
   F("f_mission", "MISSION-TAPES-61", "МИССИОНЕР-ЛЕНТЫ-61", "传教士磁带-61", "CLASSIFIED DATA", "wlz_arc", "indep", 760),
   F("f_concession", "CONCESSION-GRID-MAP", "КАРТА-КОНЦЕССИИ", "林区特许地图", "CLASSIFIED DATA", "wlz_sec", "slayer", 820),
-  F("f_jungle", "JUNGLE-HOST-KEYS", "КЛЮЧИ-ХОСТА-ДЖУНГЛЕЙ", "丛林主机密钥", "PERSONAL DATA", "wlz_prv", "scavenger", 240),
+  F("f_jungle", "JUNGLE-HOST-KEYS", "КЛЮЧИ-ХОСТА-ДЖУНГЛЕЙ", "丛林主机密钥", "PERSONAL DATA", "wlz_prv", "indep", 240),
   F("f_manifest", "PORT-MANIFESTS", "ПОРТОВЫЕ-МАНИФЕСТЫ", "港口舱单", "CORPORATE DATA", "wls_crp", "harbor", 320),
   F("f_capeecho", "CAPE-REVERSE-ECHO", "ЭХО-МЫСА-ОБРАТНОЕ", "岬角-倒置回波", "INTEL", "wlc_rly", "indep", 540),
   F("f_skydump", "OBSERVATORY-SKYDUMP", "ВЫГРУЗКА-НЕБА", "天文台-夜空转储", "INTEL", "wld_res", "civic", 220),

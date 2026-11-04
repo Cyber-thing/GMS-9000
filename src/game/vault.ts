@@ -381,6 +381,12 @@ export function generateVault(nodeId: string, ownedFiles: string[], burnedFiles:
   return { volume: theme.vol, folders, payloads: pending };
 }
 
+/** 仓库里任何一份文件的正文——用于「状态 → 数据仓库」的阅读窗口。 */
+export function payloadTextOf(fileId: string, lang: Lang): string {
+  const pt = PAYLOAD_TEXT[fileId];
+  return pt ? pickL(lang, pt[0], pt[1], pt[2]) : genericPayload(lang);
+}
+
 export function resolveScan(
   file: VaultFile,
   nodeId: string,

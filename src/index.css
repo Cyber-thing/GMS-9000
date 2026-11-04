@@ -31,6 +31,11 @@
   --color-phos: #8fb56d;
   --color-phosdim: #5f7a4b;
   --color-phosbrite: #b3d98d;
+  /* Акцент кнопки GENIUS — всегда контрастен основному люминофору */
+  --color-act: #cfa04b;
+  --color-actdim: #8f6f36;
+  --color-actbrite: #ecc481;
+  --act-rgb: 207 160 75;
   --color-amber: #cfa04b;
   --color-amberdim: #8f6f36;
   --color-oxide: #b36a52;
@@ -81,6 +86,10 @@ html[data-phos="magenta"] {
   --color-phos: #c977b0;
   --color-phosdim: #8e537e;
   --color-phosbrite: #e2a5cf;
+  --color-act: #76c8a8;
+  --color-actdim: #4d8a72;
+  --color-actbrite: #a6e6cd;
+  --act-rgb: 118 200 168;
 
   --phosrgb: 201 119 176;
   --sel-fg: #f3e4ef;
@@ -116,6 +125,10 @@ html[data-phos="blue"] {
   --color-phos: #6db3d2;
   --color-phosdim: #4a7c96;
   --color-phosbrite: #a5d9ec;
+  --color-act: #d3a254;
+  --color-actdim: #97733c;
+  --color-actbrite: #ecc481;
+  --act-rgb: 211 162 84;
 
   --phosrgb: 109 179 210;
   --sel-fg: #e2f0f8;
@@ -151,6 +164,10 @@ html[data-phos="red"] {
   --color-phos: #cf6b62;
   --color-phosdim: #964c48;
   --color-phosbrite: #eb9a90;
+  --color-act: #d8aa5c;
+  --color-actdim: #9c7940;
+  --color-actbrite: #f0cb8c;
+  --act-rgb: 216 170 92;
 
   --phosrgb: 207 107 98;
   --sel-fg: #f9e7e4;
@@ -186,6 +203,10 @@ html[data-phos="amber"] {
   --color-phos: #d3a254;
   --color-phosdim: #97733c;
   --color-phosbrite: #ecc481;
+  --color-act: #8fb56d;
+  --color-actdim: #5f7a4b;
+  --color-actbrite: #b3d98d;
+  --act-rgb: 143 181 109;
 
   --phosrgb: 211 162 84;
   --sel-fg: #f6ecd5;
@@ -351,9 +372,11 @@ html[lang="zh-CN"] .blocksbar {
   font-family: var(--font-blocks) !important;
 }
 
+/* Подсветка целей обучения — тем же контрастным акцентом, что и GENIUS:
+   в зелёной/синей/красной схеме янтарная, в янтарной зелёная, в мадженте мятная. */
 @keyframes tutpulse {
-  0%, 100% { box-shadow: 0 0 0 1px #cfa04b, 0 0 14px rgba(207,160,75,0.35); }
-  50%      { box-shadow: 0 0 0 2px #e8c478, 0 0 24px rgba(207,160,75,0.6); }
+  0%, 100% { box-shadow: 0 0 0 1px var(--color-act), 0 0 14px rgb(var(--act-rgb) / 0.35); }
+  50%      { box-shadow: 0 0 0 2px var(--color-actbrite), 0 0 24px rgb(var(--act-rgb) / 0.6); }
 }
 
 @keyframes ringshake {
@@ -367,8 +390,8 @@ html[lang="zh-CN"] .blocksbar {
 .anim-ring-shake { animation: ringshake 0.9s ease-in-out infinite; }
 
 @keyframes callglow {
-  0%, 100% { box-shadow: 0 0 30px rgba(207,160,75,0.18); }
-  50%      { box-shadow: 0 0 56px rgba(207,160,75,0.4); }
+  0%, 100% { box-shadow: 0 0 30px rgb(var(--act-rgb) / 0.18); }
+  50%      { box-shadow: 0 0 56px rgb(var(--act-rgb) / 0.4); }
 }
 .anim-call-glow { animation: callglow 1.6s ease-in-out infinite; }
 
@@ -384,6 +407,58 @@ html[lang="zh-CN"] .blocksbar {
   pointer-events: none;
   transition: opacity 200ms ease;
 }
+
+/* ---------- GENIUS：主操作按钮 ----------
+   在每套配色里都用对比色，保证它永远是屏幕上最显眼的按钮。 */
+.genius-act {
+  border-color: var(--color-act);
+  background: rgb(var(--act-rgb) / 0.16);
+  color: var(--color-actbrite);
+  box-shadow: 0 0 0 1px rgb(var(--act-rgb) / 0.25), 0 0 16px rgb(var(--act-rgb) / 0.2);
+}
+.genius-act:hover {
+  background: var(--color-act);
+  color: var(--color-ink);
+  box-shadow: 0 0 22px rgb(var(--act-rgb) / 0.5);
+}
+
+/* ---------- HEXWALL：瓦片湮灭闪光 ---------- */
+@keyframes hexburst {
+  0%   { opacity: 1; transform: scale(1); }
+  45%  { opacity: 1; transform: scale(1.18); }
+  100% { opacity: 0; transform: scale(0.72); }
+}
+.anim-hexburst {
+  animation: hexburst 0.4s ease-out forwards;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* ---------- 头像动画 ---------- */
+@keyframes glitchA {
+  0%, 92%, 100% { transform: translate(0, 0); opacity: 0; }
+  93%           { transform: translate(-2px, 1px); opacity: 0.85; }
+  96%           { transform: translate(2px, -1px); opacity: 0.6; }
+}
+@keyframes glitchB {
+  0%, 90%, 100% { transform: translate(0, 0); opacity: 0; }
+  91%           { transform: translate(2px, -1px); opacity: 0.8; }
+  97%           { transform: translate(-1px, 2px); opacity: 0.5; }
+}
+@keyframes glitchBar {
+  0%   { top: -10%; opacity: 0; }
+  8%   { opacity: 0.9; }
+  92%  { opacity: 0.9; }
+  100% { top: 110%; opacity: 0; }
+}
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-1px) scale(1.03); }
+}
+.anim-glitch-a { animation: glitchA 3.1s steps(1, end) infinite; }
+.anim-glitch-b { animation: glitchB 2.3s steps(1, end) infinite; }
+.anim-glitch-bar { animation: glitchBar 2.8s linear infinite; }
+.anim-breathe { animation: breathe 3.4s ease-in-out infinite; }
 
 .tut-ring {
   position: relative;

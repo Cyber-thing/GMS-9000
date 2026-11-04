@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Activity, Check, Languages, LogOut, MonitorDot, Palette, Pencil, ScanEye, X } from "lucide-react";
 import { clockNow, fmtUptime, randInt, store } from "../lib/util";
 import { phosLabel } from "../lib/phos";
+import Avatar, { AvatarPicker } from "./Avatar";
 import { StatusDot } from "./chrome";
 import { useT } from "../i18n";
 import { useGame, CFG } from "../game/state";
@@ -70,7 +71,7 @@ export default function TopBar({
   }, [boot]);
 
   /* 网络活动：吞吐量和柱状指示器会持续波动。 */
-  const [kb, setKb] = useState(4.2);
+  const [kb, setKb] = useState(4.2);   // Tb/s
   const [bars, setBars] = useState<number[]>([3, 5, 2, 6, 4, 7, 3]);
   useEffect(() => {
     const t = setInterval(() => {
@@ -84,6 +85,7 @@ export default function TopBar({
   }, []);
 
   /* 内联编辑操作员代号。 */
+  const [picking, setPicking] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(operator);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -167,11 +169,29 @@ export default function TopBar({
             />
           ))}
         </div>
-        <span className="w-[52px] tabular-nums text-[10px] text-dim">{kb.toFixed(1)}kb/s</span>
+        <span className="w-[52px] tabular-nums text-[10px] text-dim">{kb.toFixed(1)}Tb/s</span>
       </div>
 
       {/* 操作员代号 */}
-      <div className="flex items-center gap-2 border-l border-line2 px-3">
+      <div className="relative flex items-center gap-2 border-l border-line2 px-3">
+        <button
+          onClick={() => setPicking((v) => !v)}
+          title={t("top.avatarTip")}
+          className="shrink-0 transition-opacity hover:opacity-80"
+        >
+          <Avatar id="OP" size={24} />
+        </button>
+        {picking && (
+          <>
+            <span className="fixed inset-0 z-40" onClick={() => setPicking(false)} />
+            <div className="anim-msgin absolute left-1 top-full z-50 mt-1 border border-line3 bg-panel p-2 shadow-[0_10px_30px_rgba(0,0,0,0.85)]">
+              <div className="mb-1.5 whitespace-nowrap text-[8px] uppercase tracking-[0.2em] text-faint">
+                {t("login.avatar")}
+              </div>
+              <AvatarPicker size={30} />
+            </div>
+          </>
+        )}
         <span className="hidden text-[8.5px] uppercase tracking-[0.2em] text-faint md:inline">{t("top.operator")}</span>
         {editing ? (
           <span className="flex items-center gap-1">

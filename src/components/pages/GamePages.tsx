@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownToLine, ArrowLeft, Banknote, BookLock, CheckCircle2, CircleDollarSign, Database,
-  FileLock2, Handshake, Star, TrendingUp, Upload, UserRound, Zap,
+  FileLock2, FileText, Handshake, Star, TrendingUp, Upload, UserRound, X, Zap,
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { pickL, useT } from "../../i18n";
 import { useGame } from "../../game/state";
+import { payloadTextOf } from "../../game/vault";
 import {
   CODEX, CONTACTS, CONTRACTS, FACTIONS, SCRIPTS, UPGRADES,
   codexById, contactById, contractById, factionById, resolveFile,
@@ -14,6 +15,7 @@ import { ALL_NODES } from "../../data/regions";
 import type { CodexCat } from "../../game/types";
 import { useTut } from "../../game/tutorial";
 import RichText from "../RichText";
+import Avatar from "../Avatar";
 
 /* 知识库。 */
 
@@ -211,9 +213,14 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex shrink-0 items-center gap-2 border-b border-line bg-panel2 px-2 py-[5px]">
-          <button onClick={() => setOpen(null)} className="text-dim hover:text-phos">
-            <ArrowLeft size={11} />
+          <button
+            onClick={() => setOpen(null)}
+            title={t("co.back")}
+            className="flex shrink-0 items-center gap-1 border border-[#4a7c96] bg-[#6db3d2]/15 px-2 py-[4px] text-[9px] font-bold uppercase tracking-[0.14em] text-[#a5d9ec] transition-colors hover:bg-[#6db3d2] hover:text-ink"
+          >
+            <ArrowLeft size={12} /> {t("co.back")}
           </button>
+          <Avatar id={c.id} size={22} />
           <span className="text-[10px] font-bold tracking-[0.1em] text-phosbrite">{c.nick}</span>
           <span className="truncate text-[7.5px] uppercase tracking-[0.14em] text-faint">
             {pickL(lang, c.role, c.roleRu, c.roleZh)} · {fac ? (pickL(lang, fac.name, fac.nameRu, fac.nameZh)) : ""}
@@ -238,16 +245,20 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
               !!ct && !!pr && !["COMPLETED", "FAILED"].includes(pr.state) &&
               (m.action === "offer" || m.action === "deliver");
             return (
-              <div key={m.id} ref={liveJob ? offerRef : undefined} className="anim-msgin mb-1.5">
+              <div key={m.id} ref={liveJob ? offerRef : undefined} className="anim-msgin mb-1.5 flex gap-1.5">
+                <Avatar id={mine ? "OP" : (m.from || c.id)} size={18} className="mt-[2px]" />
+                <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-1.5 text-[10.5px] leading-snug">
                   <span className="shrink-0 tabular-nums text-faint">{m.t}</span>
                   <span className={cn("shrink-0 font-bold", mine ? "text-amber" : "text-steel")}>
                     {mine ? t("co.you") : c.nick}
                   </span>
                 </div>
-                <p className={cn("pl-1 text-[10.5px] leading-snug", mine ? "text-[#ddd3ae]" : "text-fog/90")}>
-                  <RichText text={(pickL(lang, m.textEn, m.textRu, m.textZh)) ?? m.text} />
-                </p>
+                {(((pickL(lang, m.textEn, m.textRu, m.textZh)) ?? m.text) || "").trim() !== "" && (
+                  <p className={cn("text-[10.5px] leading-snug", mine ? "text-[#ddd3ae]" : "text-fog/90")}>
+                    <RichText text={(pickL(lang, m.textEn, m.textRu, m.textZh)) ?? m.text} />
+                  </p>
+                )}
 
                 {/* 合同面板 */}
                 {ct && m.action === "offer" && (
@@ -281,9 +292,15 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                         <span className="text-amber">{ct.credits}cr</span> ·{" "}
                         <span className="text-phos">+{ct.rep} REP</span>
                       </div>
-                      <div>
+                      <div className="flex items-center gap-1.5">
                         {t("co.cstate")}:{" "}
-                        <span className="text-viole">{t(`cs.${pr?.state ?? "AVAILABLE"}`)}</span>
+                        {pr && !["AVAILABLE", "COMPLETED", "FAILED"].includes(pr.state) ? (
+                          <span className="border border-phos bg-phos/20 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.12em] text-phosbrite">
+                            ▸ {t("cs.INPROGRESS")}
+                          </span>
+                        ) : (
+                          <span className="text-viole">{t(`cs.${pr?.state ?? "AVAILABLE"}`)}</span>
+                        )}
                       </div>
                     </div>
                     {pr?.state === "AVAILABLE" && (
@@ -343,6 +360,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                     <CheckCircle2 size={10} /> {t("cs.COMPLETED")}
                   </div>
                 )}
+                </div>
               </div>
             );
           })}
@@ -402,7 +420,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
               gating && !isHl(`thread:${c.id}` as never) && "tut-dim"
             )}
           >
-            <UserRound size={13} className="mt-[2px] shrink-0 text-steel" />
+            <Avatar id={c.id} size={28} className="mt-[1px]" />
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[11px] font-bold tracking-[0.08em] text-phosbrite">{c.nick}</span>
@@ -478,6 +496,8 @@ function Row({ k, v, vc }: { k: string; v: React.ReactNode; vc?: string }) {
 export function StatusPage({ operator }: { operator: string }) {
   const { t, lang } = useT();
   const { g, buyUpgrade } = useGame();
+  /* 仓库里的文件可以点开阅读 */
+  const [reading, setReading] = useState<string | null>(null);
 
   const uid = useMemo(() => {
     let h = 0;
@@ -578,16 +598,22 @@ export function StatusPage({ operator }: { operator: string }) {
               const f = resolveFile(id);
               if (!f) return null;
               return (
-                <div key={id} className="flex items-center gap-2 border border-line bg-well px-2 py-[4px]">
+                <button
+                  key={id}
+                  onClick={() => setReading(id)}
+                  title={t("sp.readFile")}
+                  className="group flex w-full items-center gap-2 border border-line bg-well px-2 py-[4px] text-left transition-colors hover:border-phosdim hover:bg-panel2"
+                >
                   <Database size={9} className="shrink-0 text-steel" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[10px] text-fog">{pickL(lang, f.name, f.nameRu, f.nameZh)}</div>
+                    <div className="truncate text-[10px] text-fog group-hover:text-phosbrite">{pickL(lang, f.name, f.nameRu, f.nameZh)}</div>
                     <div className="truncate text-[7.5px] uppercase tracking-[0.12em] text-faint">
                       {t(`dcat.${f.cat}`)}
                     </div>
                   </div>
+                  <FileText size={9} className="shrink-0 text-faint group-hover:text-phos" />
                   <span className="shrink-0 text-[9px] tabular-nums text-amberdim">{f.value}cr</span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -630,6 +656,42 @@ export function StatusPage({ operator }: { operator: string }) {
           );
         })}
       </Section>
+
+      {/* ---- 阅读窗口 ---- */}
+      {reading && (() => {
+        const f = resolveFile(reading);
+        if (!f) return null;
+        return (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-ink/80 p-4" onClick={() => setReading(null)}>
+            <div
+              className="anim-msgin w-[min(560px,100%)] border-2 border-line3 bg-panel shadow-[0_10px_40px_rgba(0,0,0,0.9)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-2 border-b border-line2 bg-header px-2.5 py-[6px]">
+                <FileText size={11} className="text-phos" />
+                <span className="truncate text-[10px] font-bold tracking-[0.12em] text-phosbrite">
+                  {pickL(lang, f.name, f.nameRu, f.nameZh)}
+                </span>
+                <span className="ml-auto shrink-0 text-[7.5px] uppercase tracking-[0.16em] text-faint">
+                  {t(`dcat.${f.cat}`)}
+                </span>
+                <button onClick={() => setReading(null)} className="shrink-0 text-dim hover:text-oxide">
+                  <X size={12} />
+                </button>
+              </div>
+              <div className="max-h-[52vh] overflow-y-auto px-3 py-3">
+                <p className="whitespace-pre-wrap text-[10.5px] leading-relaxed text-fog/90">
+                  {payloadTextOf(f.id, lang)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 border-t border-line2 bg-soot px-2.5 py-[5px] text-[8px] uppercase tracking-[0.14em] text-faint">
+                <span>{t("dos.owner")}: {(() => { const o = factionById(f.owner); return o ? pickL(lang, o.name, o.nameRu, o.nameZh) : f.owner; })()}</span>
+                <span className="ml-auto text-amberdim">{f.value}cr</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

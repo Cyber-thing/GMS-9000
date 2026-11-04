@@ -13,12 +13,14 @@ import DataVault from "./components/DataVault";
 import BlackMarket from "./components/BlackMarket";
 import Splash from "./components/Splash";
 import RoutingGame from "./components/RoutingGame";
+import HexwallGame from "./components/HexwallGame";
 import WardenPass from "./components/WardenPass";
 import ArchiveWindow from "./components/ArchiveWindow";
 import HackerExchange from "./components/HackerExchange";
 import KeyBanner from "./components/KeyBanner";
 import MessageToast from "./components/MessageToast";
 import { ROUTING_TIERS, usesRouting } from "./game/routing";
+import { HEXWALL_TIERS, usesHexwall } from "./game/hexwall";
 import TutorialCall from "./components/TutorialCall";
 import { MEMO_ASIDE, tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
 import { useColumns } from "./hooks/useColumns";
@@ -147,6 +149,7 @@ export default function App() {
   const [vaultId, setVaultId] = useState<string | null>(null);
   const [marketOpen, setMarketOpen] = useState(false);
   const [routingId, setRoutingId] = useState<string | null>(null);
+  const [hexId, setHexId] = useState<string | null>(null);
   const [passId, setPassId] = useState<string | null>(null);
   const [archiveId, setArchiveId] = useState<string | null>(null);
 
@@ -238,7 +241,23 @@ export default function App() {
   tabRef.current = tab;
 
   const pushChat = useCallback((ch: ChannelId, nick: string, text: string, corp = false) => {
-    setChat((c) => ({ ...c, [ch]: [...c[ch].slice(-119), mkChat(ch, nick, text, false, corp)] }));
+    let dropped = false;
+    setChat((c) => {
+      const list = c[ch];
+      /* Не повторяем одну и ту же реплику подряд и не даём одному нику
+         дважды подряд написать один и тот же текст в пределах окна. */
+      const last = list[list.length - 1];
+      const recent = list.slice(-6);
+      if (
+        (last && last.text === text) ||
+        recent.some((m) => m.nick === nick && m.text === text)
+      ) {
+        dropped = true;
+        return c;
+      }
+      return { ...c, [ch]: [...list.slice(-119), mkChat(ch, nick, text, false, corp)] };
+    });
+    if (dropped) return;
     setChUnread((u) =>
       activeChRef.current === ch && tabRef.current === "CHAT" ? u : { ...u, [ch]: Math.min(99, u[ch] + 1) }
     );
@@ -430,6 +449,12 @@ export default function App() {
       }
 
       const metaR = NODE_META[id];
+      /* SEC 节点：防火墙晶格小游戏 */
+      if (usesHexwall(n.type, metaR.warden)) {
+        setHexId(id);
+        print(t("hx.logStart", { code: n.code }), "ok");
+        return;
+      }
       if (usesRouting(n.type, metaR.warden)) {
         setRoutingId(id);
         print(t("t.rtStart", { code: n.code }), "ok");
@@ -558,6 +583,18 @@ export default function App() {
     if (tutStepId === "world" && inRegion) tutSatisfy("region:west1");
     if (tutStepId === "contacts" && tab === "CONTACTS") tutSatisfy("tab:CONTACTS");
   }, [tutStepId, g.files, g.nodeStates, selectedNode, inRegion, tab, tutSatisfy]);
+
+  const hexWin = useCallback(() => {
+    const id = hexId;
+    setHexId(null);
+    if (!id) return;
+    const n = ALL_NODES.find((x) => x.id === id);
+    if (n) {
+      print(t("hx.logDown", { code: n.code }), "ok");
+      pushEvent(t("hx.logDown", { code: n.code }), "good");
+    }
+    completeHack(id);
+  }, [hexId, completeHack, print, pushEvent, t]);
 
   const routingWin = useCallback(() => {
     const id = routingId;
@@ -740,6 +777,7 @@ export default function App() {
     setAskLogout(false);
     setMarketOpen(false);
     setRoutingId(null);
+    setHexId(null);
     setPassId(null);
     setArchiveId(null);
     setVaultId(null);
@@ -1059,6 +1097,30 @@ export default function App() {
               pushEvent(t("t.vaultTimeout", { code: vn.code }), "bad");
             }}
             onClose={closeVault}
+            onLog={(k, params) => print(t(k, params), "dim")}
+          />
+        );
+      })()}
+
+      {hexId && (() => {
+        const n = ALL_NODES.find((x) => x.id === hexId);
+        const hw = HEXWALL_TIERS[NODE_META[hexId].warden];
+        if (!n || !hw) return null;
+        return (
+          <HexwallGame
+            key={hexId}
+            nodeCode={n.code}
+            warden={NODE_META[hexId].warden}
+            tier={hw}
+            onWin={hexWin}
+            onLose={() => {
+              print(t("hx.logHold", { code: n.code }), "err");
+              setHexId(null);
+            }}
+            onAbort={() => {
+              print(t("hx.logAbort"), "warn");
+              setHexId(null);
+            }}
             onLog={(k, params) => print(t(k, params), "dim")}
           />
         );

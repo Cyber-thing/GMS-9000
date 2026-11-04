@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Grid2x2, PhoneCall, PhoneOff, Skull } from "lucide-react";
+import { ChevronDown, ChevronUp, PhoneCall, PhoneOff } from "lucide-react";
 import { cn } from "../utils/cn";
 import { pickL, useT } from "../i18n";
 import { CALLER, useTut } from "../game/tutorial";
 import RichText from "./RichText";
+import Avatar from "./Avatar";
 
 /* 图层层级：通话窗口始终位于最上方。 */
 const Z_CALL = 110;
@@ -38,23 +39,6 @@ function Typed({ text, onDone }: { text: string; onDone: () => void }) {
   );
 }
 
-function Portrait({ size = 34, avatar = "skull" }: { size?: number; avatar?: "skull" | "cage" }) {
-  const cage = avatar === "cage";
-  return (
-    <span
-      className={cn(
-        "flex shrink-0 items-center justify-center border",
-        cage ? "border-viole bg-viole/10" : "border-amberdim bg-amber/10"
-      )}
-      style={{ width: size, height: size }}
-    >
-      {cage
-        ? <Grid2x2 size={size * 0.56} className="text-viole" />
-        : <Skull size={size * 0.56} className="text-amber" />}
-    </span>
-  );
-}
-
 export default function TutorialCall() {
   const { t, lang } = useT();
   const { phase, step, answer, next, choose, call, callNext, callAnswer, callRinging, aside } = useTut();
@@ -76,7 +60,7 @@ export default function TutorialCall() {
     if (callRinging) {
       return (
         <div className="fixed inset-0 z-[112] flex items-center justify-center bg-ink/85 p-4 backdrop-blur-[2px]">
-          <div className="anim-call-glow anim-msgin w-[min(320px,94%)] border border-viole bg-panel">
+          <div className="anim-call-glow anim-msgin w-[min(400px,94%)] border border-viole bg-panel">
             <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
               <span className="h-[6px] w-[6px] animate-softpulse bg-viole" />
               <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-viole">
@@ -86,7 +70,7 @@ export default function TutorialCall() {
             <div className="flex flex-col items-center px-4 py-5">
               <span className="anim-ring-shake text-viole"><PhoneCall size={34} strokeWidth={1.6} /></span>
               <div className="mt-3 flex items-center gap-2">
-                <Portrait size={30} avatar={call.script.avatar} />
+                <Avatar id={call.script.id === "sable1" ? "sablec" : call.script.nick} size={46} animated />
                 <span className="pixel text-[24px] leading-none text-fog">{call.script.nick}</span>
               </div>
               <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-faint">{t("tut.unlisted")}</div>
@@ -105,7 +89,7 @@ export default function TutorialCall() {
     return (
       <div className="pointer-events-none fixed inset-x-0 bottom-[76px] z-[110] flex justify-center px-2">
         <div
-          className="anim-msgin pointer-events-auto w-[min(620px,100%)] border-2 border-viole bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(143,134,184,0.2)]"
+          className="anim-msgin pointer-events-auto w-[min(760px,100%)] border-2 border-viole bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(143,134,184,0.2)]"
           onClick={() => setSkip(true)}
         >
           <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
@@ -117,7 +101,7 @@ export default function TutorialCall() {
             </span>
           </div>
           <div className="flex gap-2.5 px-2.5 py-2.5">
-            <Portrait avatar={call.script.avatar} />
+            <Avatar id={call.script.id === "sable1" ? "sablec" : call.script.nick} size={66} animated />
             <div className="min-w-0 flex-1">
               <p className="min-h-[32px] text-[13px] leading-snug text-fog/95">
                 {skip ? line : <Typed key={call.idx} text={line} onDone={() => setTyped(true)} />}
@@ -149,7 +133,7 @@ export default function TutorialCall() {
         className="fixed inset-0 flex items-center justify-center bg-ink/85 p-4 backdrop-blur-[2px]"
         style={{ zIndex: Z_RING }}
       >
-        <div className="anim-call-glow anim-msgin w-[min(320px,94%)] border border-amberdim bg-panel">
+        <div className="anim-call-glow anim-msgin w-[min(400px,94%)] border border-amberdim bg-panel">
           <div className="flex h-[24px] items-center gap-2 border-b border-line2 bg-header px-2.5">
             <span className="h-[6px] w-[6px] animate-softpulse bg-amber" />
             <span className="text-[8.5px] font-bold uppercase tracking-[0.22em] text-amber">
@@ -162,7 +146,7 @@ export default function TutorialCall() {
               <PhoneCall size={34} strokeWidth={1.6} />
             </span>
             <div className="mt-3 flex items-center gap-2">
-              <Portrait size={30} />
+              <Avatar id="ghost" size={46} animated />
               <span className="pixel text-[24px] leading-none text-phosbrite">{CALLER.nick}</span>
             </div>
             <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-faint">
@@ -194,7 +178,7 @@ export default function TutorialCall() {
       style={{ zIndex: Z_CALL }}
     >
       <div
-        className="anim-msgin pointer-events-auto w-[min(620px,100%)] border-2 border-amberdim bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(207,160,75,0.18)]"
+        className="anim-msgin pointer-events-auto w-[min(760px,100%)] border-2 border-amberdim bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(207,160,75,0.18)]"
         onClick={() => !folded && setSkip(true)}
       >
         {/* 来电者信息栏。 */}
@@ -223,13 +207,13 @@ export default function TutorialCall() {
         {}
         {folded ? (
           <div className="flex items-center gap-2 px-2.5 py-[5px]">
-            <Portrait size={16} />
+            <Avatar id="ghost" size={22} />
             <span className="min-w-0 flex-1 truncate text-[9px] text-dim">{line}</span>
             {waiting && <span className="h-[4px] w-[4px] shrink-0 animate-softpulse bg-amber" />}
           </div>
         ) : (
         <div className="flex gap-2.5 px-2.5 py-2.5">
-          <Portrait />
+          <Avatar id="ghost" size={66} animated />
           <div className="min-w-0 flex-1">
             <p className="min-h-[32px] text-[13px] leading-snug text-fog/95">
               {skip && !aside ? line : <Typed key={aside ?? step.id} text={line} onDone={() => setTyped(true)} />}

@@ -9,18 +9,27 @@ import {
   type Cell, type RoutingBoard, type RoutingTier, type Side,
 } from "../game/routing";
 
-const TILE = 58;
+/** 棋盘越大，单元越小，保证 9x5 也能完整塞进窗口。 */
+const tileFor = (cols: number, rows: number) => {
+  const byCol = Math.floor(620 / cols) - 6;
+  const byRow = Math.floor(380 / rows) - 6;
+  return Math.max(34, Math.min(58, byCol, byRow));
+};
 const GAP = 6;
 
 function Segment({
-  cell, lit, flowing, onRotate, disabled,
+  cell, lit, flowing, onRotate, disabled, TILE,
 }: {
   cell: Cell; lit: boolean; flowing: boolean;
-  onRotate: () => void; disabled: boolean;
+  onRotate: () => void; disabled: boolean; TILE: number;
 }) {
   const sides = liveSides(cell);
-  const terminal = cell.kind !== "pipe";
-  const col = flowing ? "var(--color-phosbrite)" : lit ? "var(--color-phos)" : terminal ? "#7f95a8" : "var(--color-moss)";
+  const dead = cell.kind === "blocked";
+  const terminal = cell.kind !== "pipe" && !dead;
+  const welded = cell.fixed && cell.kind === "pipe";
+  const col = dead
+    ? "#6b4a44"
+    : flowing ? "var(--color-phosbrite)" : lit ? "var(--color-phos)" : terminal ? "#7f95a8" : "var(--color-moss)";
   const c = TILE / 2;
 
   /* 从中心向每个开放方向绘制连接段。 */
@@ -48,13 +57,26 @@ function Segment({
       <span
         className="absolute inset-0 border transition-colors"
         style={{
-          borderColor: flowing ? "var(--color-phosbrite)" : lit ? "var(--color-phosdim)" : "var(--color-line)",
-          background: flowing
-            ? "rgb(var(--phosrgb) / 0.14)"
-            : lit ? "rgb(var(--phosrgb) / 0.07)" : "rgba(12,15,9,0.9)",
+          borderColor: dead
+            ? "#7d4f46"
+            : flowing ? "var(--color-phosbrite)" : lit ? "var(--color-phosdim)" : "var(--color-line)",
+          background: dead
+            ? "repeating-linear-gradient(45deg, rgba(125,79,70,0.22) 0 3px, rgba(0,0,0,0) 3px 7px)"
+            : flowing
+              ? "rgb(var(--phosrgb) / 0.14)"
+              : lit ? "rgb(var(--phosrgb) / 0.07)" : "rgba(12,15,9,0.9)",
           boxShadow: flowing ? "0 0 14px rgb(var(--phosrgb) / 0.35)" : "none",
         }}
       />
+      {/* 焊死标记：这段管子不能转 */}
+      {welded && (
+        <span
+          className="pointer-events-none absolute right-[2px] top-[2px] text-[7px] font-bold leading-none"
+          style={{ color: lit ? "var(--color-phosbrite)" : "#cfa04b" }}
+        >
+          ▣
+        </span>
+      )}
       {/* 边角缺口 */}
       {[["left-0 top-0", "border-l border-t"], ["right-0 top-0", "border-r border-t"],
         ["left-0 bottom-0", "border-l border-b"], ["right-0 bottom-0", "border-r border-b"]].map(([pos, b]) => (
@@ -63,8 +85,14 @@ function Segment({
       ))}
 
       <svg className="absolute inset-0" width={TILE} height={TILE} aria-hidden>
+        {dead && (
+          <>
+            <line x1={7} y1={7} x2={TILE - 7} y2={TILE - 7} stroke="#8d574d" strokeWidth={2} strokeLinecap="round" />
+            <line x1={TILE - 7} y1={7} x2={7} y2={TILE - 7} stroke="#8d574d" strokeWidth={2} strokeLinecap="round" />
+          </>
+        )}
         {sides.map(stub)}
-        {terminal ? (
+        {dead ? null : terminal ? (
           <rect x={c - 7} y={c - 7} width={14} height={14} fill={flowing ? "var(--color-phosbrite)" : col} opacity={0.9} />
         ) : (
           <circle cx={c} cy={c} r={sides.length > 2 ? 5 : 4} fill="var(--color-ink)" stroke={col} strokeWidth={2} />
@@ -135,12 +163,13 @@ export default function RoutingGame({
   };
 
   const flowing = (id: string) => running && solved && path.slice(0, front).includes(id);
+  const TILE = tileFor(tier.cols, tier.rows);
   const w = tier.cols * TILE + (tier.cols - 1) * GAP;
   const h = tier.rows * TILE + (tier.rows - 1) * GAP;
 
   return (
     <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
-      <div className="anim-msgin flex max-h-[94vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
+      <div className="anim-msgin flex max-h-[94vh] w-[min(720px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* 标题栏 */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
           <StatusDot color={done ? "var(--color-phos)" : "#7f95a8"} pulse={!done} />
@@ -207,6 +236,7 @@ export default function RoutingGame({
               <span key={c.id} style={{ gridColumn: c.col + 1, gridRow: c.row + 1 }}>
                 <Segment
                   cell={c}
+                  TILE={TILE}
                   lit={lit.has(c.id)}
                   flowing={flowing(c.id)}
                   disabled={running || done}

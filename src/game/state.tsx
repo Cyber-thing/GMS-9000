@@ -526,8 +526,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
         if (soldIt) {
           setFlag("arc_told", "sold_then_told");
-          setFlag("op17_blocked", true);
+          /* 先把对话演完（我方发言 → 他的回绝），最后才落下「已拉黑」横幅 */
           OP17_SOLD_REFUSAL.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 1200));
+          later(() => setFlag("op17_blocked", true), OP17_SOLD_REFUSAL.length * 1200 + 900);
           setG((s) => ({
             ...s,
             relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.emptyCivic },
@@ -537,7 +538,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
         if (!stillHasIt) {
           setFlag("arc_told", "empty");
+          /* 同样：说完、听完回应，之后才显示被拉黑 */
           OP17_DISBELIEF.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 1100));
+          later(() => setFlag("op17_blocked", true), OP17_DISBELIEF.length * 1100 + 900);
           setG((s) => ({
             ...s,
             relations: { ...s.relations, civic: (s.relations.civic ?? 0) + ARCHIVE_REL.emptyCivic },

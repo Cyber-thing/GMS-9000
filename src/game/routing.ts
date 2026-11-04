@@ -8,10 +8,18 @@ export interface RoutingTier {
   failRep: number;
   /** WARDEN 倒计时秒数。 */
   timerSec: number;
+  /** 焊死的管段：已经对好方向，但不能旋转。 */
+  locked?: number;
+  /** 熔断的单元：信号无法通过，只能绕开。 */
+  blocked?: number;
 }
 
 export const ROUTING_TIERS: Record<number, RoutingTier> = {
   1: { cols: 5, rows: 3, decoys: 4, failRep: 0, timerSec: 90 },
+  2: { cols: 6, rows: 4, decoys: 8, failRep: 2, timerSec: 60, locked: 2 },
+  3: { cols: 7, rows: 4, decoys: 11, failRep: 3, timerSec: 60, locked: 3, blocked: 4 },
+  4: { cols: 8, rows: 5, decoys: 15, failRep: 4, timerSec: 60, locked: 4, blocked: 6 },
+  5: { cols: 9, rows: 5, decoys: 19, failRep: 6, timerSec: 60, locked: 5, blocked: 9 },
 };
 
 export const usesRouting = (type: string, warden: number) =>
@@ -29,7 +37,7 @@ export interface Cell {
   turns: number;
   
   onPath: boolean;
-  kind: "pipe" | "inlet" | "outlet";
+  kind: "pipe" | "inlet" | "outlet" | "blocked";
   fixed: boolean;
 }
 
@@ -136,10 +144,37 @@ export function generateRouting(tier: RoutingTier): RoutingBoard {
     });
   });
 
+  /* 焊死若干中间管段：方向已经正确，玩家不能旋转，只能围着它们思考。 */
+  if (tier.locked) {
+    const mid = cells.filter((x) => x.onPath && x.kind === "pipe");
+    mid.sort(() => Math.random() - 0.5).slice(0, tier.locked).forEach((x) => {
+      x.turns = 0;      // 归位
+      x.fixed = true;
+    });
+  }
+
+  /* 熔断单元：信号打不过去，必须绕路。只放在主路径之外。 */
+  if (tier.blocked) {
+    const used = new Set(cells.map((x) => x.id));
+    const free: { c: number; r: number }[] = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++) {
+        const k = key(c, r);
+        if (!onPath.has(k) && !used.has(k)) free.push({ c, r });
+      }
+    free.sort(() => Math.random() - 0.5).slice(0, tier.blocked).forEach(({ c, r }) => {
+      cells.push({
+        id: key(c, r), col: c, row: r,
+        sides: [], turns: 0, onPath: false, kind: "blocked", fixed: true,
+      });
+    });
+  }
+
   return { cols, rows, cells, inlet: key(first.c, first.r), outlet: key(last.c, last.r) };
 }
 
-export const liveSides = (cell: Cell): Side[] => rotateSides(cell.sides, cell.turns);
+export const liveSides = (cell: Cell): Side[] =>
+  cell.kind === "blocked" ? [] : rotateSides(cell.sides, cell.turns);
 
 /** 从入口遍历电路，返回已连接单元的标识，并判断信号是否到达出口。 */
 export function traceCircuit(board: RoutingBoard): { lit: Set<string>; solved: boolean } {
