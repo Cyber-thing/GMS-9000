@@ -13,6 +13,7 @@ export const ZH: Record<string, string> = {
   "top.stable": "稳定",
   "top.globalgrid": "WORLD",
   "top.crtTip": "开关 CRT 扫描线",
+  "top.noiseTip": "开关模拟噪点滤镜",
   "top.phosTip": "切换荧光配色",
   "top.handleTip": "修改操作员呼号",
   "top.avatarTip": "更换操作员头像",
@@ -227,6 +228,8 @@ export const ZH: Record<string, string> = {
 
   "t.crtOn": "CRT 滤镜开",
   "t.crtOff": "CRT 滤镜关",
+  "t.noiseOn": "模拟噪点滤镜开",
+  "t.noiseOff": "模拟噪点滤镜关",
   "t.phosSet": "荧光调色板 → {p}",
   "t.handleSet": "操作员呼号已设定 :: {op}",
   "e.handleSet": "操作员登记为 {op}",
@@ -604,6 +607,8 @@ export const ZH: Record<string, string> = {
   "arc.logScan": "档案扫描进行中 …",
   "arc.logRestore": "{code} 的档案权限已恢复",
   "arc.logTake": "封存记录已复制 :: 裁撤时间表",
+  "arc.looted": "档案库已被攻破",
+  "arc.lootedBody": "封存记录上回就被拷走了 —— 这里没什么可拿的了",
 
   "hx.title": "HEXWALL",
   "hx.sub": "防火墙晶格",

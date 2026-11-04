@@ -6,8 +6,8 @@ import { StatusDot } from "./chrome";
 import WardenClock from "./WardenClock";
 import {
   HEX_COLORS, generateHexwall, hexPath, hexPixel, isCleared, isStuck,
-  legalCells, placeStack, unkey, handLeft,
-  type HexBoard, type HexTier,
+  legalCells, playStack, unkey, handLeft,
+  type Annihilation, type Field, type HexBoard, type HexTier,
 } from "../game/hexwall";
 
 const SIZE = 21;          // 六边形外接圆半径
@@ -15,10 +15,19 @@ const LIFT = 5;           // 堆叠时每层的抬高量
 
 /** 单枚六边形瓦片。 */
 function Tile({
-  cx, cy, color, dim, top, burst,
-}: { cx: number; cy: number; color: string; dim?: boolean; top?: boolean; burst?: boolean }) {
+  cx, cy, color, dim, top, dying, toward,
+}: {
+  cx: number; cy: number; color: string; dim?: boolean; top?: boolean;
+  /** 正在湮灭：朝着对方滑过去并炸开 */
+  dying?: boolean;
+  toward?: { x: number; y: number };
+}) {
+  const shift = dying && toward ? { dx: (toward.x - cx) * 0.42, dy: (toward.y - cy) * 0.42 } : null;
   return (
-    <g className={burst ? "anim-hexburst" : undefined}>
+    <g
+      className={dying ? "anim-hexkill" : undefined}
+      style={shift ? ({ ["--kx" as string]: `${shift.dx}px`, ["--ky" as string]: `${shift.dy}px` }) : undefined}
+    >
       <path
         d={hexPath(cx, cy, SIZE)}
         fill={`color-mix(in srgb, ${color} ${top ? 34 : 22}%, #06080c)`}
@@ -39,21 +48,30 @@ function Tile({
 
 /** 一摞瓦片。 */
 function Stack({
-  cx, cy, stack, dim, burst,
-}: { cx: number; cy: number; stack: number[]; dim?: boolean; burst?: boolean }) {
+  cx, cy, stack, dim, killTop, toward,
+}: {
+  cx: number; cy: number; stack: number[]; dim?: boolean;
+  /** 顶片正在和邻居同归于尽 */
+  killTop?: boolean;
+  toward?: { x: number; y: number };
+}) {
   return (
     <>
-      {stack.map((c, i) => (
-        <Tile
-          key={i}
-          cx={cx}
-          cy={cy - i * LIFT}
-          color={HEX_COLORS[c % HEX_COLORS.length]}
-          top={i === stack.length - 1}
-          dim={dim}
-          burst={burst}
-        />
-      ))}
+      {stack.map((c, i) => {
+        const top = i === stack.length - 1;
+        return (
+          <Tile
+            key={i}
+            cx={cx}
+            cy={cy - i * LIFT}
+            color={HEX_COLORS[c % HEX_COLORS.length]}
+            top={top}
+            dim={dim}
+            dying={top && killTop}
+            toward={toward}
+          />
+        );
+      })}
     </>
   );
 }
@@ -72,16 +90,24 @@ export default function HexwallGame({
   const { t } = useT();
   const [board, setBoard] = useState<HexBoard>(() => generateHexwall(tier));
   const [picked, setPicked] = useState<number | null>(null);
-  const [burst, setBurst] = useState<string[]>([]);
+  /* 动画播放：把连锁拆成一步步放，而不是瞬间消失 */
+  const [anim, setAnim] = useState<{ field: Field; step: Annihilation | null } | null>(null);
+  const [busy, setBusy] = useState(false);
   const [won, setWon] = useState(false);
   const [ejected, setEjected] = useState(false);
   const timers = useRef<number[]>([]);
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
+  /* 播放期间显示动画快照，其余时候显示真实场地 */
+  const shown = anim ? anim.field : board.field;
+  const active = anim?.step ?? null;
   const cleared = isCleared(board);
   const stuck = !cleared && isStuck(board);
-  const spots = useMemo(() => (picked === null ? [] : legalCells(board)), [board, picked]);
+  const spots = useMemo(
+    () => (picked === null || busy ? [] : legalCells(board)),
+    [board, picked, busy]
+  );
 
   /* 第一手自动选中，少点一次 */
   useEffect(() => {
@@ -99,22 +125,52 @@ export default function HexwallGame({
   }, [cleared, won, onWin, onLog, nodeCode]);
 
   const put = useCallback((cell: string) => {
-    if (picked === null || won || ejected) return;
-    const next = placeStack(board, cell, picked);
-    if (!next) return;
-    /* 对比前后，找出被打掉的格子做闪光 */
-    const gone = Object.keys(board.field).filter((k) => !next.field[k]);
-    setBurst([...gone, cell]);
-    timers.current.push(window.setTimeout(() => setBurst([]), 420));
-    setBoard(next);
-    setPicked(next.hand.findIndex(Boolean) >= 0 ? next.hand.findIndex(Boolean) : null);
+    if (picked === null || won || ejected || busy) return;
+    const res = playStack(board, cell, picked);
+    if (!res) return;
+
+    const { board: next, placed, steps } = res;
     onLog?.("hx.logPlace", { n: handLeft(next) });
-  }, [board, picked, won, ejected, onLog]);
+
+    /* 没有连锁：直接落子 */
+    if (!steps.length) {
+      setBoard(next);
+      setPicked(next.hand.findIndex(Boolean) >= 0 ? next.hand.findIndex(Boolean) : null);
+      return;
+    }
+
+    /* 有连锁：先显示刚放下的那一摞，然后逐对湮灭 */
+    setBusy(true);
+    setAnim({ field: placed, step: null });
+
+    /* 连锁越长，节奏越快，避免长链拖沓 */
+    const STEP = steps.length > 5 ? 190 : steps.length > 3 ? 240 : 300;
+    steps.forEach((st, i) => {
+      /* 高亮这一对 */
+      timers.current.push(window.setTimeout(() => {
+        setAnim({ field: i === 0 ? placed : steps[i - 1].after, step: st });
+      }, 160 + i * STEP));
+      /* 对消后的快照 */
+      timers.current.push(window.setTimeout(() => {
+        setAnim({ field: st.after, step: null });
+      }, 160 + i * STEP + STEP - 40));
+    });
+
+    timers.current.push(window.setTimeout(() => {
+      setAnim(null);
+      setBusy(false);
+      setBoard(next);
+      setPicked(next.hand.findIndex(Boolean) >= 0 ? next.hand.findIndex(Boolean) : null);
+    }, 160 + steps.length * STEP + 60));
+  }, [board, picked, won, ejected, busy, onLog]);
 
   const retry = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+    setAnim(null);
+    setBusy(false);
     setBoard(generateHexwall(tier));
     setPicked(null);
-    setBurst([]);
   };
 
   /* 画布范围按实际格子算 */
@@ -213,12 +269,43 @@ export default function HexwallGame({
               );
             })}
 
+            {/* 湮灭射线：两格之间的放电 */}
+            {active && (() => {
+              const [aq, ar] = unkey(active.a);
+              const [bq, br] = unkey(active.b);
+              const pa = hexPixel(aq, ar, SIZE);
+              const pb = hexPixel(bq, br, SIZE);
+              const col = HEX_COLORS[active.color % HEX_COLORS.length];
+              const mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+              return (
+                <g style={{ pointerEvents: "none" }}>
+                  <line
+                    x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
+                    stroke={col} strokeWidth={3} strokeLinecap="round"
+                    className="anim-hexarc"
+                  />
+                  <circle cx={mx} cy={my} r={SIZE * 0.42} fill="none" stroke={col} strokeWidth={2} className="anim-hexring" />
+                  <circle cx={mx} cy={my} r={3} fill={col} className="anim-hexspark" />
+                </g>
+              );
+            })()}
+
             {/* 墙上的堆：不拦截点击，免得挡住上一格的落点 */}
             <g style={{ pointerEvents: "none" }}>
-              {Object.entries(board.field).map(([k, stack]) => {
+              {Object.entries(shown).map(([k, stack]) => {
                 const [q, r] = unkey(k);
                 const { x, y } = hexPixel(q, r, SIZE);
-                return <Stack key={`s${k}`} cx={x} cy={y} stack={stack} burst={burst.includes(k)} />;
+                /* 这一帧里正在对消的两格：顶片朝对方飞过去 */
+                let killTop = false;
+                let toward: { x: number; y: number } | undefined;
+                if (active && (active.a === k || active.b === k)) {
+                  killTop = true;
+                  const [oq, or_] = unkey(active.a === k ? active.b : active.a);
+                  toward = hexPixel(oq, or_, SIZE);
+                }
+                return (
+                  <Stack key={`s${k}`} cx={x} cy={y} stack={stack} killTop={killTop} toward={toward} />
+                );
               })}
             </g>
           </svg>

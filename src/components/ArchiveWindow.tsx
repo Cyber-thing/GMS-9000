@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Archive, Download, FileText, Radar, X } from "lucide-react";
+import { Archive, Download, FileText, Radar, ShieldOff, X } from "lucide-react";
 import { cn } from "../utils/cn";
 import { blockBar } from "../lib/util";
 import { useT } from "../i18n";
 
-type Phase = "idle" | "scanning" | "found" | "saved";
+type Phase = "idle" | "scanning" | "found" | "saved" | "looted";
 
 const SPOOLS = [
   "PERS-ROSTER-7781", "LEAVE-REQ-0042", "SHIFT-ROTA-91", "MEDICAL-CLAIMS", "PENSION-TIER-B",
@@ -27,7 +27,8 @@ export default function ArchiveWindow({
   onLog: (key: string, params?: Record<string, string | number>) => void;
 }) {
   const { t } = useT();
-  const [phase, setPhase] = useState<Phase>(alreadyTaken ? "saved" : "idle");
+  /* 已经洗过的档案库：再进来只剩一行「已被扒空」的提示 */
+  const [phase, setPhase] = useState<Phase>(alreadyTaken ? "looted" : "idle");
   const [pct, setPct] = useState(0);
   const [cursor, setCursor] = useState(0);
   const timers = useRef<number[]>([]);
@@ -95,6 +96,23 @@ export default function ArchiveWindow({
           })}
         </div>
 
+        {/* 已被扒空：说明这里再没有可拿的东西 */}
+        {phase === "looted" && (
+          <div className="shrink-0 border-t border-line2 bg-panel2 px-3 py-2.5">
+            <div className="flex items-start gap-2 border border-viole/40 bg-viole/8 px-2.5 py-2">
+              <ShieldOff size={12} className="mt-[1px] shrink-0 text-viole" />
+              <div className="min-w-0">
+                <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-viole">
+                  {t("arc.looted")}
+                </div>
+                <p className="mt-[2px] text-[8.5px] uppercase leading-relaxed tracking-[0.1em] text-faint">
+                  {t("arc.lootedBody")}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 结果 */}
         {(phase === "found" || phase === "saved") && (
           <div className="shrink-0 border-t border-line2 bg-panel2 px-3 py-2.5">
@@ -132,6 +150,10 @@ export default function ArchiveWindow({
             >
               <Radar size={11} /> {t("arc.scanBtn")}
             </button>
+          ) : phase === "looted" ? (
+            <span className="flex items-center gap-1.5 text-[8.5px] uppercase tracking-[0.14em] text-viole">
+              <ShieldOff size={10} /> {t("arc.looted")}
+            </span>
           ) : (
             <span className="text-[8.5px] uppercase tracking-[0.14em] text-faint">{t("arc.restored")}</span>
           )}

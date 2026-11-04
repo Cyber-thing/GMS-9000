@@ -422,14 +422,106 @@ html[lang="zh-CN"] .blocksbar {
   box-shadow: 0 0 22px rgb(var(--act-rgb) / 0.5);
 }
 
-/* ---------- HEXWALL：瓦片湮灭闪光 ---------- */
-@keyframes hexburst {
-  0%   { opacity: 1; transform: scale(1); }
-  45%  { opacity: 1; transform: scale(1.18); }
-  100% { opacity: 0; transform: scale(0.72); }
+/* ---------- 复古模拟噪点 ---------- */
+/* 整层一起和页面做 screen 混合（见组件里的注释） */
+.noise-layer {
+  mix-blend-mode: screen;
 }
-.anim-hexburst {
-  animation: hexburst 0.4s ease-out forwards;
+.noise-grain {
+  opacity: 0.42;
+}
+
+/* 缓慢下爬的亮带 */
+@keyframes noiseBand {
+  0%   { top: -12%; opacity: 0; }
+  6%   { opacity: 0.5; }
+  94%  { opacity: 0.5; }
+  100% { top: 112%; opacity: 0; }
+}
+.noise-band {
+  height: 72px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.025) 35%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.025) 65%,
+    transparent
+  );
+  animation: noiseBand 7.5s linear infinite;
+}
+
+/* 偶发撕裂：绝大多数时间看不见，突然抽一下 */
+@keyframes noiseGlitch {
+  0%, 93.5%, 100% { opacity: 0; transform: translateY(0) scaleY(1); }
+  94%   { opacity: 0.75; top: 22%; transform: translateY(0) scaleY(1.6); }
+  95%   { opacity: 0;    top: 22%; }
+  96.5% { opacity: 0.6;  top: 63%; transform: translateY(0) scaleY(2.4); }
+  97.5% { opacity: 0;    top: 63%; }
+  98.5% { opacity: 0.45; top: 41%; transform: translateY(0) scaleY(1.2); }
+  99.2% { opacity: 0;    top: 41%; }
+}
+.noise-glitch {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(109, 179, 210, 0.55) 18%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(224, 99, 74, 0.5) 82%,
+    transparent
+  );
+  animation: noiseGlitch 9s steps(1, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .noise-band, .noise-glitch { animation: none; opacity: 0; }
+}
+
+/* ---------- HEXWALL：湮灭动画 ----------
+   同色顶片先朝对方冲过去，再一起炸成白光。 */
+@keyframes hexkill {
+  0%   { transform: translate(0, 0) scale(1);            opacity: 1; filter: brightness(1); }
+  35%  { transform: translate(calc(var(--kx) * 0.55), calc(var(--ky) * 0.55)) scale(1.1);
+         opacity: 1; filter: brightness(1.9); }
+  65%  { transform: translate(var(--kx), var(--ky)) scale(1.22);
+         opacity: 0.95; filter: brightness(3.2); }
+  100% { transform: translate(var(--kx), var(--ky)) scale(0.2);
+         opacity: 0; filter: brightness(4); }
+}
+.anim-hexkill {
+  animation: hexkill 0.3s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* 两格之间的放电 */
+@keyframes hexarc {
+  0%   { opacity: 0; stroke-width: 1; }
+  30%  { opacity: 1; stroke-width: 4; }
+  70%  { opacity: 0.8; stroke-width: 2; }
+  100% { opacity: 0; stroke-width: 0.5; }
+}
+.anim-hexarc { animation: hexarc 0.3s ease-out forwards; }
+
+/* 中点炸开的冲击环 */
+@keyframes hexring {
+  0%   { opacity: 0.95; transform: scale(0.15); }
+  100% { opacity: 0;    transform: scale(1.8); }
+}
+.anim-hexring {
+  animation: hexring 0.34s ease-out forwards;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+@keyframes hexspark {
+  0%   { opacity: 0; transform: scale(0.4); }
+  40%  { opacity: 1; transform: scale(2.2); }
+  100% { opacity: 0; transform: scale(0.6); }
+}
+.anim-hexspark {
+  animation: hexspark 0.3s ease-out forwards;
   transform-origin: center;
   transform-box: fill-box;
 }

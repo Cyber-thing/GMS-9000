@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Activity, Check, Languages, LogOut, MonitorDot, Palette, Pencil, ScanEye, X } from "lucide-react";
+import { Activity, Check, Languages, LogOut, MonitorDot, Palette, Pencil, ScanEye, Waves, X } from "lucide-react";
 import { clockNow, fmtUptime, randInt, store } from "../lib/util";
 import { phosLabel } from "../lib/phos";
 import Avatar, { AvatarPicker } from "./Avatar";
@@ -32,6 +32,8 @@ function Field({ label, value, color = "var(--color-fog)" }: { label: string; va
 export default function TopBar({
   sessions,
   fx,
+  noise,
+  onToggleNoise,
   onToggleFx,
   phos,
   onTogglePhos,
@@ -42,6 +44,8 @@ export default function TopBar({
 }: {
   sessions: number;
   fx: boolean;
+  noise: boolean;
+  onToggleNoise: () => void;
   onToggleFx: () => void;
   phos: string;
   onTogglePhos: () => void;
@@ -293,6 +297,18 @@ export default function TopBar({
       >
         <MonitorDot size={12} />
         CRT
+      </button>
+
+      {/* 复古噪点切换 */}
+      <button
+        onClick={onToggleNoise}
+        className={`flex w-[58px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+          noise ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
+        }`}
+        title={t("top.noiseTip")}
+      >
+        <Waves size={12} />
+        NSE
       </button>
 
       {/* 界面配色切换：循环 绿色 → 洋红 → 蓝色 → 红色 → 琥珀 */}

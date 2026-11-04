@@ -24,6 +24,7 @@ export const DICT: Record<string, Entry> = {
   "top.stable": { en: "STABLE", ru: "СТАБИЛЬНА" },
   "top.globalgrid": { en: "WORLD", ru: "WORLD" },
   "top.crtTip": { en: "toggle CRT scanlines", ru: "переключить развёртку ЭЛТ" },
+  "top.noiseTip": { en: "toggle analog noise filter", ru: "переключить фильтр аналогового шума" },
   "top.phosTip": { en: "switch phosphor color scheme", ru: "сменить цветовую схему люминофора" },
 
   "phos.green": { en: "GREEN P1", ru: "ЗЕЛЁНЫЙ P1" },
@@ -293,6 +294,8 @@ export const DICT: Record<string, Entry> = {
 
   "t.crtOn": { en: "crt overlay enabled", ru: "развёртка ЭЛТ включена" },
   "t.crtOff": { en: "crt overlay disabled", ru: "развёртка ЭЛТ выключена" },
+  "t.noiseOn": { en: "analog noise filter enabled", ru: "фильтр аналогового шума включён" },
+  "t.noiseOff": { en: "analog noise filter disabled", ru: "фильтр аналогового шума выключен" },
   "t.phosSet": { en: "phosphor palette → {p}", ru: "палитра люминофора → {p}" },
   "t.handleSet": { en: "operator handle set :: {op}", ru: "позывной оператора задан :: {op}" },
   "e.handleSet": { en: "operator identified as {op}", ru: "оператор опознан как {op}" },
@@ -759,6 +762,11 @@ export const DICT: Record<string, Entry> = {
   "arc.logScan": { en: "archive scan running …", ru: "идёт сканирование архива …" },
   "arc.logRestore": { en: "archive access restored on {code}", ru: "доступ к архиву восстановлен на {code}" },
   "arc.logTake": { en: "sealed record copied :: termination schedule", ru: "закрытая запись скопирована :: график увольнений" },
+  "arc.looted": { en: "ARCHIVE ALREADY BREACHED", ru: "АРХИВ УЖЕ ВЗЛОМАН" },
+  "arc.lootedBody": {
+    en: "the sealed record was pulled on an earlier run — nothing left here to copy",
+    ru: "закрытая запись уже скопирована в прошлый заход — забирать больше нечего",
+  },
   "dos.archive": { en: "open archive", ru: "открыть архив" },
 
   /* HEXWALL —— SEC 防火墙小游戏 */

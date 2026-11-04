@@ -27,6 +27,7 @@ import { useColumns } from "./hooks/useColumns";
 import { EventLog, SectorPanel, mkEvent, type NetEvent } from "./components/InfoPanels";
 import TerminalBar, { type TermLine } from "./components/TerminalBar";
 import CrtOverlay from "./components/CrtOverlay";
+import NoiseOverlay from "./components/NoiseOverlay";
 import { ALL_NODES, REGION_DATA, regionNodeById, regionSectorById } from "./data/regions";
 import { REGIONS, regionById, type RegionDef } from "./data/world";
 import {
@@ -113,6 +114,8 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [operator, setOperator] = useState(() => store.get("operator", "UNKNOWN"));
   const [fx, setFx] = useState(() => store.get("fx", true));
+  /* 复古噪点滤镜，和 CRT 独立开关 */
+  const [noise, setNoise] = useState(() => store.get("noise", true));
   /* Цвет интерфейса: зелёный фосфор либо маджента. */
   const [phos, setPhos] = useState<string>(() => store.get("phos", "green"));
   const operatorRef = useRef(operator);
@@ -179,6 +182,7 @@ export default function App() {
   );
   useEffect(() => void store.set("operator", operator), [operator]);
   useEffect(() => void store.set("fx", fx), [fx]);
+  useEffect(() => void store.set("noise", noise), [noise]);
   useEffect(() => {
     document.documentElement.dataset.phos = phos;
     store.set("phos", phos);
@@ -619,12 +623,19 @@ export default function App() {
 
   /* ---------- 档案 ---------- */
   const archiveTake = useCallback(() => {
+    /* 只能拿一次：卖掉之后 files 里没有了，但 arc_looted 永久留着 */
+    if (g.flags.arc_looted) return;
+    setFlag("arc_looted");
     download("f_termlist");
     print(t("arc.logTake"), "warn");
     pushEvent(t("arc.logTake"), "bad");
-    
-    later(() => tut.playCall("sable1"), 1400);
-  }, [download, print, pushEvent, later, tut]);
+
+    /* sable 只打一次电话——哪怕玩家再回到档案库 */
+    if (!g.flags.sable_called) {
+      setFlag("sable_called");
+      later(() => tut.playCall("sable1"), 1400);
+    }
+  }, [g.flags.arc_looted, g.flags.sable_called, setFlag, download, print, pushEvent, later, tut]);
 
   const archiveClose = useCallback(() => {
     const id = archiveId;
@@ -811,6 +822,7 @@ export default function App() {
       <>
         <Splash onDone={() => setSplash(false)} />
         {fx && <CrtOverlay />}
+        {noise && <NoiseOverlay />}
       </>
     );
   }
@@ -836,6 +848,7 @@ export default function App() {
           }}
         />
         {fx && <CrtOverlay />}
+        {noise && <NoiseOverlay />}
       </>
     );
   }
@@ -850,6 +863,11 @@ export default function App() {
       <TopBar
         sessions={compromised.size}
         fx={fx}
+        noise={noise}
+        onToggleNoise={() => {
+          print(noise ? t("t.noiseOff") : t("t.noiseOn"), "dim");
+          setNoise((v) => !v);
+        }}
         onToggleFx={() => {
           print(fx ? t("t.crtOff") : t("t.crtOn"), "dim");
           setFx((f) => !f);
@@ -1172,7 +1190,11 @@ export default function App() {
           <ArchiveWindow
             key={archiveId}
             nodeCode={n.code}
-            alreadyTaken={g.files.includes("f_termlist")}
+            alreadyTaken={
+              g.flags.arc_looted === true ||
+              g.files.includes("f_termlist") ||
+              g.burned.includes("f_termlist")
+            }
             onTake={archiveTake}
             onClose={archiveClose}
             onLog={(k, params) => print(t(k, params), "dim")}
@@ -1196,6 +1218,7 @@ export default function App() {
       )}
 
       {fx && <CrtOverlay />}
+      {noise && <NoiseOverlay />}
     </div>
   );
 }

@@ -86,18 +86,26 @@ export function legalCells(board: HexBoard): string[] {
   return [...ok];
 }
 
+/** 一次湮灭事件：两格的顶片同色，一起消失。 */
+export interface Annihilation {
+  a: string;
+  b: string;
+  color: number;
+  /** 这一步结束后的场地快照，用于逐帧回放。 */
+  after: Field;
+}
+
 /**
- * 结算：相邻两堆顶色相同 → 各消掉一枚，连锁直到稳定。
- * 返回新场地以及被清掉的格子，供动画使用。
+ * 和 resolveField 相同的规则，但把每一次对消都记录下来，
+ * 让界面可以一步步播放连锁动画。
  */
-export function resolveField(input: Field): { field: Field; burst: string[] } {
+export function resolveSteps(input: Field): { field: Field; steps: Annihilation[] } {
   const field = clone(input);
-  const burst = new Set<string>();
+  const steps: Annihilation[] = [];
   let changed = true;
 
   while (changed) {
     changed = false;
-    /* 固定顺序遍历，保证结果可复现 */
     const keys = Object.keys(field).sort();
     for (const k of keys) {
       const a = field[k];
@@ -106,33 +114,53 @@ export function resolveField(input: Field): { field: Field; burst: string[] } {
         const b = field[n];
         if (!b || !b.length) continue;
         if (a[a.length - 1] === b[b.length - 1]) {
+          const color = a[a.length - 1];
           a.pop();
           b.pop();
-          burst.add(k);
-          burst.add(n);
+          if (!a.length) delete field[k];
+          if (!b.length) delete field[n];
+          steps.push({ a: k, b: n, color, after: clone(field) });
           changed = true;
-          if (!a.length) break;
+          break;
         }
       }
     }
-    /* 清掉空堆 */
-    for (const k of Object.keys(field)) if (!field[k].length) delete field[k];
   }
+  return { field, steps };
+}
+
+/**
+ * 结算：相邻两堆顶色相同 → 各消掉一枚，连锁直到稳定。
+ * 直接复用 resolveSteps，确保求解器和动画看到的结果完全一致。
+ */
+export function resolveField(input: Field): { field: Field; burst: string[] } {
+  const { field, steps } = resolveSteps(input);
+  const burst = new Set<string>();
+  steps.forEach((st) => { burst.add(st.a); burst.add(st.b); });
   return { field, burst: [...burst] };
 }
 
 /** 落子：把手牌放到空格上并结算。 */
 export function placeStack(board: HexBoard, cell: string, handIdx: number): HexBoard | null {
+  return playStack(board, cell, handIdx)?.board ?? null;
+}
+
+/** 落子并返回连锁过程，供界面播放动画。 */
+export function playStack(
+  board: HexBoard,
+  cell: string,
+  handIdx: number
+): { board: HexBoard; placed: Field; steps: Annihilation[] } | null {
   const stack = board.hand[handIdx];
   if (!stack || board.field[cell] || !board.cells.includes(cell)) return null;
   if (!legalCells(board).includes(cell)) return null;
 
-  const next = clone(board.field);
-  next[cell] = stack.slice();
-  const { field } = resolveField(next);
+  const placed = clone(board.field);
+  placed[cell] = stack.slice();
+  const { field, steps } = resolveSteps(placed);
   const hand = board.hand.slice();
   hand[handIdx] = null;
-  return { ...board, field, hand };
+  return { board: { ...board, field, hand }, placed, steps };
 }
 
 export const isCleared = (b: HexBoard) => Object.keys(b.field).length === 0;
