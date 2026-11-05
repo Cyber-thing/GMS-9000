@@ -60,6 +60,37 @@ export const OP17_ACCEPTED: Beat[] = [
   },
 ];
 
+/* 玩家在接单之前就自己撬开了档案库：接单时直接摊牌。 */
+export const OP17_PREBREACHED: Beat[] = [
+  {
+    id: "q2b",
+    from: "OP",
+    line: L(
+      "Already did it. Your archive is open — I cracked it before you asked. Wait.",
+      "Уже взломал. Твой архив открыт — я вскрыл его ещё до твоей просьбы. Жди.",
+      "已经办了。你那档案库我早撬开了 —— 在你开口之前。等着。"
+    ),
+  },
+  {
+    id: "q2c",
+    from: "op17",
+    line: L(
+      "You... what? Before I even sent the job? How did you know which terminal?",
+      "Ты... что? Ещё до того, как я отправил заказ? Откуда ты знал, какой терминал?",
+      "你……什么？在我派单之前？你怎么知道是哪台终端？"
+    ),
+  },
+  {
+    id: "q2d",
+    from: "op17",
+    line: L(
+      "Never mind. I do not want to know. The index is wrecked, but access is access — go pull the key and send it over.",
+      "Хотя нет. Знать не хочу. Индекс разворочен, но доступ есть доступ — забери ключ и пришли мне.",
+      "算了，我不想知道。索引是毁了，但权限到底是权限 —— 去把密钥取出来发我。"
+    ),
+  },
+];
+
 export const OP17_READY: Beat[] = [
   {
     id: "q3b",
@@ -226,6 +257,83 @@ export const FREDDY_IMPLANT_4: Beat[] = [
   },
 ];
 
+/* 玩家在接活之前就已经把备忘录搞到手了 */
+export const FREDDY_IMPLANT_PRE: Beat[] = [
+  {
+    id: "fi4b", from: "OP",
+    line: L(
+      "Already have it. I was inside that server before you wrote.",
+      "Он уже у меня. Я был в том сервере ещё до того, как ты написал.",
+      "已经拿到了。你发消息之前我就进过那台服务器。"
+    ),
+  },
+  {
+    id: "fi4c", from: "freddy",
+    line: L(
+      "You... already? I have not even told you which company. Who are you?",
+      "Ты... уже? Я ведь даже не сказал, какая компания. Ты вообще кто?",
+      "你……已经拿到了？我连是哪家公司都还没说。你到底是谁？"
+    ),
+  },
+  {
+    id: "fi4d", from: "freddy",
+    line: L(
+      "Forget it. Just send it over, please. I need to see it.",
+      "Неважно. Просто пришли, пожалуйста. Мне нужно это увидеть.",
+      "算了。拜托，直接发我吧。我得亲眼看看。"
+    ),
+    choices: [{ id: "fi_send", en: "Send the memo", ru: "Отправить документ", zh: "把文件发过去" }],
+  },
+];
+
+/* 备忘录早就被卖掉了——这单根本交不了 */
+export const FREDDY_IMPLANT_SOLD: Beat[] = [
+  {
+    id: "fi4g", from: "OP",
+    line: L(
+      "I had that memo. I sold it before you wrote to me.",
+      "Эта записка у меня была. Я продал её ещё до того, как ты написал.",
+      "那份备忘我拿到过。在你联系我之前就卖掉了。"
+    ),
+  },
+  {
+    id: "fi4h", from: "freddy",
+    line: L(
+      "You sold it? To whom? That was my sister's place in the queue, and you sold it.",
+      "Продал? Кому? Там была очередь моей сестры, а ты её продал.",
+      "你卖了？卖给谁了？那是我妹妹的队位，你把它卖了。"
+    ),
+  },
+  {
+    id: "fi4i", from: "freddy",
+    line: L(
+      "Do not write to me again.",
+      "Больше мне не пиши.",
+      "别再联系我了。"
+    ),
+  },
+];
+
+/* 服务器已经被拿下，但文件还没到手 */
+export const FREDDY_IMPLANT_BREACHED: Beat[] = [
+  {
+    id: "fi4e", from: "OP",
+    line: L(
+      "I am already inside that server. Give me a minute.",
+      "Я уже внутри этого сервера. Дай минуту.",
+      "我已经在那台服务器里了。给我一分钟。"
+    ),
+  },
+  {
+    id: "fi4f", from: "freddy",
+    line: L(
+      "Already inside? I did not even name it yet. Fine — find the sales memo, that is all I need.",
+      "Уже внутри? Я ведь даже не назвал его. Ладно — найди записку отдела продаж, больше ничего не нужно.",
+      "已经进去了？我都还没说是哪台。行吧 —— 找到销售部那份备忘就够了。"
+    ),
+  },
+];
+
 export const FREDDY_IMPLANT_HOLD: Beat[] = [
   {
     id: "fi5", from: "freddy",
@@ -316,6 +424,28 @@ export const MARLA_PROJ_ALREADY: Beat[] = [
       "Погоди — ты уже внутри этого узла? Тогда ещё круче. Остаётся только дёрнуть рубильник.",
       "等等 —— 你已经在那台主机里了？更妙。那你只剩拉闸这一步。"
     ),
+  },
+];
+
+/* 还没接活，机器就已经被砸了 */
+export const MARLA_PROJ_WRECKED: Beat[] = [
+  {
+    id: "mp5b", from: "OP",
+    line: L(
+      "That controller is already dead. I wrecked it earlier.",
+      "Тот контроллер уже мёртв. Я вывел его из строя раньше.",
+      "那台控制器早就废了。我先前就把它砸了。"
+    ),
+  },
+  {
+    id: "mp5c", from: "marla",
+    line: L(
+      "You are joking. Before I even asked? ... I love this city. Confirm it and take the money.",
+      "Шутишь. Ещё до моей просьбы? ... Обожаю этот город. Подтверди и забирай деньги.",
+      "开玩笑吧。在我开口之前？……我爱死这座城了。确认一下，钱拿走。"
+    ),
+    contract: "sb_projector",
+    action: "deliver",
   },
 ];
 

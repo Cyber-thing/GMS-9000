@@ -762,6 +762,11 @@ export const DICT: Record<string, Entry> = {
   "arc.logScan": { en: "archive scan running …", ru: "идёт сканирование архива …" },
   "arc.logRestore": { en: "archive access restored on {code}", ru: "доступ к архиву восстановлен на {code}" },
   "arc.logTake": { en: "sealed record copied :: termination schedule", ru: "закрытая запись скопирована :: график увольнений" },
+  "arc.damaged": { en: "ARCHIVE DAMAGED", ru: "АРХИВ ПОВРЕЖДЁН" },
+  "arc.damagedBody": {
+    en: "you forced the lock yourself — the index is wrecked and there is nothing here to restore",
+    ru: "вы вскрыли замок сами — индекс разрушен, восстанавливать здесь нечего",
+  },
   "arc.looted": { en: "ARCHIVE ALREADY BREACHED", ru: "АРХИВ УЖЕ ВЗЛОМАН" },
   "arc.lootedBody": {
     en: "the sealed record was pulled on an earlier run — nothing left here to copy",
@@ -790,6 +795,56 @@ export const DICT: Record<string, Entry> = {
   "hx.logHold": { en: "HEXWALL :: {code} firewall held", ru: "HEXWALL :: файрвол {code} выстоял" },
   "hx.logAbort": { en: "hexwall attack aborted", ru: "атака на файрвол прервана" },
   "dos.hexwall": { en: "connect · crack firewall", ru: "подключиться · взломать файрвол" },
+
+  /* MEMDUMP —— PRV 口令破解 */
+  "md.title": { en: "MEMORY DUMP", ru: "ДАМП ПАМЯТИ" },
+  "md.titleIn": { en: "CLOUD SERVICE", ru: "ОБЛАЧНЫЙ СЕРВИС" },
+  "md.dump": { en: "resident memory · password fragment", ru: "резидентная память · фрагмент пароля" },
+  "md.log": { en: "attempts", ru: "попытки" },
+  "md.tries": { en: "tries", ru: "попыток" },
+  "md.len": { en: "length", ru: "длина" },
+  "md.exact": { en: "in place", ru: "на месте" },
+  "md.letters": { en: "matched", ru: "совпало" },
+  "md.submit": { en: "SUBMIT", ru: "ВВЕСТИ" },
+  "md.ph": { en: "TYPE PASSWORD", ru: "ВВЕДИТЕ ПАРОЛЬ" },
+  "md.hint": {
+    en: "highlighted words are password candidates. pick one or type it — the host reports how many letters match and how many sit in the right place.",
+    ru: "подсвеченные слова — кандидаты в пароль. выберите или введите — узел сообщит, сколько букв совпало и сколько стоит на своих местах.",
+  },
+  "md.foot": { en: "memory not wiped · residual strings readable", ru: "память не очищена · остаточные строки читаемы" },
+  "md.locked": { en: "TERMINAL LOCKED", ru: "ТЕРМИНАЛ ЗАБЛОКИРОВАН" },
+  "md.lockedSub": { en: "too many bad passwords — session dropped", ru: "слишком много неверных паролей — сеанс сброшен" },
+
+  "md.desktop": { en: "CLOUD SERVICE", ru: "ОБЛАЧНЫЙ СЕРВИС" },
+  "md.localUser": { en: "resident account", ru: "учётная запись жильца" },
+  "md.session": { en: "session live", ru: "сеанс активен" },
+  "md.icon.mail": { en: "MAIL", ru: "ПОЧТА" },
+  "md.icon.control": { en: "CONTROL", ru: "УПРАВЛЕНИЕ" },
+  "md.icon.disk": { en: "REMOTE DESKTOP", ru: "УДАЛЁННЫЙ РАБОЧИЙ СТОЛ" },
+  "md.denied": { en: "PROTECTED BY WARDEN MAX", ru: "ЗАЩИЩЕНО WARDEN MAX" },
+  "md.deniedBody": {
+    en: "{what} sits behind a WARDEN MAX container — GENIUS cannot open it yet",
+    ru: "{what} закрыта контейнером WARDEN MAX — GENIUS пока не может его вскрыть",
+  },
+  "md.deskHint": {
+    en: "the account is yours, but every application is sealed. somebody will eventually pay for what is inside.",
+    ru: "учётная запись ваша, но все приложения запечатаны. однажды кто-то заплатит за то, что внутри.",
+  },
+  "md.logout": { en: "LOG OFF", ru: "ВЫХОД" },
+  "md.footer": { en: "cloud sync · resident grid", ru: "облачная синхронизация · сеть жильцов" },
+
+  "md.logStart": { en: "MEMDUMP :: residual memory pulled from {code}", ru: "ДАМП :: снята остаточная память с {code}" },
+  "md.logTry": { en: "try {w} :: {e} in place, {n} matched", ru: "проба {w} :: {e} на месте, {n} совпало" },
+  "md.logCracked": { en: "PASSWORD ACCEPTED :: {pw}", ru: "ПАРОЛЬ ПРИНЯТ :: {pw}" },
+  "md.logIn": { en: "workstation on {code} is yours", ru: "станция на {code} в вашем распоряжении" },
+  "md.logLocked": { en: "{code} locked the terminal — too many attempts", ru: "{code} заблокировал терминал — слишком много попыток" },
+  "md.logAbort": { en: "memory dump attack aborted", ru: "атака по дампу памяти прервана" },
+  "md.granted": { en: "ACCESS GRANTED", ru: "ДОСТУП ПОЛУЧЕН" },
+  "md.grantedSub": { en: "password recovered — opening cloud service", ru: "пароль подобран — открываю облачный сервис" },
+  "md.logReuse": { en: "MEMDUMP :: stored password replayed on {code}", ru: "ДАМП :: подставлен сохранённый пароль на {code}" },
+  "md.known": { en: "password on file", ru: "пароль сохранён" },
+  "dos.enterServer": { en: "enter server", ru: "зайти на сервер" },
+  "dos.memdump": { en: "connect · crack password", ru: "подключиться · подобрать пароль" },
 };
 
 const interpolate = (s: string, p?: Record<string, string | number>) =>

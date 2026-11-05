@@ -198,7 +198,8 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
     const fac = factionById(c.faction);
     const threadBlocked = c.id === "op17"
       ? g.flags.op17_blocked === true
-      : c.id === "sablec" ? g.flags.sable_blocked === true : false;
+      : c.id === "sablec" ? g.flags.sable_blocked === true
+      : c.id === "freddy" ? g.flags.freddy_blocked === true : false;
     
     const mine = CONTRACTS.filter((x) => x.contact === c.id && g.contracts[x.id]);
     const threadClosed =
@@ -405,7 +406,8 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
         const unread = missed || awaiting;
         const blocked = c.id === "op17"
           ? g.flags.op17_blocked === true
-          : c.id === "sablec" ? g.flags.sable_blocked === true : false;
+          : c.id === "sablec" ? g.flags.sable_blocked === true
+          : c.id === "freddy" ? g.flags.freddy_blocked === true : false;
         return (
           <button
             key={c.id}

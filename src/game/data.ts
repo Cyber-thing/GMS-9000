@@ -91,7 +91,7 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     codex: ["f_intercell", "c_sable"],
     intel: "Payroll routing exposes a shell subsidiary feeding Slayer Incorporated.",
   },
-  w1p_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 12, files: ["f_scav_list"], codex: ["f_scavenger"] },
+  w1p_prv: { owner: "indep", cls: "UNDERGROUND", warden: 1, rep: 12, files: ["f_scav_list"], codex: ["f_scavenger", "n_residential"] },
   w1p_sec: {
     owner: "takamuri", cls: "CORPORATE", warden: 1, rep: 12,
     files: ["f_seismic"],
@@ -127,7 +127,7 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     sabotageGate: "sb_projector",
     intel: "Freight desk and the hall it books. Projector rigs hang off the same controller as the index.",
   },
-  w1m_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 14, files: ["f_cbgate"], codex: ["c_koma"] },
+  w1m_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 14, files: ["f_cbgate"], codex: ["c_koma", "n_residential"] },
 
   w1e_crp: {
     owner: "agogee", cls: "CORPORATE", warden: 4, rep: 24,
@@ -157,7 +157,8 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     intel: "Mission tapes predate the grid. Someone was already transmitting in 1961.",
   },
   wlz_sec: { owner: "slayer", cls: "CORPORATE", warden: 5, rep: 30, restricted: true, req: { rep: 55 }, files: ["f_concession"], codex: ["n_conflict"] },
-  wlz_prv: { owner: "indep", cls: "UNDERGROUND", warden: 3, rep: 16, files: ["f_jungle"], codex: ["c_count"] },
+  wlp_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 14, codex: ["n_residential"] },
+  wlz_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 16, files: ["f_jungle"], codex: ["c_count", "n_residential"] },
   wls_crp: { owner: "harbor", cls: "GOVERNMENT", warden: 3, rep: 16, files: ["f_manifest"], codex: ["f_harbor"] },
   wlc_rly: { owner: "indep", cls: "UNDERGROUND", warden: 4, rep: 24, files: ["f_capeecho"], codex: ["i_reverse"], intel: "Packets return reversed. The cape relay answers in a language nobody typed." },
   wld_res: { owner: "civic", cls: "GOVERNMENT", warden: 3, rep: 14, files: ["f_skydump"] },
@@ -362,6 +363,10 @@ export const CODEX: CodexEntry[] = [
     "Node defence system. Tiers 1-5. Higher tiers log intrusions and report to the owning organisation, which sours relations fast.",
     "Система защиты узлов. Уровни 1-5. Высокие уровни журналируют проникновение и докладывают владельцу, что быстро портит отношения.",
     "节点防御系统。1-5 级。等级越高越爱记日志，还会跟属主打小报告，关系掉得飞快。"),
+  C("n_residential", "NETWORK", "Resident cloud", "Жилой облачный контур", "住户云",
+    "PRV hosts are not servers in the corporate sense. Each one is a block of flats: personal machines in the apartments, all mirrored into a single resident cloud so a tenant can reach their files from any terminal. Convenient, cheap, and catastrophically trusting — the cloud keeps login material in plain memory, and that memory is never wiped between sessions.",
+    "Узлы PRV — не серверы в корпоративном смысле. Каждый из них — жилой дом: персональные машины в квартирах, зеркалируемые в единый облачный контур, чтобы жилец дотянулся до своих файлов с любого терминала. Удобно, дёшево и катастрофически доверчиво: облако держит материал для входа в открытой памяти, а память между сеансами не чистится.",
+    "PRV 主机不是企业意义上的服务器。每一台背后都是一栋居民楼：各家各户的个人电脑，统一镜像进一个住户云，方便租客在任何终端上取自己的文件。便宜、好用，而且轻信得可怕 —— 云把登录凭据明晃晃地留在内存里，而内存在会话之间从来不清。"),
   C("n_conflict", "NETWORK", "CONFLICT ZONE", "ЗОНА КОНФЛИКТА", "冲突区",
     "A sector claimed by more than one operator. WARDEN signatures overlap, routing is unstable, and nobody admits who owns what.",
     "Сектор, на который претендует несколько операторов. Сигнатуры WARDEN накладываются, маршруты нестабильны, владельца никто не признаёт.",

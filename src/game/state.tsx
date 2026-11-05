@@ -5,11 +5,13 @@ import { store, stampNow } from "../lib/util";
 import { pickL, type Lang } from "../i18n";
 import { ALL_NODES } from "../data/regions";
 import {
-  OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_READY, OP17_DELIVER, OP17_FORK,
+  OP17_INTRO, OP17_BRIEF, OP17_ACCEPTED, OP17_PREBREACHED, OP17_READY, OP17_DELIVER, OP17_FORK,
   OP17_TOLD, OP17_DISBELIEF, OP17_SOLD_REFUSAL, SABLE_PUNISH, SABLE_REWARD, SABLE_OFFER,
   FREDDY_IMPLANT, FREDDY_IMPLANT_2, FREDDY_IMPLANT_3, FREDDY_IMPLANT_4,
-  FREDDY_IMPLANT_HOLD, FREDDY_IMPLANT_DONE,
-  MARLA_PROJ, MARLA_PROJ_2, MARLA_PROJ_3, MARLA_PROJ_READY, MARLA_PROJ_ALREADY, MARLA_PROJ_DONE,
+  FREDDY_IMPLANT_HOLD, FREDDY_IMPLANT_DONE, FREDDY_IMPLANT_PRE, FREDDY_IMPLANT_BREACHED,
+  FREDDY_IMPLANT_SOLD,
+  MARLA_PROJ, MARLA_PROJ_2, MARLA_PROJ_3, MARLA_PROJ_READY, MARLA_PROJ_ALREADY,
+  MARLA_PROJ_WRECKED, MARLA_PROJ_DONE,
   ARCHIVE_PAY, ARCHIVE_REL,
   type Beat,
 } from "./questArchive";
@@ -514,6 +516,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       if (choiceId === "accept") {
+        /* 玩家可能早就自己把 ARC-N05 撬开了——那就走「我已经干完了」的分支 */
+        const pre = gRef.current.nodeStates["w1n_arc"] === "COMPROMISED";
+        if (pre) {
+          setG((s) => ({
+            ...s,
+            contracts: { ...s.contracts, ct_archive: { state: "TARGET ACCESSED", accepted: true } },
+          }));
+          OP17_PREBREACHED.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 1100));
+          return;
+        }
         pushBeat({ id: "a2", from: "OP", line: { en: "Taking the contract.", ru: "Принимаю контракт.", zh: "接了合同。" } });
         setG((s) => ({ ...s, contracts: { ...s.contracts, ct_archive: { state: "ACCEPTED", accepted: true } } }));
         later(() => OP17_ACCEPTED.forEach((b) => pushBeat(b, "op17")), 800);
@@ -596,8 +608,33 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       if (choiceId === "fi_ok") {
         pushBeat({ id: "a6", from: "OP", line: { en: "All right.", ru: "Хорошо.", zh: "行。" } }, "freddy");
-        setG((s) => ({ ...s, contracts: { ...s.contracts, ct_implant: { state: "ACCEPTED", accepted: true } } }));
-        later(() => FREDDY_IMPLANT_4.forEach((b) => pushBeat(b, "freddy")), 800);
+        const cur = gRef.current;
+        const hasMemo = cur.files.includes("f_queue_memo");
+        /* 已经卖掉就再也拿不回来了——这条线直接谈崩 */
+        const soldMemo = !hasMemo && cur.burned.includes("f_queue_memo");
+        const inside = cur.nodeStates["w1g_dsv"] === "COMPROMISED";
+        if (soldMemo) {
+          setG((s) => ({
+            ...s,
+            contracts: { ...s.contracts, ct_implant: { state: "FAILED" } },
+            relations: { ...s.relations, indep: (s.relations.indep ?? 0) - 10 },
+          }));
+          setFlag("freddy_blocked", true);
+          FREDDY_IMPLANT_SOLD.forEach((b, i) => later(() => pushBeat(b, "freddy"), 800 + i * 1100));
+          return;
+        }
+        setG((s) => ({
+          ...s,
+          contracts: {
+            ...s.contracts,
+            ct_implant: {
+              state: hasMemo ? "DATA ACQUIRED" : inside ? "TARGET ACCESSED" : "ACCEPTED",
+              accepted: true,
+            },
+          },
+        }));
+        const script = hasMemo ? FREDDY_IMPLANT_PRE : inside ? FREDDY_IMPLANT_BREACHED : FREDDY_IMPLANT_4;
+        script.forEach((b, i) => later(() => pushBeat(b, "freddy"), 800 + i * 1000));
         return;
       }
 
@@ -616,12 +653,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       if (choiceId === "mp_ok") {
         pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь.", zh: "接了。" } }, "marla");
-        const already = gRef.current.nodeStates["w1p_crp2"] === "COMPROMISED";
+        const cur = gRef.current;
+        const wrecked = cur.sabotaged.includes("w1p_crp2");
+        const already = cur.nodeStates["w1p_crp2"] === "COMPROMISED";
         setG((s) => ({
           ...s,
-          contracts: { ...s.contracts, sb_projector: { state: already ? "TARGET ACCESSED" : "ACCEPTED", accepted: true } },
+          contracts: {
+            ...s.contracts,
+            sb_projector: {
+              state: wrecked ? "SABOTAGED" : already ? "TARGET ACCESSED" : "ACCEPTED",
+              accepted: true,
+            },
+          },
         }));
-        later(() => (already ? MARLA_PROJ_ALREADY : MARLA_PROJ_READY).forEach((b) => pushBeat(b, "marla")), 850);
+        const script = wrecked ? MARLA_PROJ_WRECKED : already ? MARLA_PROJ_ALREADY : MARLA_PROJ_READY;
+        script.forEach((b, i) => later(() => pushBeat(b, "marla"), 850 + i * 1000));
         return;
       }
 
@@ -787,6 +833,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
           "уже держишь файл? быстро. передавай — перевод готов.",
           "你已经拿到了？挺快。传过来，钱就动。",
           { contract: id, action: "deliver" });
+      } else if (breached) {
+        /* 目标主机早就被玩家拿下了——客户会愣一下 */
+        say(ct.contact,
+          `wait — you are already inside ${code}? you move before I ask. just pull ${ct.file?.toUpperCase()} then.`,
+          `стоп — ты уже внутри ${code}? работаешь раньше, чем я прошу. тогда просто вытащи ${ct.file?.toUpperCase()}.`,
+          `等等 —— 你已经在 ${code} 里了？我还没开口你就动手了。那把 ${ct.file?.toUpperCase()} 掏出来就行。`,
+          { contract: id });
       } else {
         say(ct.contact,
           `target: ${code}. pull ${ct.file?.toUpperCase()} and come back.`,
@@ -891,8 +944,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const failBreach = useCallback(
     (nodeId: string, repLoss: number) => {
       const n = ALL_NODES.find((x) => x.id === nodeId);
-      setG((s) => ({ ...s, rep: Math.max(0, s.rep - repLoss) }));
-      notify("WARDEN LOCKOUT", `${n?.code ?? nodeId} · -${repLoss} REP`, "STATUS");
+      /* 被 WARDEN 抓到 = 身份彻底暴露：操作缓冲直接打满，
+         玩家必须先按「匿名重置」才能继续干活。 */
+      setG((s) => ({
+        ...s,
+        rep: Math.max(0, s.rep - repLoss),
+        ops: CFG.opsLimit,
+      }));
+      if (repLoss > 0) {
+        notify("WARDEN LOCKOUT", `${n?.code ?? nodeId} · -${repLoss} REP`, "STATUS");
+      } else {
+        notify("WARDEN LOCKOUT", `${n?.code ?? nodeId}`, "STATUS");
+      }
+      notify("SYSTEM RECOVERY REQUIRED", "GENIUS", "STATUS");
     },
     [notify]
   );

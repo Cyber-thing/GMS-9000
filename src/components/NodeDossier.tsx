@@ -11,6 +11,7 @@ import { ALL_NODES } from "../data/regions";
 import { usesVault } from "../game/vault";
 import { usesRouting } from "../game/routing";
 import { usesHexwall } from "../game/hexwall";
+import { usesMemdump } from "../game/memdump";
 import { useTut } from "../game/tutorial";
 
 export const NODE_STATE_COLOR: Record<string, string> = {
@@ -95,6 +96,7 @@ export default function NodeDossier({
   const sealed = !!meta.password;
   const routing = usesRouting(node.type, meta.warden);
   const hexwall = usesHexwall(node.type, meta.warden);
+  const memdump = usesMemdump(node.type, meta.warden);
   const wrecked = g.sabotaged.includes(node.id);
   const burning = g.burning.includes(node.id);
   /* 部分主机只有在收到对应合同时才会显示破坏操作。 */
@@ -203,14 +205,18 @@ export default function NodeDossier({
             {chk.ok && <Zap size={11} />}
             {chk.ok
               ? breached
-                ? t("dos.hackRepeat")
+                ? memdump
+                  ? t("dos.enterServer")
+                  : t("dos.hackRepeat")
                 : sealed
                   ? t("dos.sealed")
                   : routing
                     ? t("dos.routing")
                     : hexwall
                       ? t("dos.hexwall")
-                      : t("dos.hack")
+                      : memdump
+                        ? t("dos.memdump")
+                        : t("dos.hack")
               : chk.reason === "LOCKED"
                 ? t("dos.lockedBtn")
                 : chk.reason === "RESTRICTED"

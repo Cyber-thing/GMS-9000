@@ -478,6 +478,47 @@ html[lang="zh-CN"] .blocksbar {
   .noise-band, .noise-glitch { animation: none; opacity: 0; }
 }
 
+/* ---------- MEMDUMP：内存在抖 ---------- */
+@keyframes bitflip {
+  0%   { opacity: 0.25; transform: translateY(-1px) scaleX(1.25); }
+  40%  { opacity: 1;    transform: translateY(1px)  scaleX(0.85); }
+  100% { opacity: 0.7;  transform: translateY(0)    scaleX(1); }
+}
+.anim-bitflip {
+  display: inline-block;
+  animation: bitflip 0.42s steps(3, end);
+}
+
+/* 候选词轻微颤动，像读错的扇区 */
+@keyframes wordJitter {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(0.5px, -0.5px); }
+  50%      { transform: translate(-0.5px, 0.5px); }
+  75%      { transform: translate(0.5px, 0.5px); }
+}
+.anim-wordjitter { animation: wordJitter 2.6s steps(4, end) infinite; }
+
+/* ACCESS GRANTED 的打字/闪烁登场 */
+@keyframes grantPop {
+  0%   { opacity: 0; transform: scale(0.86); filter: brightness(2.6); }
+  35%  { opacity: 1; transform: scale(1.06); }
+  45%  { opacity: 0.35; }
+  55%  { opacity: 1; transform: scale(1); }
+  70%  { opacity: 0.6; }
+  100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+}
+.anim-grant { animation: grantPop 0.9s ease-out both; }
+
+/* ---------- 输入框错误抖动 ---------- */
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+.anim-shake { animation: inputShake 0.4s ease-in-out; }
+
 /* ---------- HEXWALL：湮灭动画 ----------
    同色顶片先朝对方冲过去，再一起炸成白光。 */
 @keyframes hexkill {

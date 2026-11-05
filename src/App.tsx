@@ -14,6 +14,7 @@ import BlackMarket from "./components/BlackMarket";
 import Splash from "./components/Splash";
 import RoutingGame from "./components/RoutingGame";
 import HexwallGame from "./components/HexwallGame";
+import MemdumpGame from "./components/MemdumpGame";
 import WardenPass from "./components/WardenPass";
 import ArchiveWindow from "./components/ArchiveWindow";
 import HackerExchange from "./components/HackerExchange";
@@ -21,6 +22,7 @@ import KeyBanner from "./components/KeyBanner";
 import MessageToast from "./components/MessageToast";
 import { ROUTING_TIERS, usesRouting } from "./game/routing";
 import { HEXWALL_TIERS, usesHexwall } from "./game/hexwall";
+import { DUMP_TIERS, usesMemdump } from "./game/memdump";
 import TutorialCall from "./components/TutorialCall";
 import { MEMO_ASIDE, tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
 import { useColumns } from "./hooks/useColumns";
@@ -153,6 +155,7 @@ export default function App() {
   const [marketOpen, setMarketOpen] = useState(false);
   const [routingId, setRoutingId] = useState<string | null>(null);
   const [hexId, setHexId] = useState<string | null>(null);
+  const [dumpId, setDumpId] = useState<string | null>(null);
   const [passId, setPassId] = useState<string | null>(null);
   const [archiveId, setArchiveId] = useState<string | null>(null);
 
@@ -453,6 +456,13 @@ export default function App() {
       }
 
       const metaR = NODE_META[id];
+      /* PRV 节点：先从内存转储里拼出口令；口令记住了就直接进 */
+      if (usesMemdump(n.type, metaR.warden)) {
+        setDumpId(id);
+        if (g.nodeStates[id] === "COMPROMISED") print(t("md.logReuse", { code: n.code }), "ok");
+        else print(t("md.logStart", { code: n.code }), "ok");
+        return;
+      }
       /* SEC 节点：防火墙晶格小游戏 */
       if (usesHexwall(n.type, metaR.warden)) {
         setHexId(id);
@@ -588,6 +598,23 @@ export default function App() {
     if (tutStepId === "contacts" && tab === "CONTACTS") tutSatisfy("tab:CONTACTS");
   }, [tutStepId, g.files, g.nodeStates, selectedNode, inRegion, tab, tutSatisfy]);
 
+  /* 口令一破就结算：节点此刻攻陷，邻居解锁，口令也就记下了。 */
+  const dumpCracked = useCallback(() => {
+    const id = dumpId;
+    if (!id) return;
+    const n = ALL_NODES.find((x) => x.id === id);
+    if (n) {
+      print(t("md.logIn", { code: n.code }), "ok");
+      pushEvent(t("md.logIn", { code: n.code }), "good");
+    }
+    completeHack(id);
+  }, [dumpId, completeHack, print, pushEvent, t]);
+
+  /* 「注销」只是关窗——进度早在破解那一刻就存下了。 */
+  const dumpWin = useCallback(() => {
+    setDumpId(null);
+  }, []);
+
   const hexWin = useCallback(() => {
     const id = hexId;
     setHexId(null);
@@ -641,13 +668,15 @@ export default function App() {
     const id = archiveId;
     setArchiveId(null);
     if (!id) return;
-    
+    /* 没接委托就自己闯进来：只是把索引搞坏了，拿不到「恢复凭证」 */
+    if (!g.contracts["ct_archive"]) return;
+
     if (!g.files.includes("f_access_restored")) {
       download("f_access_restored");
       const n = ALL_NODES.find((x) => x.id === id);
       if (n) print(t("arc.logRestore", { code: n.code }), "ok");
     }
-  }, [archiveId, g.files, download, print, t]);
+  }, [archiveId, g.files, g.contracts, download, print, t]);
 
   /* ---------- 破坏 ---------- */
   const runSabotage = useCallback(
@@ -789,6 +818,7 @@ export default function App() {
     setMarketOpen(false);
     setRoutingId(null);
     setHexId(null);
+    setDumpId(null);
     setPassId(null);
     setArchiveId(null);
     setVaultId(null);
@@ -1113,8 +1143,39 @@ export default function App() {
             onEjected={() => {
               print(t("t.vaultTimeout", { code: vn.code }), "err");
               pushEvent(t("t.vaultTimeout", { code: vn.code }), "bad");
+              /* 被抓 = 身份烧掉；短暂展示提示后自动退回地图 */
+              failBreach(vaultId, 0);
+              later(() => setVaultId(null), 1800);
             }}
             onClose={closeVault}
+            onLog={(k, params) => print(t(k, params), "dim")}
+          />
+        );
+      })()}
+
+      {dumpId && (() => {
+        const n = ALL_NODES.find((x) => x.id === dumpId);
+        const dt = DUMP_TIERS[NODE_META[dumpId].warden];
+        if (!n || !dt) return null;
+        return (
+          <MemdumpGame
+            key={dumpId}
+            nodeCode={n.code}
+            warden={NODE_META[dumpId].warden}
+            tier={dt}
+            known={g.nodeStates[dumpId] === "COMPROMISED"}
+            onCracked={dumpCracked}
+            onWin={dumpWin}
+            onLose={() => {
+              print(t("md.logLocked", { code: n.code }), "err");
+              pushEvent(t("md.logLocked", { code: n.code }), "bad");
+              failBreach(dumpId, dt.failRep);
+              setDumpId(null);
+            }}
+            onAbort={() => {
+              print(t("md.logAbort"), "warn");
+              setDumpId(null);
+            }}
             onLog={(k, params) => print(t(k, params), "dim")}
           />
         );
@@ -1133,6 +1194,8 @@ export default function App() {
             onWin={hexWin}
             onLose={() => {
               print(t("hx.logHold", { code: n.code }), "err");
+              pushEvent(t("hx.logHold", { code: n.code }), "bad");
+              failBreach(hexId, HEXWALL_TIERS[NODE_META[hexId].warden]?.failRep ?? 0);
               setHexId(null);
             }}
             onAbort={() => {
@@ -1158,6 +1221,7 @@ export default function App() {
             onLose={() => {
               print(t("t.rtTimeout", { code: n.code }), "err");
               pushEvent(t("t.rtTimeout", { code: n.code }), "bad");
+              failBreach(routingId, ROUTING_TIERS[NODE_META[routingId].warden]?.failRep ?? 0);
               setRoutingId(null);
             }}
             onAbort={() => setRoutingId(null)}
@@ -1195,6 +1259,7 @@ export default function App() {
               g.files.includes("f_termlist") ||
               g.burned.includes("f_termlist")
             }
+            hasJob={!!g.contracts["ct_archive"]}
             onTake={archiveTake}
             onClose={archiveClose}
             onLog={(k, params) => print(t(k, params), "dim")}

@@ -4,7 +4,7 @@ import { cn } from "../utils/cn";
 import { blockBar } from "../lib/util";
 import { useT } from "../i18n";
 
-type Phase = "idle" | "scanning" | "found" | "saved" | "looted";
+type Phase = "idle" | "scanning" | "found" | "saved" | "looted" | "damaged";
 
 const SPOOLS = [
   "PERS-ROSTER-7781", "LEAVE-REQ-0042", "SHIFT-ROTA-91", "MEDICAL-CLAIMS", "PENSION-TIER-B",
@@ -16,19 +16,29 @@ const SPOOLS = [
 export default function ArchiveWindow({
   nodeCode,
   alreadyTaken,
+  hasJob,
   onTake,
   onClose,
   onLog,
 }: {
   nodeCode: string;
   alreadyTaken: boolean;
+  /** 还没接到 operator_17 的委托时，这里没什么可「恢复」的。 */
+  hasJob: boolean;
   onTake: () => void;
   onClose: () => void;
   onLog: (key: string, params?: Record<string, string | number>) => void;
 }) {
   const { t } = useT();
   /* 已经洗过的档案库：再进来只剩一行「已被扒空」的提示 */
-  const [phase, setPhase] = useState<Phase>(alreadyTaken ? "looted" : "idle");
+  const [phase, setPhase] = useState<Phase>(
+    alreadyTaken ? "looted" : hasJob ? "idle" : "damaged"
+  );
+
+  /* 中途接到委托：从「损坏」切回可扫描 */
+  useEffect(() => {
+    if (hasJob && phase === "damaged") setPhase("idle");
+  }, [hasJob, phase]);
   const [pct, setPct] = useState(0);
   const [cursor, setCursor] = useState(0);
   const timers = useRef<number[]>([]);
@@ -36,7 +46,7 @@ export default function ArchiveWindow({
   useEffect(() => () => timers.current.forEach((h) => { clearTimeout(h); clearInterval(h); }), []);
 
   const scan = () => {
-    if (phase !== "idle") return;
+    if (phase !== "idle" || !hasJob) return;
     setPhase("scanning");
     setPct(0);
     onLog("arc.logScan");
@@ -96,6 +106,23 @@ export default function ArchiveWindow({
           })}
         </div>
 
+        {/* 自己先闯进来：索引已经被破坏，现在没什么可恢复的 */}
+        {phase === "damaged" && (
+          <div className="shrink-0 border-t border-line2 bg-panel2 px-3 py-2.5">
+            <div className="flex items-start gap-2 border border-oxide/40 bg-oxide/8 px-2.5 py-2">
+              <ShieldOff size={12} className="mt-[1px] shrink-0 text-oxide" />
+              <div className="min-w-0">
+                <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-oxide">
+                  {t("arc.damaged")}
+                </div>
+                <p className="mt-[2px] text-[8.5px] uppercase leading-relaxed tracking-[0.1em] text-faint">
+                  {t("arc.damagedBody")}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 已被扒空：说明这里再没有可拿的东西 */}
         {phase === "looted" && (
           <div className="shrink-0 border-t border-line2 bg-panel2 px-3 py-2.5">
@@ -143,6 +170,10 @@ export default function ArchiveWindow({
               <span className="text-[8.5px] uppercase tracking-[0.14em] text-amber">{t("arc.scanning")}</span>
               <span className="blocksbar ml-auto text-[13px] text-amber">{blockBar(pct, 16)}</span>
             </>
+          ) : phase === "damaged" ? (
+            <span className="flex items-center gap-1.5 text-[8.5px] uppercase tracking-[0.14em] text-oxide">
+              <ShieldOff size={10} /> {t("arc.damaged")}
+            </span>
           ) : phase === "idle" ? (
             <button
               onClick={scan}
