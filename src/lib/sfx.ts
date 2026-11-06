@@ -205,5 +205,28 @@ if (typeof window !== "undefined") {
       for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > peak) peak = a; sum += d[i] * d[i]; }
       return { peak, rms: Math.sqrt(sum / d.length) };
     },
+    /** 按窗口取响度包线，用来画脉冲的形状（调试铃声用）。 */
+    async envelope(mode: Exclude<SfxMode, "off">, name: SfxName, seconds = 1.6, bins = 90) {
+      const OAC = window.OfflineAudioContext;
+      if (!OAC) return null;
+      const oc = new OAC(1, Math.ceil(44100 * seconds), 44100);
+      const out = oc.createGain(); out.connect(oc.destination);
+      const eng =
+        mode === "ym"  ? createYmEngine(oc as unknown as AudioContext, out) :
+        mode === "new" ? createFmEngine(oc as unknown as AudioContext, out) :
+                         createLegacyEngine(oc as unknown as AudioContext, out);
+      eng.play(name);
+      const buf = await oc.startRendering();
+      const d = buf.getChannelData(0);
+      const win = Math.floor(d.length / bins);
+      const curve: number[] = [];
+      for (let i = 0; i < bins; i++) {
+        let s2 = 0;
+        for (let j = 0; j < win; j++) s2 += d[i * win + j] * d[i * win + j];
+        curve.push(Math.sqrt(s2 / win));
+      }
+      const max = Math.max(...curve, 0.001);
+      return curve.map((v) => +(v / max).toFixed(3));
+    },
   };
 }

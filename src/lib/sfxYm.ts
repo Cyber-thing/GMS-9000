@@ -63,6 +63,8 @@ const ALGO: Record<number, { mods: number[][]; carriers: number[] }> = {
 interface Patch {
   algo: number;
   ops: OpSpec[];
+  /** 慢速脉冲式调幅：0 关闭。值是包络被掐到零的占空比，让能量「动」起来 */
+  pulse?: number;
   /** 反馈量 0..1：近似 YM2612 的 op1 自反馈，越大泛音越毛 */
   feedback?: number;
   /** 音高包络：起音瞬间的频率倍率，很快落回 1。做机械「哐」的关键 */
@@ -243,6 +245,16 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     /* 输出级：整条声部的总音量，便于被抢占时统一淡出 */
     const vOut = ac.createGain();
     vOut.gain.value = gain;
+    if (patch.pulse) {
+      /* 每个算子一份，别共享增益——不然包络会互相打架 */
+      const gate = Math.max(0.02, dur * 0.11);
+      const steps = Math.max(2, Math.floor(dur / gate));
+      for (let i = 0; i < steps; i++) {
+        const a = t0 + i * gate;
+        vOut.gain.setValueAtTime(i % 2 === 0 ? gain : gain * 0.06, a);
+      }
+      vOut.gain.setValueAtTime(gain * 0.06, t0 + dur);
+    }
     vOut.connect(busNode);
 
     /* 先建好所有算子的振荡器与包络 */
@@ -466,6 +478,16 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
         { ratio: 1.0, level: 1.0, a: 0.006, d: 0.45, s: 0.08, r: 0.5 },
       ],
     } as Patch,
+    /** 电铃：两片金属互撞，逼出老式电话的电磁铃感 */
+    ringer: {
+      algo: 4, feedback: 0.35, pitchHit: 1.5, bus: "fm", pulse: 0.72,
+      ops: [
+        { ratio: 4.42, level: 1.9, a: 0.005, d: 0.4, s: 0.1, r: 0.5, detune: 26 },
+        { ratio: 1.51, level: 1.3, a: 0.006, d: 0.5, s: 0.18, r: 0.6 },
+        { ratio: 6.29, level: 1.5, a: 0.004, d: 0.35, s: 0.02, r: 0.4, detune: -34 },
+        { ratio: 2.13, level: 1.0, a: 0.008, d: 0.6, s: 0.1, r: 0.7 },
+      ],
+    } as Patch,
     /** 警报：咬人的不和谐 */
     siren: {
       algo: 5, feedback: 0.6, bus: "fm", broken: 0.2,
@@ -620,14 +642,24 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
           patch: { algo: 7, bus: "clean", ops: [{ ratio: 1, level: 1, a: 0.08, d: 0.5, s: 0, r: 0.4, wave: "square" }] },
         });
         break;
-      case "ring":
-        /* 三全音交替，金属钟声 —— 机房里的电铃 */
-        seq([
-          [nt("A", 2), 0.12], [nt("Ds", 3), 0.12], [nt("A", 2), 0.12], [nt("Ds", 3), 0.13],
-          [0, 0.14],
-          [nt("A", 2), 0.12], [nt("Ds", 3), 0.12], [nt("A", 2), 0.12], [nt("Ds", 3), 0.16],
-        ], P.bell, 0.4, { prio: 3 });
+      case "ring": {
+        /* 机械电铃：两片金属互敲。每响一下换个音高和失谐，不单调 */
+        const clang = (f: number, at: number, g = 1) => {
+          fmVoice({ freq: f, dur: 0.1, gain: 0.5 * g, patch: P.ringer, delay: at, prio: 3 });
+          fmVoice({ freq: f * 3.13, dur: 0.05, gain: 0.16 * g, patch: P.ringer, delay: at + 0.012, prio: 3 });
+        };
+        /* 第一轮：哐——哐-铛-铛 */
+        clang(nt("F", 3), 0, 1);
+        clang(nt("F", 3) * 1.34, 0.15, 0.7);
+        clang(nt("F", 3) * 1.12, 0.23, 0.85);
+        clang(nt("F", 2) * 1.5, 0.31, 0.6);
+        /* 第二轮：换组音高，避免完全重复 */
+        clang(nt("A", 2) * 1.26, 0.52, 0.95);
+        clang(nt("A", 3) * 1.19, 0.67, 0.65);
+        clang(nt("G", 3) * 1.4, 0.75, 0.8);
+        clang(nt("A", 2) * 1.26, 0.83, 0.55);
         break;
+      }
       case "answer":
         seq([[nt("A", 1), 0.06], [nt("C", 2), 0.06], [nt("E", 2), 0.12]], P.steel, 0.5, { prio: 2 });
         break;
