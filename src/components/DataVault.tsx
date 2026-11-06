@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, FolderClosed, FolderOpen, HardDrive, Radar, ShieldCheck, X } from "lucide-react";
 import { cn } from "../utils/cn";
 import { blockBar } from "../lib/util";
+import { sfx } from "../lib/sfx";
 import { pickL, useT } from "../i18n";
 import { StatusDot } from "./chrome";
 import { resolveFile } from "../game/data";
@@ -104,6 +105,7 @@ export default function DataVault({
       return;
     }
     setScanning(file.id);
+    sfx("scan");
     setPct(0);
     patch(file.id, { scan: "scanning" });
     onLog("dv.logScan", { name: file.name });
@@ -119,6 +121,7 @@ export default function DataVault({
         const res = resolveScan(file, nodeId, lang, fileName);
         patch(file.id, { scan: "done", result: res });
 
+        sfx(res.kind === "empty" ? "tick" : "found");
         if (res.kind === "payload" && res.fileId) {
           setFound((f) => (f.includes(res.fileId!) ? f : [...f, res.fileId!]));
           onAcquire(res.fileId);
@@ -155,7 +158,7 @@ export default function DataVault({
   const dirsLabel = useMemo(() => `${fs.folders.length}`, [fs.folders.length]);
 
   return (
-    <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
+    <div data-zone="Game" className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin relative flex max-h-[92vh] w-[min(760px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* ---- 标题栏 ---- */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
@@ -195,6 +198,7 @@ export default function DataVault({
           running={!ejected}
           onExpire={() => {
             setEjected(true);
+            sfx("hackFail");
             setReader(null);
             onEjected();
           }}

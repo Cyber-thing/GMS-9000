@@ -478,6 +478,40 @@ html[lang="zh-CN"] .blocksbar {
   .noise-band, .noise-glitch { animation: none; opacity: 0; }
 }
 
+/* ---------- CRT 弧面：整块画面交给 SVG 置换滤镜 ---------- */
+.crt-warp {
+  filter: url(#crt-warp);
+  /* 让浏览器把这一层单独提出来合成，滤镜就不用每帧重算整棵树 */
+  will-change: filter;
+}
+
+/* ---------- CRT 玻璃：固定的反光 + 弧面暗角 ----------
+   机器不再摇晃，所以反光是静止的；靠四角压暗来表现管面是鼓的。 */
+.crt-glass {
+  background:
+    /* 房间灯打在管面左上的亮斑 */
+    radial-gradient(38% 30% at 27% 20%,
+      rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 70%),
+    /* 斜拉的一道长反光 */
+    linear-gradient(118deg,
+      rgba(255, 255, 255, 0) 36%,
+      rgba(255, 255, 255, 0.032) 50%,
+      rgba(255, 255, 255, 0) 62%),
+    /* 中心微微提亮：鼓起来的地方离光源更近 */
+    radial-gradient(70% 70% at 50% 46%,
+      rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0) 72%),
+    /* 边缘的荧光外溢 */
+    radial-gradient(118% 118% at 50% 50%,
+      rgba(0, 0, 0, 0) 56%,
+      rgb(var(--phosrgb) / 0.055) 80%,
+      rgba(0, 0, 0, 0) 100%),
+    /* 弧面暗角：越靠边越暗，四角最深 */
+    radial-gradient(124% 124% at 50% 50%,
+      rgba(0, 0, 0, 0) 48%,
+      rgba(0, 0, 0, 0.26) 76%,
+      rgba(0, 0, 0, 0.66) 100%);
+}
+
 /* ---------- MEMDUMP：内存在抖 ---------- */
 @keyframes bitflip {
   0%   { opacity: 0.25; transform: translateY(-1px) scaleX(1.25); }

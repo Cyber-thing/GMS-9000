@@ -144,9 +144,8 @@ export default function WorldMap({
         </div>
       }
     >
-      <div ref={hostRef} className="relative flex h-full w-full items-center justify-center overflow-hidden p-1.5">
-        <div
-          className="relative border border-line2 bg-[#0b0e11]"
+      <div ref={hostRef} data-zone="Map" className="relative flex h-full w-full items-center justify-center overflow-hidden p-1.5">
+        <div className="relative border border-line2 bg-[#0b0e11]"
           style={{ width: box.w, height: box.h }}
         >
           {}
@@ -192,8 +191,7 @@ export default function WorldMap({
           </svg>
 
           {}
-          <div
-            className="absolute z-10"
+          <div className="absolute z-10"
             style={{ left: `${lonToX(UPLINK.lon) * 100}%`, top: `${latToY(UPLINK.lat) * 100}%`, transform: "translate(-50%,-50%)" }}
           >
             <div className="flex flex-col items-center">
@@ -242,8 +240,7 @@ export default function WorldMap({
                   )}
                 </span>
                 <span className="absolute left-full top-1/2 ml-1 -translate-y-1/2 whitespace-nowrap text-left">
-                  <span
-                    className={cn(
+                  <span className={cn(
                       "block text-[10px] font-bold tracking-[0.18em] transition-colors",
                       locked ? "text-dim" : "text-phosbrite group-hover:bg-phos group-hover:text-ink"
                     )}
@@ -253,8 +250,7 @@ export default function WorldMap({
                   <span className="block text-[7.5px] tracking-[0.2em] text-dim">
                     {regionContinent(lang, r.id, r.continent)}
                   </span>
-                  <span
-                    className={cn(
+                  <span className={cn(
                       "block text-[7px] tracking-[0.14em] transition-opacity",
                       locked ? "text-oxide/80 opacity-100" : "text-faint opacity-0 group-hover:opacity-100"
                     )}

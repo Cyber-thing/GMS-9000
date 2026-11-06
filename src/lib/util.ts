@@ -38,7 +38,7 @@ export const store = {
     }
   },
   /** 清除游戏进度，同时默认保留语言、CRT 和列宽等界面设置。 */
-    wipe(keep: string[] = ["lang", "fx", "noise", "phos", "avatar", "col.left", "col.right"]) {
+    wipe(keep: string[] = ["lang", "fx", "noise", "depth", "depth.migrated", "sfx", "sfx.vol", "sfx.mode", "sfx.mode.migrated", "sfx.mode.v3", "phos", "avatar", "col.left", "col.right"]) {
     try {
       const spared = new Set(keep.map((k) => "netgrid." + k));
       const doomed: string[] = [];

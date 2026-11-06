@@ -82,6 +82,7 @@ function NodeMarker({
         e.stopPropagation();
         onSelect();
       }}
+      data-sfx="uiNode"
       title={`${node.code} · ${t("node.suffix", { t: t(`type.${node.type}`) })} · ${connected ? t("st.CONNECTED") : t(`st.${status}`)}`}
       className={cn(
         "group absolute z-20 cursor-crosshair outline-none transition-opacity duration-500",
@@ -97,26 +98,22 @@ function NodeMarker({
     >
       <span className="relative block h-[20px] w-[20px]">
         {burst && (
-          <span
-            className="anim-ringout pointer-events-none absolute inset-0 border"
+          <span className="anim-ringout pointer-events-none absolute inset-0 border"
             style={{ borderColor: STATUS_COLOR.CONNECTED }}
           />
         )}
         {burning && (
-          <span
-            className="pointer-events-none absolute inset-[-5px] animate-softpulse rounded-full"
+          <span className="pointer-events-none absolute inset-[-5px] animate-softpulse rounded-full"
             style={{ background: "radial-gradient(circle, rgba(224,99,74,0.45), transparent 70%)" }}
           />
         )}
         {connected && (
-          <span
-            className="pointer-events-none absolute inset-[-3px] animate-[spin_7s_linear_infinite] border border-dashed"
+          <span className="pointer-events-none absolute inset-[-3px] animate-[spin_7s_linear_infinite] border border-dashed"
             style={{ borderColor: alfa(color, 60) }}
           />
         )}
         {selected && <Brackets color={connecting ? CH_COLORS.amber : CH_COLORS.phos} size={7} />}
-        <span
-          className={cn(
+        <span className={cn(
             "absolute left-1/2 top-1/2 block h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 border transition-transform duration-150 group-hover:scale-125",
             shapeClass(glyph),
             connecting && "animate-softpulse",
@@ -137,8 +134,7 @@ function NodeMarker({
           )}
         </span>
       </span>
-      <span
-        className={cn(
+      <span className={cn(
           "pointer-events-none absolute whitespace-nowrap rounded-[1px] bg-ink/80 px-[2px] py-[1px] text-[7px] leading-none tracking-[0.06em] transition-colors",
           "group-hover:z-30 group-hover:bg-ink",
           side === "bottom"
@@ -403,8 +399,7 @@ export default function NetworkMap({
           }}
         >
           {}
-          <svg
-            className="absolute inset-0 h-full w-full"
+          <svg className="absolute inset-0 h-full w-full"
             viewBox={`0 0 ${MAP_W} ${MAP_H}`}
             preserveAspectRatio="none"
             aria-hidden
@@ -513,16 +508,14 @@ export default function NetworkMap({
               >
                 <SectorHatch status={s.status} />
                 {!sel && (
-                  <span
-                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                  <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                     style={{ background: alfa(col, 7), boxShadow: `inset 0 0 0 1px ${alfa(col, 60)}` }}
                   />
                 )}
                 {sel && <Brackets color={col} size={10} />}
                 {/* 标签块 */}
                 <div className="pointer-events-none absolute left-[16px] top-[15px] flex items-center gap-1.5">
-                  <span
-                    className="px-1 py-[1px] text-[7.5px] font-bold tracking-[0.16em]"
+                  <span className="px-1 py-[1px] text-[7.5px] font-bold tracking-[0.16em]"
                     style={
                       sel
                         ? { background: col, color: "var(--color-ink)" }
@@ -531,8 +524,7 @@ export default function NetworkMap({
                   >
                     {s.code}
                   </span>
-                  <span
-                    className="pixel text-[15px] uppercase leading-none tracking-[0.1em] transition-colors"
+                  <span className="pixel text-[15px] uppercase leading-none tracking-[0.1em] transition-colors"
                     style={{
                       color: sel ? col : "var(--color-sage)",
                       textShadow: sel ? `0 0 10px ${alfa(col, 40)}` : "0 1px 2px rgba(0,0,0,0.9)",
@@ -545,8 +537,7 @@ export default function NetworkMap({
                     {t(`st.${s.status}`)}
                   </span>
                 </div>
-                <span
-                  className="pointer-events-none absolute bottom-[4px] right-[6px] bg-ink/70 px-[3px] text-[8px] tracking-[0.14em]"
+                <span className="pointer-events-none absolute bottom-[4px] right-[6px] bg-ink/70 px-[3px] text-[8px] tracking-[0.14em]"
                   style={{ color: sel ? col : "var(--color-dim)" }}
                 >
                   {t("map.nd", { n: nodes.filter((n) => n.sector === s.id).length })}
@@ -573,8 +564,7 @@ export default function NetworkMap({
 
           {/* ======== 缓慢扫描线 ======== */}
           <div className="pointer-events-none absolute inset-0 z-[6] overflow-hidden">
-            <div
-              className="net-sweep absolute left-0 right-0 h-[3px]"
+            <div className="net-sweep absolute left-0 right-0 h-[3px]"
               style={{
                 background:
                   "linear-gradient(to bottom, transparent, rgb(var(--phosrgb) / 0.09), rgb(var(--phosrgb) / 0.16), rgb(var(--phosrgb) / 0.09), transparent)",
@@ -602,8 +592,7 @@ export default function NetworkMap({
           ))}
 
           {/* ======== 图例 (悬停展开) ======== */}
-          <div
-            className={cn("absolute bottom-[5px] left-[16px] z-[15] hidden md:block", gating && "tut-dim")}
+          <div className={cn("absolute bottom-[5px] left-[16px] z-[15] hidden md:block", gating && "tut-dim")}
             style={{
               transform: `scale(${1 / view.scale})`,
               transformOrigin: "bottom left",

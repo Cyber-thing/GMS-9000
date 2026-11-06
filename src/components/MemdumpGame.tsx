@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HardDrive, Mail, Power, Settings2, ShieldAlert, Terminal, X } from "lucide-react";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
+import { sfx } from "../lib/sfx";
 import { StatusDot } from "./chrome";
 import WardenClock from "./WardenClock";
 import {
@@ -264,6 +265,7 @@ export default function MemdumpGame({
 
     if (guess === board.secret) {
       onLog?.("md.logCracked", { pw: guess });
+      sfx("hackOk");
       /* 立刻记账：节点此刻就算拿下，相邻节点随之解锁 */
       onCracked?.();
       /* 先打出 ACCESS GRANTED，再滑进桌面 */
@@ -275,9 +277,11 @@ export default function MemdumpGame({
     onLog?.("md.logTry", { w: guess, e: at.exact, n: at.letters });
     /* 答错就抖一下 */
     setShake(true);
+    sfx("deny");
     timers.current.push(window.setTimeout(() => setShake(false), 420));
     if (triesLeft(board, next) <= 0) {
       setLocked(true);
+      sfx("hackFail");
       timers.current.push(window.setTimeout(onLose, 1800));
     }
   }, [board, attempts, onLose, onLog, onCracked]);
@@ -303,7 +307,7 @@ export default function MemdumpGame({
     setTyped("");
     const SPEED = 55;
     for (let i = 1; i <= w.length; i++) {
-      timers.current.push(window.setTimeout(() => setTyped(w.slice(0, i)), i * SPEED));
+      timers.current.push(window.setTimeout(() => { setTyped(w.slice(0, i)); sfx("type"); }, i * SPEED));
     }
     timers.current.push(window.setTimeout(() => {
       setTyping(false);
@@ -322,7 +326,7 @@ export default function MemdumpGame({
   };
 
   return (
-    <div className="fixed inset-0 z-[115] flex items-center justify-center bg-ink/85 p-3">
+    <div data-zone="Game" className="fixed inset-0 z-[115] flex items-center justify-center bg-ink/85 p-3">
       <div className="anim-msgin flex max-h-[94vh] w-[min(660px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* 标题栏 */}
         <div className="flex shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5 py-[6px]">
@@ -369,6 +373,7 @@ export default function MemdumpGame({
                     running={!done}
                     onExpire={() => {
                       setLocked(true);
+                      sfx("hackFail");
                       timers.current.push(window.setTimeout(onLose, 1600));
                     }}
                   />

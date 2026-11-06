@@ -265,14 +265,12 @@ function Shell({
   const TABS: [Tab, string][] = [["sell", "bm.tab.sell"], ["buy", "bm.tab.buy"], ["jobs", "bm.tab.jobs"]];
 
   return (
-    <div className="fixed inset-0 z-[94] flex items-end justify-end bg-ink/70 p-2 backdrop-blur-[1px] sm:items-center sm:justify-center sm:p-4">
-      <div
-        className="anim-msgin flex max-h-[86vh] w-[min(460px,100%)] flex-col border bg-[#140d0c] shadow-[0_0_70px_rgba(194,91,70,0.18)]"
+    <div data-zone="Trade" className="fixed inset-0 z-[94] flex items-end justify-end bg-ink/70 p-2 backdrop-blur-[1px] sm:items-center sm:justify-center sm:p-4">
+      <div className="anim-msgin flex max-h-[86vh] w-[min(460px,100%)] flex-col border bg-[#140d0c] shadow-[0_0_70px_rgba(194,91,70,0.18)]"
         style={{ borderColor: "#c25b4688" }}
       >
         {/* 标题栏 */}
-        <div
-          className="flex h-[28px] shrink-0 items-center gap-2 border-b px-2.5"
+        <div className="flex h-[28px] shrink-0 items-center gap-2 border-b px-2.5"
           style={{ borderColor: "#c25b4855", background: "rgba(194,91,70,0.12)" }}
         >
           <ShoppingBag size={12} style={{ color: RED }} />
@@ -312,8 +310,7 @@ function Shell({
 
         {children}
 
-        <div
-          className="shrink-0 border-t px-2.5 py-[4px] text-center text-[7.5px] uppercase tracking-[0.18em] text-faint"
+        <div className="shrink-0 border-t px-2.5 py-[4px] text-center text-[7.5px] uppercase tracking-[0.18em] text-faint"
           style={{ borderColor: "#c25b4833" }}
         >
           {t("bm.motto")}

@@ -332,7 +332,7 @@ export default function BreachGame({
   const danger = timerOn && left <= 10;
 
   return (
-    <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
+    <div data-zone="Game" className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div
         className="anim-msgin flex max-h-[94vh] w-full flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]"
         style={{ maxWidth: Math.min(boardW + 40, 1120) }}

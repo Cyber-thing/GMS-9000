@@ -71,7 +71,7 @@ export default function ArchiveWindow({
   };
 
   return (
-    <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
+    <div data-zone="Game" className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[92vh] w-[min(560px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.78)]">
         {/* 标题栏 */}
         <div className="flex h-[26px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">

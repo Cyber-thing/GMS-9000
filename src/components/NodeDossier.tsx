@@ -137,6 +137,7 @@ export default function NodeDossier({
 
   return (
     <Panel
+      data-zone="Node"
       title={t("panel.node")}
       className="min-h-0 shrink-0"
       accent={color}
@@ -151,8 +152,7 @@ export default function NodeDossier({
               {node.code}
             </span>
           </span>
-          <span
-            className="shrink-0 border px-1.5 py-[2px] text-[8px] font-bold tracking-[0.14em]"
+          <span className="shrink-0 border px-1.5 py-[2px] text-[8px] font-bold tracking-[0.14em]"
             style={{ color, borderColor: alfa(color, 40) }}
           >
             {t(`nst.${st}`)}
@@ -228,8 +228,7 @@ export default function NodeDossier({
         {/* ---- 破坏：已攻陷的企业节点只保留这一个操作 ---- */}
         {corp && st === "COMPROMISED" && (
           wrecked ? (
-            <div
-              className={cn(
+            <div className={cn(
                 "mt-1.5 flex items-center justify-center gap-1.5 border py-[6px] text-[9px] font-bold uppercase tracking-[0.14em]",
                 burning ? "border-oxide/50 bg-oxide/10 text-oxide" : "border-amberdim/50 bg-amber/8 text-amberdim"
               )}
@@ -253,16 +252,14 @@ export default function NodeDossier({
 
         {/* ---- 访问条件 ---- */}
         {gated && (
-          <div
-            className="mt-2 border-l-2 py-1 pl-2"
+          <div className="mt-2 border-l-2 py-1 pl-2"
             style={{
               borderColor: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "var(--color-faint)" : "var(--color-phosdim)",
               background: st === "RESTRICTED" ? "rgba(207,160,75,0.07)" : "rgb(var(--phosrgb) / 0.05)",
             }}
           >
             <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("dos.cond")}</div>
-            <div
-              className="mt-[2px] space-y-[2px] text-[10px] leading-snug"
+            <div className="mt-[2px] space-y-[2px] text-[10px] leading-snug"
               style={{ color: st === "RESTRICTED" ? "#cfa04b" : st === "LOCKED" ? "var(--color-dim)" : "var(--color-sage)" }}
             >
               {conditions.map((c, i) => (

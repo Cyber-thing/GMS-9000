@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, RotateCw, Unplug } from "lucide-react";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
+import { sfx } from "../lib/sfx";
 import { StatusDot } from "./chrome";
 import WardenClock from "./WardenClock";
 import {
@@ -156,6 +157,7 @@ export default function RoutingGame({
       if (i >= path.length) {
         clearInterval(iv);
         setDone(true);
+        sfx("hackOk");
         timers.current.push(window.setTimeout(onWin, 1100));
       }
     }, 170);
@@ -168,7 +170,7 @@ export default function RoutingGame({
   const h = tier.rows * TILE + (tier.rows - 1) * GAP;
 
   return (
-    <div className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
+    <div data-zone="Game" className="fixed inset-0 z-[96] flex items-center justify-center bg-ink/88 p-3 backdrop-blur-[2px]">
       <div className="anim-msgin flex max-h-[94vh] w-[min(720px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* 标题栏 */}
         <div className="flex h-[28px] shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5">
@@ -190,6 +192,7 @@ export default function RoutingGame({
           running={!done && !ejected}
           onExpire={() => {
             setEjected(true);
+            sfx("hackFail");
             setRunning(false);
             timers.current.push(window.setTimeout(onLose, 1500));
           }}

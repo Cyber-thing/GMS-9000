@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ShieldAlert, X, RotateCcw } from "lucide-react";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
+import { sfx } from "../lib/sfx";
 import { StatusDot } from "./chrome";
 import WardenClock from "./WardenClock";
 import {
@@ -120,6 +121,7 @@ export default function HexwallGame({
   useEffect(() => {
     if (!cleared || won) return;
     setWon(true);
+    sfx("hackOk");
     onLog?.("hx.logDown", { code: nodeCode });
     timers.current.push(window.setTimeout(onWin, 1150));
   }, [cleared, won, onWin, onLog, nodeCode]);
@@ -134,6 +136,7 @@ export default function HexwallGame({
 
     /* 没有连锁：直接落子 */
     if (!steps.length) {
+      sfx("tick");
       setBoard(next);
       setPicked(next.hand.findIndex(Boolean) >= 0 ? next.hand.findIndex(Boolean) : null);
       return;
@@ -149,6 +152,7 @@ export default function HexwallGame({
       /* 高亮这一对 */
       timers.current.push(window.setTimeout(() => {
         setAnim({ field: i === 0 ? placed : steps[i - 1].after, step: st });
+        sfx("place");
       }, 160 + i * STEP));
       /* 对消后的快照 */
       timers.current.push(window.setTimeout(() => {
@@ -189,7 +193,7 @@ export default function HexwallGame({
   const remaining = Object.values(board.field).reduce((a, s) => a + s.length, 0);
 
   return (
-    <div className="fixed inset-0 z-[115] flex items-center justify-center bg-ink/85 p-3">
+    <div data-zone="Game" className="fixed inset-0 z-[115] flex items-center justify-center bg-ink/85 p-3">
       <div className="anim-msgin flex max-h-[94vh] w-[min(640px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
         {/* 标题栏 */}
         <div className="flex shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5 py-[6px]">

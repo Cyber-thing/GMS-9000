@@ -52,7 +52,7 @@ export default function ChatPage({
   const list = messages[active];
 
   return (
-    <div className="flex min-h-0 flex-1">
+    <div data-zone="Chat" className="flex min-h-0 flex-1">
       {/* ---- 频道栏 ---- */}
       <div className="flex w-[82px] shrink-0 flex-col border-r border-line bg-soot sm:w-[94px]">
         <div className="border-b border-line px-2 py-[5px] text-[7.5px] uppercase tracking-[0.2em] text-faint">
@@ -71,8 +71,7 @@ export default function ChatPage({
               )}
             >
               <Hash size={9} className={cn("shrink-0", isActive ? "text-phos" : "text-faint")} />
-              <span
-                className={cn(
+              <span className={cn(
                   "min-w-0 flex-1 truncate text-[8.5px] font-bold uppercase tracking-[0.08em]",
                   isActive ? "text-phosbrite" : "text-dim group-hover:text-fog"
                 )}
@@ -105,8 +104,7 @@ export default function ChatPage({
           {list.map((m) => (
             <div key={m.id} className="anim-msgin py-[2px] text-[10.5px] leading-[1.45]">
               <span className="tabular-nums text-faint">{m.t}</span>{" "}
-              <span
-                className={cn("font-semibold", m.corp && "uppercase")}
+              <span className={cn("font-semibold", m.corp && "uppercase")}
                 style={{ color: m.self ? "#cfa04b" : m.corp ? "#cfa04b" : nickColor(m.nick) }}
               >
                 {m.self ? `[${m.nick}]` : m.corp ? `«${m.nick}»` : `<${m.nick}>`}

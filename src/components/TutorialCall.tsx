@@ -5,6 +5,7 @@ import { pickL, useT } from "../i18n";
 import { CALLER, useTut } from "../game/tutorial";
 import RichText from "./RichText";
 import Avatar from "./Avatar";
+import { sfx } from "../lib/sfx";
 
 /* 图层层级：通话窗口始终位于最上方。 */
 const Z_CALL = 110;
@@ -27,7 +28,11 @@ function Typed({ text, onDone }: { text: string; onDone: () => void }) {
       if (!doneRef.current) { doneRef.current = true; onDone(); }
       return;
     }
-    const h = setTimeout(() => setShown((n) => n + 1), 18);
+    const h = setTimeout(() => {
+      setShown((n) => n + 1);
+      /* 每个字一声极短的高频，空格不响 */
+      if (text[shown] && text[shown] !== " ") sfx("type");
+    }, 18);
     return () => clearTimeout(h);
   }, [shown, done, text, onDone]);
 
@@ -52,6 +57,15 @@ export default function TutorialCall() {
     setFolded(false); // 出现新台词时自动展开面板
   }, [step?.id]);
 
+  /* 来电铃声：响一阵、停一拍，直到接起或挂断 */
+  const ringing = callRinging || phase === "ringing";
+  useEffect(() => {
+    if (!ringing) return;
+    sfx("ring");
+    const iv = window.setInterval(() => sfx("ring"), 2600);
+    return () => clearInterval(iv);
+  }, [ringing]);
+
   /* 剧情通话。 */
   if (call) {
     const line = pickL(lang, call.script.lines[call.idx].en, call.script.lines[call.idx].ru, call.script.lines[call.idx].zh);
@@ -75,7 +89,7 @@ export default function TutorialCall() {
               </div>
               <div className="mt-1 text-[8px] uppercase tracking-[0.24em] text-faint">{t("tut.unlisted")}</div>
               <button
-                onClick={callAnswer}
+                onClick={() => { sfx("answer"); callAnswer(); }}
                 className="mt-4 flex w-full items-center justify-center gap-2 border border-viole bg-viole/15 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-viole transition-all hover:bg-viole hover:text-ink"
               >
                 <PhoneCall size={12} /> {t("tut.answer")}
@@ -154,7 +168,7 @@ export default function TutorialCall() {
             </div>
 
             <button
-              onClick={answer}
+              onClick={() => { sfx("answer"); answer(); }}
               className="mt-4 flex w-full items-center justify-center gap-2 border border-phosdim bg-phos/15 py-[9px] text-[10px] font-bold uppercase tracking-[0.2em] text-phosbrite transition-all hover:bg-phos hover:text-ink"
             >
               <PhoneCall size={12} /> {t("tut.answer")}

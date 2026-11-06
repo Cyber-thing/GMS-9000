@@ -4,6 +4,7 @@ import { useT } from "../i18n";
 import { useGame } from "../game/state";
 import { contactById } from "../game/data";
 import Avatar from "./Avatar";
+import { sfx } from "../lib/sfx";
 
 /** 右下角弹窗用于提示联系人会话中的新消息。 */
 export default function MessageToast({ onOpen }: { onOpen: () => void }) {
@@ -30,6 +31,7 @@ export default function MessageToast({ onOpen }: { onOpen: () => void }) {
       /* 当前会话已在屏幕上，因此无需再次提示。 */
       if (isThreadOpen(contact)) continue;
       setShown({ id: contact, nick: contactById(contact)?.nick ?? contact, text: last.text });
+      sfx("message");
       if (hide.current) clearTimeout(hide.current);
       hide.current = window.setTimeout(() => setShown(null), 6000);
     }

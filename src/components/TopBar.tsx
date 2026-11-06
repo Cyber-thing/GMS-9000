@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Activity, Check, Languages, LogOut, MonitorDot, Palette, Pencil, ScanEye, Waves, X } from "lucide-react";
+import { Activity, Box, Check, Languages, LogOut, MonitorDot, Palette, Pencil, ScanEye, Volume2, VolumeX, Waves, X } from "lucide-react";
 import { clockNow, fmtUptime, randInt, store } from "../lib/util";
 import { phosLabel } from "../lib/phos";
 import Avatar, { AvatarPicker } from "./Avatar";
+import { cycleSfxMode, sfx, sfxMode, sfxSubscribe } from "../lib/sfx";
 import { StatusDot } from "./chrome";
 import { useT } from "../i18n";
 import { useGame, CFG } from "../game/state";
@@ -32,6 +33,9 @@ function Field({ label, value, color = "var(--color-fog)" }: { label: string; va
 export default function TopBar({
   sessions,
   fx,
+  depth,
+  onToggleDepth,
+  onSfxMode,
   noise,
   onToggleNoise,
   onToggleFx,
@@ -44,6 +48,10 @@ export default function TopBar({
 }: {
   sessions: number;
   fx: boolean;
+  depth: boolean;
+  onToggleDepth: () => void;
+  /** 把当前档位报给控制台 */
+  onSfxMode?: (mode: string) => void;
   noise: boolean;
   onToggleNoise: () => void;
   onToggleFx: () => void;
@@ -89,6 +97,12 @@ export default function TopBar({
   }, []);
 
   /* 内联编辑操作员代号。 */
+  /* 音效档位：订阅全局状态，别处改了这里也会跟着变 */
+  const [snd, setSnd] = useState(sfxMode);
+  useEffect(() => {
+    const off = sfxSubscribe(() => setSnd(sfxMode()));
+    return () => { off(); };
+  }, []);
   const [picking, setPicking] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(operator);
@@ -297,6 +311,31 @@ export default function TopBar({
       >
         <MonitorDot size={12} />
         CRT
+      </button>
+
+      {/* 音效三档：新版 FM → 原版 8-bit → 关闭 */}
+      <button
+        onClick={() => { const next = cycleSfxMode(); if (next !== "off") sfx("toggle"); onSfxMode?.(next); }}
+        data-sfx="none"
+        className={`flex w-[68px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.16em] transition-colors ${
+          snd === "off" ? "text-faint hover:text-dim" : "bg-panel2 text-phos"
+        }`}
+        title={`${t("top.sfxTip")} · ${t(`sfx.${snd}`)}`}
+      >
+        {snd === "off" ? <VolumeX size={13} /> : <Volume2 size={13} />}
+        <span className="tabular-nums">{t(`sfx.short.${snd}`)}</span>
+      </button>
+
+      {/* 3D 机壳切换 */}
+      <button
+        onClick={onToggleDepth}
+        className={`flex w-[58px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+          depth ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
+        }`}
+        title={t("top.depthTip")}
+      >
+        <Box size={12} />
+        3D
       </button>
 
       {/* 复古噪点切换 */}

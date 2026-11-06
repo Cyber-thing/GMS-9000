@@ -51,6 +51,7 @@ export function Panel({
   bodyClassName,
   accent = "var(--color-phos)",
   scroll = false,
+  ...rest
 }: {
   title: string;
   right?: ReactNode;
@@ -59,9 +60,12 @@ export function Panel({
   bodyClassName?: string;
   accent?: string;
   scroll?: boolean;
+  /** 透传 data-* 之类的属性，比如音效分区标记 */
+  [key: `data-${string}`]: unknown;
 }) {
   return (
     <section
+      {...rest}
       className={cn(
         "flex min-h-0 flex-col border border-line bg-panel shadow-[inset_0_0_0_1px_rgba(0,0,0,0.55)]",
         className

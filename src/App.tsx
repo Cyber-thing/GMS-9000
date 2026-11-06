@@ -30,6 +30,7 @@ import { EventLog, SectorPanel, mkEvent, type NetEvent } from "./components/Info
 import TerminalBar, { type TermLine } from "./components/TerminalBar";
 import CrtOverlay from "./components/CrtOverlay";
 import NoiseOverlay from "./components/NoiseOverlay";
+import CrtStage, { canRender3D } from "./components/CrtStage";
 import { ALL_NODES, REGION_DATA, regionNodeById, regionSectorById } from "./data/regions";
 import { REGIONS, regionById, type RegionDef } from "./data/world";
 import {
@@ -37,6 +38,7 @@ import {
   type ChannelId, type ChatMsg,
 } from "./data/chat";
 import { fillTemplate, pick, randInt, stampNow, clockNow, store } from "./lib/util";
+import { sfx } from "./lib/sfx";
 import { nextPhos } from "./lib/phos";
 import { pickL, useT } from "./i18n";
 import {
@@ -118,6 +120,10 @@ export default function App() {
   const [fx, setFx] = useState(() => store.get("fx", true));
   /* 复古噪点滤镜，和 CRT 独立开关 */
   const [noise, setNoise] = useState(() => store.get("noise", true));
+  /* 3D 机壳：把界面放进一台真的显示器里。
+     默认关闭——想要的人自己按顶栏的 3D 按钮；
+     即便存档里开着，软件渲染的机器也会被 canRender3D 挡掉。 */
+  const [depth, setDepth] = useState(() => store.get("depth", false) && canRender3D());
   /* Цвет интерфейса: зелёный фосфор либо маджента. */
   const [phos, setPhos] = useState<string>(() => store.get("phos", "green"));
   const operatorRef = useRef(operator);
@@ -186,6 +192,7 @@ export default function App() {
   useEffect(() => void store.set("operator", operator), [operator]);
   useEffect(() => void store.set("fx", fx), [fx]);
   useEffect(() => void store.set("noise", noise), [noise]);
+  useEffect(() => void store.set("depth", depth), [depth]);
   useEffect(() => {
     document.documentElement.dataset.phos = phos;
     store.set("phos", phos);
@@ -227,6 +234,7 @@ export default function App() {
       [t("t.sat"), "dim", 2750],
       [t("t.ready"), "ok", 3300],
     ];
+    sfx("login");
     boot.forEach(([txt, tone, at]) => later(() => print(txt, tone), at));
     later(() => pushEvent(t("e.sessionOpened", { op }), "good"), 3400);
   }, [loggedIn]);
@@ -418,6 +426,7 @@ export default function App() {
         print(t("hk.blocked", { r: "WARDEN" }), "err");
         return;
       }
+      sfx("hackOk");
       print(t("hk.granted", { code: n.code }), "ok");
       if (res.repeat) print(t("hk.repeat"), "warn");
       else print(t("hk.rep", { n: res.rep }), "ok");
@@ -444,6 +453,7 @@ export default function App() {
       const n = ALL_NODES.find((x) => x.id === id);
       if (!n) return;
       if (!chk.ok) {
+        sfx("deny");
         print(t("hk.blocked", { r: chk.reason ?? "" }), "err");
         return;
       }
@@ -484,6 +494,7 @@ export default function App() {
       const meta = NODE_META[id];
       setHackingId(id);
       setHackPct(0);
+      sfx("hackStart");
       print(t("hk.start", { code: n.code }), "ok");
 
       const iv = window.setInterval(() => setHackPct((p) => Math.min(96, p + Math.random() * 14)), 180);
@@ -803,7 +814,17 @@ export default function App() {
     const fresh = notifs.filter((n) => n.id > lastNotif.current);
     if (!fresh.length) return;
     lastNotif.current = notifs[notifs.length - 1].id;
-    fresh.forEach((n) => print(n.text, NOTIF_TONE[n.kind], t(`nf.${n.kind}`)));
+    fresh.forEach((n) => {
+      print(n.text, NOTIF_TONE[n.kind], t(`nf.${n.kind}`));
+      /* 通知按性质给不同的提示音 */
+      if (n.kind === "NEW CONTACT MESSAGE") sfx("message");
+      else if (n.kind === "NEW CODEX ENTRY" || n.kind === "CODEX UPDATED") sfx("codex");
+      else if (n.kind === "DATA ACQUIRED" || n.kind === "KEY RECOVERED") sfx("download");
+      else if (n.kind === "CONTRACT COMPLETED" || n.kind === "DATA SOLD") sfx("money");
+      else if (n.kind === "WARDEN LOCKOUT" || n.kind === "SYSTEM RECOVERY REQUIRED" ||
+               n.kind === "CONTRACT FAILED") sfx("alarm");
+      else sfx("notify");
+    });
   }, [notifs, print, t]);
 
   const logout = useCallback(() => {
@@ -834,6 +855,7 @@ export default function App() {
     setTermLines([]);
     setEvents([]);
     setTermOpen(false);
+    sfx("logout");
     print(t("t.logout", { op }), "warn");
     setLoggedIn(false);
   }, [print, t]);
@@ -849,17 +871,17 @@ export default function App() {
 
   if (splash) {
     return (
-      <>
+      <CrtStage enabled={depth}>
         <Splash onDone={() => setSplash(false)} />
         {fx && <CrtOverlay />}
         {noise && <NoiseOverlay />}
-      </>
+      </CrtStage>
     );
   }
 
   if (!loggedIn) {
     return (
-      <>
+      <CrtStage enabled={depth}>
         <LoginGate
           savedHandle={operator}
           phos={phos}
@@ -879,7 +901,7 @@ export default function App() {
         />
         {fx && <CrtOverlay />}
         {noise && <NoiseOverlay />}
-      </>
+      </CrtStage>
     );
   }
 
@@ -888,11 +910,22 @@ export default function App() {
   const nodeSector = node ? regionSectorById(sectors, node.sector) : undefined;
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-ink text-fog">
+    <CrtStage enabled={depth}>
+    <div className="flex h-full w-full flex-col overflow-hidden bg-ink text-fog">
       <div className={gate("anonymity")}>
       <TopBar
         sessions={compromised.size}
         fx={fx}
+        depth={depth}
+        onSfxMode={(m) => print(t("t.sfxMode", { m: t(`sfx.${m}`) }), "dim")}
+        onToggleDepth={() => {
+          if (!depth && !canRender3D()) {
+            print(t("t.depthNoGpu"), "err");
+            return;
+          }
+          print(depth ? t("t.depthOff") : t("t.depthOn"), "dim");
+          setDepth((v) => !v);
+        }}
         noise={noise}
         onToggleNoise={() => {
           print(noise ? t("t.noiseOff") : t("t.noiseOn"), "dim");
@@ -1285,5 +1318,6 @@ export default function App() {
       {fx && <CrtOverlay />}
       {noise && <NoiseOverlay />}
     </div>
+    </CrtStage>
   );
 }
