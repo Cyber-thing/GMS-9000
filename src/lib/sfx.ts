@@ -150,14 +150,42 @@ export function initSfx() {
   }
   volume = store.get("sfx.vol", 0.5);
 
-  const unlock = () => { if (mode !== "off") ensureEngine(); };
+  const unlock = () => {
+    if (mode === "off") return;
+    const ac = audio();
+    if (!ac) return;
+    /* resume 是异步的，等它真的 running 了再补放 */
+    void Promise.resolve(ac.resume?.()).then(() => { ensureEngine(); flushPending(); });
+  };
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });
 }
 
+/* 浏览器要求先有手势才允许出声。在那之前被触发的音不能直接排进时间线——
+   上下文一旦 resume，它们会一股脑儿全涌出来。这里只记住「最后一个重要的音」，
+   等解锁的瞬间补放一次。 */
+let pending: SfxName | null = null;
+
 /** 触发一个音效。调用点不需要知道当前是哪套引擎。 */
 export function sfx(name: SfxName) {
   if (mode === "off") return;
+  const ac = audio();
+  if (!ac) return;
+  if (ac.state !== "running") {
+    /* 还没解锁：只留下最近这一个，别积压 */
+    pending = name;
+    return;
+  }
+  ensureEngine()?.play(name);
+}
+
+/** 音频解锁后，把等待中的那一个补放出来。 */
+function flushPending() {
+  if (mode === "off" || !pending) { pending = null; return; }
+  const name = pending;
+  pending = null;
+  const ac = audio();
+  if (!ac || ac.state !== "running") return;
   ensureEngine()?.play(name);
 }
 
@@ -176,7 +204,7 @@ export const SFX_EVENTS: SfxName[] = [
   "message", "notify", "codex",
   "hackStart", "hackOk", "hackFail", "alarm",
   "scan", "found", "download", "money", "place",
-  "boot", "login", "logout",
+  "boot", "powerOn", "login", "logout",
 ];
 
 if (typeof window !== "undefined") {

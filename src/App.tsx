@@ -419,14 +419,16 @@ export default function App() {
 
   
   const completeHack = useCallback(
-    (id: string) => {
+    /* silent：小游戏已经在「ACCESS GRANTED」那一刻放过胜利音了，
+       这里就别再响第二遍。 */
+    (id: string, opts?: { silent?: boolean }) => {
       const n = ALL_NODES.find((x) => x.id === id);
       const res = hack(id);
       if (!n || !res) {
         print(t("hk.blocked", { r: "WARDEN" }), "err");
         return;
       }
-      sfx("hackOk");
+      if (!opts?.silent) sfx("hackOk");
       print(t("hk.granted", { code: n.code }), "ok");
       if (res.repeat) print(t("hk.repeat"), "warn");
       else print(t("hk.rep", { n: res.rep }), "ok");
@@ -519,7 +521,7 @@ export default function App() {
     const id = breachId;
     setBreachId(null);
     tutFire("breach:win");
-    if (id) completeHack(id);
+    if (id) completeHack(id, { silent: true });
   }, [breachId, completeHack, tutFire]);
 
   const breachLose = useCallback(
@@ -618,7 +620,7 @@ export default function App() {
       print(t("md.logIn", { code: n.code }), "ok");
       pushEvent(t("md.logIn", { code: n.code }), "good");
     }
-    completeHack(id);
+    completeHack(id, { silent: true });
   }, [dumpId, completeHack, print, pushEvent, t]);
 
   /* 「注销」只是关窗——进度早在破解那一刻就存下了。 */
@@ -635,7 +637,7 @@ export default function App() {
       print(t("hx.logDown", { code: n.code }), "ok");
       pushEvent(t("hx.logDown", { code: n.code }), "good");
     }
-    completeHack(id);
+    completeHack(id, { silent: true });
   }, [hexId, completeHack, print, pushEvent, t]);
 
   const routingWin = useCallback(() => {
@@ -644,7 +646,7 @@ export default function App() {
     if (!id) return;
     const n = ALL_NODES.find((x) => x.id === id);
     if (n) print(t("t.rtWin", { code: n.code }), "ok");
-    completeHack(id);
+    completeHack(id, { silent: true });
   }, [routingId, completeHack, print, t]);
 
   /* WARDEN PASS：保护节点的字面密码输入窗口。 */
@@ -654,8 +656,8 @@ export default function App() {
     if (!id) return;
     const n = ALL_NODES.find((x) => x.id === id);
     if (n) print(t("t.wpOk", { code: n.code }), "ok");
-    completeHack(id);
-    
+    completeHack(id, { silent: true });
+
     later(() => setArchiveId(id), 400);
   }, [passId, completeHack, print, t, later]);
 

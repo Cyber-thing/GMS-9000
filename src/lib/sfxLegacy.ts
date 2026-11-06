@@ -236,6 +236,12 @@ export function createLegacyEngine(ac: AudioContext, dest: AudioNode): SfxEngine
         break;
 
       /* ---- 会话 ---- */
+      case "powerOn":
+        /* 原版风格：一声下坠加白噪，朴素但同样有爆裂感 */
+        tone({ freq: nt("A", 4), to: nt("A", 2), dur: 0.35, gain: 0.014, wave: "sawtooth" });
+        noise(0.1, 0.018, 0, 300);
+        noise(0.7, 0.011, 0.04, 1200);
+        break;
       case "boot":
         tone({ freq: nt("C", 5), dur: 0.12, gain: 0.12, wave: "square" });
         break;

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { KeyRound, Lock, ShieldAlert, X } from "lucide-react";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
+import { sfx } from "../lib/sfx";
 import { StatusDot } from "./chrome";
 
 /** WARDEN PASS：保护节点的字面密码输入窗口。 */
@@ -34,10 +35,13 @@ export default function WardenPass({
     timers.current.push(
       window.setTimeout(() => {
         if (typed === expected.toUpperCase()) {
+          /* 胜利音跟着「ДОСТУП ОТКРЫТ」一起出现，只响一次 */
           setState("granted");
+          sfx("hackOk");
           timers.current.push(window.setTimeout(onPass, 1000));
         } else {
           setState("denied");
+          sfx("deny");
           setTries((n) => n + 1);
           setValue("");
           timers.current.push(window.setTimeout(() => inputRef.current?.focus(), 50));

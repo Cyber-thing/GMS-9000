@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Siren, Snowflake, Unplug, Zap } from "lucide-react";
 import { cn } from "../utils/cn";
 import { blockBar, pad } from "../lib/util";
+import { sfx } from "../lib/sfx";
 import { pickL, useT } from "../i18n";
 import { StatusDot } from "./chrome";
 import { useGame } from "../game/state";
@@ -249,8 +250,9 @@ export default function BreachGame({
   }, [left, timerOn, phase]);
 
   useEffect(() => {
-    if (phase === "WIN") add(window.setTimeout(onWin, 1400));
-    if (phase === "LOSE") add(window.setTimeout(() => onLose("timeout"), 1700));
+    /* 胜利音就放在横幅出现这一刻，只放一次 */
+    if (phase === "WIN") { sfx("hackOk"); add(window.setTimeout(onWin, 1400)); }
+    if (phase === "LOSE") { sfx("hackFail"); add(window.setTimeout(() => onLose("timeout"), 1700)); }
   }, [phase]);
 
   const land = useCallback(

@@ -7,7 +7,7 @@ export type SfxName =
   | "message" | "notify" | "codex"
   | "hackStart" | "hackOk" | "hackFail"
   | "scan" | "found" | "download" | "money"
-  | "boot" | "login" | "logout" | "alarm" | "place" | "pop"
+  | "boot" | "login" | "logout" | "alarm" | "place" | "pop" | "powerOn"
   /* 不同区块的点击音 */
   | "uiSys" | "uiMap" | "uiNode" | "uiChat" | "uiGame" | "uiTrade" | "uiDanger";
 

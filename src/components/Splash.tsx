@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useT } from "../i18n";
+import { sfx } from "../lib/sfx";
 
 /* 使用方框绘图字符构建块状 GNS-9000 标志。 */
 const ASCII = String.raw`
@@ -19,7 +20,8 @@ export default function Splash({ onDone }: { onDone: () => void }) {
   useEffect(() => {
     const hs = [
       setTimeout(() => setStage(1), 420),
-      setTimeout(() => setStage(2), 1150),
+      /* 标志砸出来的同时来一记涌流爆裂 */
+      setTimeout(() => { setStage(2); sfx("powerOn"); }, 1150),
       setTimeout(() => setStage(3), 2050),
       setTimeout(() => setStage(4), 2750),
     ];

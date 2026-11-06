@@ -375,6 +375,13 @@ export function createFmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
       }
   
       /* ---- 会话 ---- */
+      case "powerOn":
+        /* 涌流爆裂：低频下坠 + 长嘶声 */
+        tone({ freq: nt("A", 2), to: nt("D", 1), dur: 0.42, gain: 0.19, wave: "sawtooth", sub: true, ...FM.anvil });
+        noise(0.12, 0.2, 0, 200);
+        noise(0.8, 0.13, 0.04, 1100);
+        noise(1.1, 0.07, 0.08, 2600);
+        break;
       case "boot":                        // 自检：一声低沉的长哔
         tone({ freq: nt("A", 2), dur: 0.16, gain: 0.14, wave: "square", sub: true, ...FM.anvil });
         break;

@@ -728,6 +728,25 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
         break;
 
       /* ===== 会话 ===== */
+      case "powerOn": {
+        /* 开机涌流：先是一记闷爆，随后是长长的「滋——」
+           低频冲击给重量，降采样噪声给电流的嘶嘶声，
+           再加一条下滑的共振，像电容充满后余震。 */
+        /* 1. 爆点：音高骤降的低频冲击 */
+        fmVoice({ freq: nt("A", 2), to: nt("D", 0), dur: 0.5, gain: 0.2, patch: P.impact, prio: 4 });
+        /* 2. 宽带爆裂：短促、几乎全频 */
+        noise(0.14, 0.07, 0, 180, 1, "heavy");
+        /* 3. 嘶声主体：降采样噪声慢慢散开，这就是「шипучий」的来源 */
+        noise(0.85, 0.055, 0.03, 900, 3, "fm");
+        noise(1.25, 0.035, 0.06, 2400, 2, "glitch");
+        /* 4. 余震：缓慢下滑的金属共振，让尾巴不空 */
+        fmVoice({ freq: nt("E", 2), to: nt("A", 0), dur: 1.0, gain: 0.085, patch: P.corrupt, delay: 0.1, prio: 3 });
+        /* 5. 零星电火花 */
+        for (let i = 0; i < 5; i++) {
+          glitchBurst(ac.currentTime + 0.12 + Math.random() * 0.8, 0.015 + Math.random() * 0.03, 0.035);
+        }
+        break;
+      }
       case "boot":
         fmVoice({ freq: nt("A", 1), dur: 0.2, gain: 0.52, patch: P.impact, prio: 3 });
         break;
