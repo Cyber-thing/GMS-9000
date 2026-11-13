@@ -205,6 +205,10 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     return v;
   }
 
+  /* 回声网络的拆除定时器，以及拆除回调（静音时要立刻收掉反馈环） */
+  const pendingTimers = new Set<number>();
+  const echoKills = new Set<() => void>();
+
   /* 所有在响的源，切引擎时一次掐干净 */
   const live = new Set<AudioScheduledSourceNode>();
   const track = (n: AudioScheduledSourceNode) => {
@@ -223,9 +227,13 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     /** 终点频率，做滑音 */
     to?: number;
     prio?: number;
+    /** 额外送一份到回声网络 */
+    send?: AudioNode;
+    /** 送往回声的比例 */
+    sendGain?: number;
   }
 
-  function fmVoice({ freq, dur, gain, patch, delay = 0, to, prio = 1 }: PlayOpts) {
+  function fmVoice({ freq, dur, gain, patch, delay = 0, to, prio = 1, send, sendGain = 0.6 }: PlayOpts) {
     const v = alloc(prio, dur + delay);
     if (!v) return;                       // 声部被抢占：这一声直接不发
     const t0 = ac.currentTime + delay;
@@ -245,6 +253,12 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     /* 输出级：整条声部的总音量，便于被抢占时统一淡出 */
     const vOut = ac.createGain();
     vOut.gain.value = gain;
+    if (send) {
+      const sg = ac.createGain();
+      sg.gain.value = sendGain;
+      vOut.connect(sg);
+      sg.connect(send);
+    }
     if (patch.pulse) {
       /* 每个算子一份，别共享增益——不然包络会互相打架 */
       const gate = Math.max(0.02, dur * 0.11);
@@ -386,7 +400,7 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     return buf;
   }
 
-  function noise(dur: number, gain: number, delay = 0, hp = 600, hold = 1, bus: keyof typeof BUS = "fm") {
+  function noise(dur: number, gain: number, delay = 0, hp = 600, hold = 1, bus: keyof typeof BUS = "fm", send?: AudioNode, sendGain = 0.6) {
     const t0 = ac.currentTime + delay;
     const src = ac.createBufferSource();
     src.buffer = noiseBuf(dur, hold);
@@ -394,11 +408,83 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     f.type = "highpass";
     f.frequency.value = hp;
     const g = ac.createGain();
+    g.gain.value = gain;                 // 同上：杜绝启动瞬间的满幅爆音
     g.gain.setValueAtTime(gain, t0);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     src.connect(f); f.connect(g); g.connect(BUS[bus]);
+    if (send) {
+      const sg = ac.createGain();
+      sg.gain.value = sendGain;
+      g.connect(sg);
+      sg.connect(send);
+    }
     src.start(t0); src.stop(t0 + dur + 0.02);
     track(src);
+  }
+
+  /**
+   * 临时回声网络：延迟 + 反馈，反馈回路里挂一只低通，
+   * 于是每一次重复都比上一次更闷更远 —— 这正是真实空间里
+   * 回声的样子（高频先被吸收掉）。
+   * 用完自动断开，不常驻占资源。
+   *
+   * 返回一个输入节点：谁想要回声，把自己接进来就行。
+   */
+  function makeEcho(opts: {
+    time?: number;      // 单次延迟（秒）
+    feedback?: number;  // 反馈量 0..1，决定重复几次
+    tone?: number;      // 反馈回路低通，越低衰减得越暗
+    wet?: number;       // 回声音量
+    life?: number;      // 多久之后拆掉这套节点
+    bus?: keyof typeof BUS;
+  } = {}) {
+    const time = opts.time ?? 0.26;
+    const fb = opts.feedback ?? 0.52;
+    const tone = opts.tone ?? 1800;
+    const wet = opts.wet ?? 0.5;
+    const life = opts.life ?? 4;
+
+    const input = ac.createGain();
+    const delay = ac.createDelay(2);
+    delay.delayTime.value = time;
+    const fbGain = ac.createGain();
+    fbGain.gain.value = fb;
+    const damp = ac.createBiquadFilter();
+    damp.type = "lowpass";
+    damp.frequency.value = tone;
+    /* 顺便砍掉低频，避免回声越滚越浑 */
+    const cut = ac.createBiquadFilter();
+    cut.type = "highpass";
+    cut.frequency.value = 160;
+    const wetGain = ac.createGain();
+    wetGain.gain.value = wet;
+
+    /* 反馈环：delay → damp → cut → fbGain → delay */
+    input.connect(delay);
+    delay.connect(damp);
+    damp.connect(cut);
+    cut.connect(fbGain);
+    fbGain.connect(delay);
+    /* 取样送出去 */
+    damp.connect(wetGain);
+    wetGain.connect(BUS[opts.bus ?? "fm"]);
+
+    /* 到时间把反馈收干净再拆，免得留一条永远在循环的回路 */
+    const t = ac.currentTime;
+    fbGain.gain.setValueAtTime(fb, t);
+    fbGain.gain.setTargetAtTime(0, t + life * 0.62, life * 0.14);
+    const teardown = () => {
+      try {
+        input.disconnect(); delay.disconnect(); damp.disconnect();
+        cut.disconnect(); fbGain.disconnect(); wetGain.disconnect();
+      } catch { /* noop */ }
+      echoKills.delete(teardown);
+    };
+    const h = window.setTimeout(() => { teardown(); pendingTimers.delete(h); }, life * 1000);
+    pendingTimers.add(h);
+    echoKills.add(teardown);
+
+    return input;
   }
 
   /** 短促的数字毛刺：重度降采样噪声，走故障链。 */
@@ -729,22 +815,38 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
 
       /* ===== 会话 ===== */
       case "powerOn": {
-        /* 开机涌流：先是一记闷爆，随后是长长的「滋——」
-           低频冲击给重量，降采样噪声给电流的嘶嘶声，
-           再加一条下滑的共振，像电容充满后余震。 */
+        /* 开机涌流：一记闷爆，随后长长的「滋——」，最后是空间里的回声。
+           三段式：冲击 → 嘶声 → 回响，总长约 3 秒。 */
+        const echo = makeEcho({ time: 0.27, feedback: 0.74, tone: 1700, wet: 0.62, life: 5, bus: "fm" });
+        /* 低频那一路单独给一条更慢更闷的回声，像大厅里的闷响 */
+        const boom = makeEcho({ time: 0.43, feedback: 0.7, tone: 500, wet: 0.5, life: 5, bus: "heavy" });
+
         /* 1. 爆点：音高骤降的低频冲击 */
-        fmVoice({ freq: nt("A", 2), to: nt("D", 0), dur: 0.5, gain: 0.2, patch: P.impact, prio: 4 });
+        fmVoice({
+          freq: nt("A", 2), to: nt("D", 0), dur: 0.5, gain: 0.2,
+          patch: P.impact, prio: 4, send: boom, sendGain: 0.8,
+        });
         /* 2. 宽带爆裂：短促、几乎全频 */
-        noise(0.14, 0.07, 0, 180, 1, "heavy");
-        /* 3. 嘶声主体：降采样噪声慢慢散开，这就是「шипучий」的来源 */
-        noise(0.85, 0.055, 0.03, 900, 3, "fm");
-        noise(1.25, 0.035, 0.06, 2400, 2, "glitch");
-        /* 4. 余震：缓慢下滑的金属共振，让尾巴不空 */
-        fmVoice({ freq: nt("E", 2), to: nt("A", 0), dur: 1.0, gain: 0.085, patch: P.corrupt, delay: 0.1, prio: 3 });
-        /* 5. 零星电火花 */
+        noise(0.14, 0.07, 0, 180, 1, "heavy", boom, 0.7);
+        /* 3. 嘶声主体：降采样噪声慢慢散开 */
+        noise(0.85, 0.055, 0.03, 900, 3, "fm", echo, 0.5);
+        noise(1.25, 0.035, 0.06, 2400, 2, "glitch", echo, 0.45);
+        /* 4. 余震：缓慢下滑的金属共振 */
+        fmVoice({
+          freq: nt("E", 2), to: nt("A", 0), dur: 1.0, gain: 0.085,
+          patch: P.corrupt, delay: 0.1, prio: 3, send: echo, sendGain: 0.55,
+        });
+        /* 5. 零星电火花，也进回声 */
         for (let i = 0; i < 5; i++) {
           glitchBurst(ac.currentTime + 0.12 + Math.random() * 0.8, 0.015 + Math.random() * 0.03, 0.035);
         }
+        /* 6. 远处的二次闷响：让回声听起来是「从远方滚回来的」，而不只是复读 */
+        fmVoice({
+          freq: nt("D", 1), to: nt("A", 0), dur: 0.9, gain: 0.05,
+          patch: P.impact, delay: 0.42, prio: 2, send: boom, sendGain: 0.9,
+        });
+        /* 7. 尾部气流：很轻的长噪声，把回声之间的空隙填上 */
+        noise(2.4, 0.015, 0.5, 600, 4, "fm", echo, 0.45);
         break;
       }
       case "boot":
@@ -776,6 +878,11 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     voices.length = 0;
     live.forEach((s) => { try { s.stop(t + 0.012); } catch { /* noop */ } });
     live.clear();
+    /* 反馈环不会自己停，必须手动拆 —— 否则静音之后它还在那儿回荡 */
+    echoKills.forEach((k) => k());
+    echoKills.clear();
+    pendingTimers.forEach((h) => clearTimeout(h));
+    pendingTimers.clear();
   }
 
   function dispose() {

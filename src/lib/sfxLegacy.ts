@@ -104,6 +104,9 @@ export function createLegacyEngine(ac: AudioContext, dest: AudioNode): SfxEngine
     f.type = "highpass";
     f.frequency.value = hp;
     const g = ac.createGain();
+    /* 默认增益是 1：若只在 t0 设值，源启动那一瞬可能仍以满幅通过，
+       经过滤波器就是一声爆音。先把初值压下去再排自动化。 */
+    g.gain.value = gain;
     g.gain.setValueAtTime(gain, t0);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     src.connect(f); f.connect(g); g.connect(out);
@@ -236,12 +239,23 @@ export function createLegacyEngine(ac: AudioContext, dest: AudioNode): SfxEngine
         break;
 
       /* ---- 会话 ---- */
-      case "powerOn":
-        /* 原版风格：一声下坠加白噪，朴素但同样有爆裂感 */
+      case "powerOn": {
+        /* 原版风格：一声下坠加白噪，后面跟几声递减的回响 */
         tone({ freq: nt("A", 4), to: nt("A", 2), dur: 0.35, gain: 0.014, wave: "sawtooth" });
         noise(0.1, 0.018, 0, 300);
         noise(0.7, 0.011, 0.04, 1200);
+        /* 回声：间隔递增、音量递减。
+           注意高通不能越降越低——那样反而会放进更多低频能量，
+           听感上后面的回声比前面还响。这里让它略微升高，声音自然变薄。 */
+        let at = 0.32, lvl = 0.021, hp = 650;
+        for (let i = 0; i < 8; i++) {
+          noise(0.26 + i * 0.025, lvl, at, hp);
+          at += 0.27 + i * 0.022;
+          lvl *= 0.72;
+          hp += 85;
+        }
         break;
+      }
       case "boot":
         tone({ freq: nt("C", 5), dur: 0.12, gain: 0.12, wave: "square" });
         break;

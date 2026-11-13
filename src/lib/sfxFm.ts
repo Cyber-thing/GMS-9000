@@ -209,6 +209,7 @@ export function createFmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
     f.type = "highpass";
     f.frequency.value = hp;
     const g = ac.createGain();
+    g.gain.value = gain;                 // 见 legacy 里的同名修复：避免启动瞬间满幅
     g.gain.setValueAtTime(gain, t0);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     src.connect(f); f.connect(g); g.connect(grit);
@@ -375,13 +376,23 @@ export function createFmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
       }
   
       /* ---- 会话 ---- */
-      case "powerOn":
-        /* 涌流爆裂：低频下坠 + 长嘶声 */
+      case "powerOn": {
+        /* 涌流爆裂：低频下坠 + 长嘶声，再用一串递减的重复做出回声 */
         tone({ freq: nt("A", 2), to: nt("D", 1), dur: 0.42, gain: 0.19, wave: "sawtooth", sub: true, ...FM.anvil });
         noise(0.12, 0.2, 0, 200);
         noise(0.8, 0.13, 0.04, 1100);
         noise(1.1, 0.07, 0.08, 2600);
+        /* 回声：每次更轻、更闷、间隔略微拉长，像从远处滚回来 */
+        let at = 0.29, lvl = 0.17, hp = 680;
+        for (let i = 0; i < 7; i++) {
+          noise(0.3 + i * 0.05, lvl, at, hp);
+          tone({ freq: nt("D", 1), dur: 0.28, gain: lvl * 0.5, wave: "sine", delay: at, noFm: true });
+          at += 0.3 + i * 0.035;
+          lvl *= 0.72;
+          hp *= 0.88;
+        }
         break;
+      }
       case "boot":                        // 自检：一声低沉的长哔
         tone({ freq: nt("A", 2), dur: 0.16, gain: 0.14, wave: "square", sub: true, ...FM.anvil });
         break;
