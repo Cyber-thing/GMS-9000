@@ -244,7 +244,7 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
             const pr = ct ? g.contracts[ct.id] : null;
             const liveJob =
               !!ct && !!pr && !["COMPLETED", "FAILED"].includes(pr.state) &&
-              (m.action === "offer" || m.action === "deliver");
+              (m.action === "offer" || m.action === "accepted" || m.action === "deliver");
             return (
               <div key={m.id} ref={liveJob ? offerRef : undefined} className="anim-msgin mb-1.5 flex gap-1.5">
                 <Avatar id={mine ? "OP" : (m.from || c.id)} size={18} className="mt-[2px]" />
@@ -315,6 +315,36 @@ export function ContactsPage({ home = 0 }: { home?: number }) {
                         {t("co.accept")}
                       </button>
                     )}
+                  </div>
+                )}
+
+                {/* 统一的「合同已接受」窗口。剧情任务和普通任务都走这一套，
+                    不再只在聊天里丢一句「принят」。 */}
+                {ct && m.action === "accepted" && (
+                  <div className="mt-1 overflow-hidden border border-phosdim bg-phos/8 shadow-[inset_3px_0_0_var(--color-phos)]">
+                    <div className="flex items-center gap-1.5 border-b border-phosdim/40 bg-phos/12 px-2 py-[5px]">
+                      <CheckCircle2 size={11} className="shrink-0 text-phosbrite" />
+                      <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-phosbrite">
+                        {t("co.acceptedTitle")}
+                      </span>
+                      <span className="ml-auto border border-phos bg-phos/20 px-1.5 py-[2px] text-[8px] font-bold uppercase tracking-[0.12em] text-phosbrite">
+                        ▸ {t("cs.INPROGRESS")}
+                      </span>
+                    </div>
+                    <div className="px-2 py-1.5">
+                      <div className="text-[10px] font-bold tracking-[0.1em] text-fog">
+                        {pickL(lang, ct.title, ct.titleRu, ct.titleZh)}
+                      </div>
+                      <div className="mt-[3px] flex flex-wrap items-center gap-x-3 gap-y-1 text-[8.5px] uppercase tracking-[0.1em] text-dim">
+                        <span>
+                          {t("co.target")}: <b className="font-medium text-phosbrite">{ALL_NODES.find((n) => n.id === ct.target)?.code}</b>
+                        </span>
+                        <span>
+                          {t("co.payout")}: <b className="font-medium text-amber">{ct.credits}cr</b>
+                        </span>
+                        <span className="text-phos">+{ct.rep} REP</span>
+                      </div>
+                    </div>
                   </div>
                 )}
 

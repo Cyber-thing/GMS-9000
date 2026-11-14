@@ -1,4 +1,4 @@
-import { Bomb, Download, FolderOpen, HardDriveDownload, Lock, RadioTower, ShieldAlert, Zap } from "lucide-react";
+import { Bomb, Download, FolderOpen, HardDriveDownload, Lock, RadioTower, ShieldAlert, ShieldOff, Zap } from "lucide-react";
 import { cn } from "../utils/cn";
 import type { NetNode } from "../data/network";
 import { KV, Panel, STATUS_COLOR, StatusDot } from "./chrome";
@@ -97,6 +97,21 @@ export default function NodeDossier({
   const routing = usesRouting(node.type, meta.warden);
   const hexwall = usesHexwall(node.type, meta.warden);
   const memdump = usesMemdump(node.type, meta.warden);
+  /* ARC-N05 在提前闯入时只是「损坏」，恢复入口只能在真正接单后启用。
+     完成后仍可再次打开，查看「档案已被洗过」的状态。 */
+  const archiveContract = g.contracts["ct_archive"];
+  const archiveJobTaken = !!archiveContract && (
+    archiveContract.accepted === true || archiveContract.state !== "AVAILABLE"
+  );
+  const archiveLooted =
+    g.flags.arc_looted === true ||
+    g.files.includes("f_termlist") ||
+    g.burned.includes("f_termlist");
+  const archiveRestored =
+    g.files.includes("f_access_restored") ||
+    g.burned.includes("f_access_restored") ||
+    archiveContract?.state === "COMPLETED";
+  const archiveCanOpen = archiveJobTaken || archiveLooted || archiveRestored;
   const wrecked = g.sabotaged.includes(node.id);
   const burning = g.burning.includes(node.id);
   /* 部分主机只有在收到对应合同时才会显示破坏操作。 */
@@ -170,12 +185,23 @@ export default function NodeDossier({
             </div>
             <div className="blocksbar mt-1.5 text-[16px] text-amber">{blockBar(hackPct, 18)}</div>
           </div>
+        ) : sealed && st === "COMPROMISED" && !archiveCanOpen ? (
+          /* 早于委托闯进来：这里只显示状态，不给可点击的恢复按钮。 */
+          <div className="mt-2.5 flex w-full cursor-not-allowed items-center justify-center gap-2 border border-oxide/40 bg-oxide/5 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-oxide/70">
+            <ShieldOff size={11} /> {t("arc.damaged")}
+          </div>
         ) : sealed && st === "COMPROMISED" ? (
           <button
             onClick={() => onOpenArchive(node.id)}
             className="mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink"
           >
-            <FolderOpen size={11} /> {t("dos.archive")}
+            <FolderOpen size={11} />{
+              archiveLooted
+                ? t("arc.looted")
+                : !archiveRestored
+                  ? t("arc.restoreBtn")
+                  : t("dos.archive")
+            }
           </button>
         ) : corp && st === "COMPROMISED" ? null : vault && st === "COMPROMISED" ? (
           <button

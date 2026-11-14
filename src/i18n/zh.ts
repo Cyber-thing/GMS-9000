@@ -365,6 +365,7 @@ export const ZH: Record<string, string> = {
   "co.jump": "来活了",
   "co.jumpTip": "跳到这串对话里进行中的活",
   "co.accept": "接下合同",
+  "co.acceptedTitle": "合同已接受",
   "co.deliver": "交付数据",
   "co.target": "目标",
   "co.file": "文件",
@@ -612,6 +613,7 @@ export const ZH: Record<string, string> = {
 
   "arc.title": "人事档案库",
   "arc.scanBtn": "扫描并恢复权限",
+  "arc.restoreBtn": "恢复档案库权限",
   "arc.scanning": "正在扫卷带 …",
   "arc.sealed": "发现封存记录",
   "arc.termTitle": "机密。未来 30 年的员工裁撤顺序。",

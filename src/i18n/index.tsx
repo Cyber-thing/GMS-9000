@@ -449,6 +449,7 @@ export const DICT: Record<string, Entry> = {
   "co.jump": { en: "NEW JOB", ru: "НОВЫЙ ЗАКАЗ" },
   "co.jumpTip": { en: "jump to the live job in this thread", ru: "перейти к заказу в этой переписке" },
   "co.accept": { en: "ACCEPT CONTRACT", ru: "ПРИНЯТЬ КОНТРАКТ" },
+  "co.acceptedTitle": { en: "CONTRACT ACCEPTED", ru: "КОНТРАКТ ПРИНЯТ" },
   "co.deliver": { en: "TRANSFER DATA", ru: "ПЕРЕДАТЬ ДАННЫЕ" },
   "co.target": { en: "target", ru: "цель" },
   "co.file": { en: "file", ru: "файл" },
@@ -767,6 +768,7 @@ export const DICT: Record<string, Entry> = {
   /* ---- 档案 ---- */
   "arc.title": { en: "PERSONNEL ARCHIVE", ru: "КАДРОВЫЙ АРХИВ" },
   "arc.scanBtn": { en: "SCAN AND RESTORE ACCESS", ru: "ПРОСКАНИРОВАТЬ И ВОССТАНОВИТЬ ДОСТУП" },
+  "arc.restoreBtn": { en: "RESTORE ARCHIVE ACCESS", ru: "ВОССТАНОВИТЬ ДОСТУП К АРХИВУ" },
   "arc.scanning": { en: "scanning spools …", ru: "сканирование катушек …" },
   "arc.sealed": { en: "sealed record found", ru: "обнаружена закрытая запись" },
   "arc.termTitle": {

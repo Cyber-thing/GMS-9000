@@ -17,7 +17,7 @@ export interface Beat {
   choices?: { id: string; en: string; ru: string; zh?: string }[];
 
   contract?: string;
-  action?: "offer" | "deliver" | "done";
+  action?: "offer" | "accepted" | "deliver" | "done";
 }
 
 export const L = (en: string, ru: string, zh?: string): Line => ({ en, ru, zh });
@@ -65,6 +65,8 @@ export const OP17_PREBREACHED: Beat[] = [
   {
     id: "q2b",
     from: "OP",
+    contract: "ct_archive",
+    action: "accepted",
     line: L(
       "Already did it. Your archive is open — I cracked it before you asked. Wait.",
       "Уже взломал. Твой архив открыт — я вскрыл его ещё до твоей просьбы. Жди.",

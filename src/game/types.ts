@@ -246,7 +246,7 @@ export interface ThreadMsg {
   textZh?: string;
   t: string;
   contract?: string;
-  action?: "offer" | "deliver" | "done";
+  action?: "offer" | "accepted" | "deliver" | "done";
   /** 脚本回复按钮。 */
   choices?: { id: string; en: string; ru: string; zh?: string }[];
   /** 已选择的选项标识。 */

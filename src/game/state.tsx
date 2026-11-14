@@ -526,7 +526,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
           OP17_PREBREACHED.forEach((b, i) => later(() => pushBeat(b, "op17"), i * 1100));
           return;
         }
-        pushBeat({ id: "a2", from: "OP", line: { en: "Taking the contract.", ru: "Принимаю контракт.", zh: "接了合同。" } });
+        pushBeat({
+          id: "a2", from: "OP",
+          line: { en: "Taking the contract.", ru: "Принимаю контракт.", zh: "接了合同。" },
+          contract: "ct_archive", action: "accepted",
+        });
         setG((s) => ({ ...s, contracts: { ...s.contracts, ct_archive: { state: "ACCEPTED", accepted: true } } }));
         later(() => OP17_ACCEPTED.forEach((b) => pushBeat(b, "op17")), 800);
         return;
@@ -607,7 +611,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (choiceId === "fi_ok") {
-        pushBeat({ id: "a6", from: "OP", line: { en: "All right.", ru: "Хорошо.", zh: "行。" } }, "freddy");
+        pushBeat({
+          id: "a6", from: "OP",
+          line: { en: "All right.", ru: "Хорошо.", zh: "行。" },
+          contract: "ct_implant", action: "accepted",
+        }, "freddy");
         const cur = gRef.current;
         const hasMemo = cur.files.includes("f_queue_memo");
         /* 已经卖掉就再也拿不回来了——这条线直接谈崩 */
@@ -652,7 +660,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (choiceId === "mp_ok") {
-        pushBeat({ id: "a8", from: "OP", line: { en: "Taking it.", ru: "Берусь.", zh: "接了。" } }, "marla");
+        pushBeat({
+          id: "a8", from: "OP",
+          line: { en: "Taking it.", ru: "Берусь.", zh: "接了。" },
+          contract: "sb_projector", action: "accepted",
+        }, "marla");
         const cur = gRef.current;
         const wrecked = cur.sabotaged.includes("w1p_crp2");
         const already = cur.nodeStates["w1p_crp2"] === "COMPROMISED";
@@ -807,7 +819,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
           : hasFile ? "DATA ACQUIRED" : breached ? "TARGET ACCESSED" : "ACCEPTED";
 
       setG((s) => ({ ...s, contracts: { ...s.contracts, [id]: { state: next, accepted: true } } }));
-      say(ct.contact, "taking the contract.", "принимаю контракт.", "单子我接了。", { from: "OP" });
+      say(ct.contact, "taking the contract.", "принимаю контракт.", "单子我接了。", {
+        from: "OP", contract: id, action: "accepted",
+      });
 
       const tgt = ALL_NODES.find((n) => n.id === ct.target);
       const code = tgt?.code ?? ct.target;

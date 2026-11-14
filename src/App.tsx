@@ -681,8 +681,11 @@ export default function App() {
     const id = archiveId;
     setArchiveId(null);
     if (!id) return;
-    /* 没接委托就自己闯进来：只是把索引搞坏了，拿不到「恢复凭证」 */
-    if (!g.contracts["ct_archive"]) return;
+    /* 没真正接委托就自己闯进来：只是把索引搞坏了，拿不到「恢复凭证」。
+       AVAILABLE 还只是收到邀约，不算接单。 */
+    const arc = g.contracts["ct_archive"];
+    const hasJob = !!arc && (arc.accepted === true || arc.state !== "AVAILABLE");
+    if (!hasJob) return;
 
     if (!g.files.includes("f_access_restored")) {
       download("f_access_restored");
@@ -1294,7 +1297,10 @@ export default function App() {
               g.files.includes("f_termlist") ||
               g.burned.includes("f_termlist")
             }
-            hasJob={!!g.contracts["ct_archive"]}
+            hasJob={(() => {
+              const arc = g.contracts["ct_archive"];
+              return !!arc && (arc.accepted === true || arc.state !== "AVAILABLE");
+            })()}
             onTake={archiveTake}
             onClose={archiveClose}
             onLog={(k, params) => print(t(k, params), "dim")}
