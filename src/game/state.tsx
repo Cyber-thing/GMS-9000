@@ -108,7 +108,7 @@ interface Ctx {
   deliverContract: (id: string) => void;
   recover: () => void;
   failBreach: (nodeId: string, repLoss: number) => void;
-  sabotage: (nodeId: string) => boolean;
+  sabotage: (nodeId: string, opts?: { forceCompromised?: boolean }) => boolean;
   pickChoice: (msgId: number, choiceId: string) => void;
   sableArrives: () => void;
   openFreddy: () => void;
@@ -978,29 +978,33 @@ export function GameProvider({ children }: { children: ReactNode }) {
   /* ---------------- 破坏 ---------------- */
 
   const sabotage = useCallback(
-    (nodeId: string) => {
-      if (g.sabotaged.includes(nodeId)) return false;
-      if (g.nodeStates[nodeId] !== "COMPROMISED") return false;
+    (nodeId: string, opts?: { forceCompromised?: boolean }) => {
+      const cur = gRef.current;
+      if (cur.sabotaged.includes(nodeId)) return false;
+      if (!opts?.forceCompromised && cur.nodeStates[nodeId] !== "COMPROMISED") return false;
       const n = ALL_NODES.find((x) => x.id === nodeId);
       const meta = NODE_META[nodeId];
-      setG((s) => ({
-        ...s,
-        sabotaged: [...s.sabotaged, nodeId],
-        burning: s.burning.includes(nodeId) ? s.burning : [...s.burning, nodeId],
-        relations: {
-          ...s.relations,
-          [meta.owner]: (s.relations[meta.owner] ?? 0) + CFG.relHitPerWarden * meta.warden,
-        },
-        contracts: Object.fromEntries(
-          Object.entries(s.contracts).map(([cid, pr]) => {
-            const ct = contractById(cid);
-            if (ct?.kind === "SABOTAGE" && ct.target === nodeId &&
-                (pr.state === "ACCEPTED" || pr.state === "TARGET ACCESSED"))
-              return [cid, { ...pr, state: "SABOTAGED" as const }];
-            return [cid, pr];
-          })
-        ),
-      }));
+      setG((s) => {
+        if (s.sabotaged.includes(nodeId)) return s;
+        return {
+          ...s,
+          sabotaged: [...s.sabotaged, nodeId],
+          burning: s.burning.includes(nodeId) ? s.burning : [...s.burning, nodeId],
+          relations: {
+            ...s.relations,
+            [meta.owner]: (s.relations[meta.owner] ?? 0) + CFG.relHitPerWarden * meta.warden,
+          },
+          contracts: Object.fromEntries(
+            Object.entries(s.contracts).map(([cid, pr]) => {
+              const ct = contractById(cid);
+              if (ct?.kind === "SABOTAGE" && ct.target === nodeId &&
+                  (pr.state === "ACCEPTED" || pr.state === "TARGET ACCESSED"))
+                return [cid, { ...pr, state: "SABOTAGED" as const }];
+              return [cid, pr];
+            })
+          ),
+        };
+      });
       notify("SABOTAGE COMPLETE", n?.code ?? nodeId, "CONTACTS");
 
       if (nodeId === "w1p_crp2") {
@@ -1025,7 +1029,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       CONTRACTS.forEach((ct) => {
         if (ct.kind !== "SABOTAGE" || ct.target !== nodeId) return;
         if (ct.scripted) return;   // 由专用对话处理结算
-        const pr = g.contracts[ct.id];
+        const pr = cur.contracts[ct.id];
         if (pr?.state !== "ACCEPTED" && pr?.state !== "TARGET ACCESSED") return;
         pushThread(ct.contact, {
           from: ct.contact,
@@ -1044,7 +1048,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       });
       return true;
     },
-    [g.sabotaged, g.nodeStates, g.contracts, notify, pushThread, pushBeat]
+    [notify, pushThread, pushBeat]
   );
 
   /* 黑市。 */

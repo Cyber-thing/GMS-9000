@@ -864,6 +864,68 @@ export const DICT: Record<string, Entry> = {
   "md.known": { en: "password on file", ru: "пароль сохранён" },
   "dos.enterServer": { en: "enter server", ru: "зайти на сервер" },
   "dos.memdump": { en: "connect · crack password", ru: "подключиться · подобрать пароль" },
+
+  /* VIRTUALITY BREACH */
+  "dos.vr": { en: "connect · VIRTUALITY BREACH", ru: "подключиться · VIRTUALITY BREACH" },
+  "t.vrStart": { en: "VR-LINK :: diving into {code} virtual reality construct", ru: "VR-ЛИНК :: погружение в виртуальную реальность {code}" },
+  "t.vrWin": { en: "VR-LINK :: {code} core breached and stabilized", ru: "VR-ЛИНК :: ядро {code} взломано" },
+  "t.vrBlackout": { en: "SABOTAGE // BLACKOUT :: {code} lights severed and logging disabled", ru: "ДИВЕРСИЯ // БЛЭКАУТ :: освещение {code} обесточено" },
+  "e.vrBlackout": { en: "{code} plunged into blackout during Virtuality Breach", ru: "{code} обесточен во время Virtuality Breach" },
+  "t.vrAbort": { en: "VR-LINK :: operator pulled plug manually", ru: "VR-ЛИНК :: оператор экстренно вышел из VR" },
+  "t.vrFail": { en: "VR-LINK :: neural intrusion severed by ICE (-{n} REP)", ru: "VR-ЛИНК :: нейролинк оборван системой ICE (-{n} REP)" },
+
+  "vr.title": { en: "VIRTUALITY BREACH", ru: "VIRTUALITY BREACH" },
+  "vr.pause": { en: "PAUSE", ru: "ПАУЗА" },
+  "vr.resume": { en: "RESUME", ru: "ПРОДОЛЖИТЬ" },
+  "vr.abort": { en: "JACK OUT", ru: "ВЫЙТИ" },
+  "vr.skip": { en: "[SPACE / CLICK] SKIP LINK", ru: "[SPACE / КЛИК] ПРОПУСТИТЬ" },
+  "vr.paused": { en: "LINK SUSPENDED", ru: "СВЯЗЬ НА ПАУЗЕ" },
+  "vr.backToVr": { en: "BACK TO VR [ESC]", ru: "НАЗАД В VR [ESC]" },
+  "vr.finaleBlackout": { en: "SABOTAGE BREAKER // LIGHTS CONTROL", ru: "РУБИЛЬНИК ДИВЕРСИИ // СВЕТ" },
+  "vr.finaleRouting": { en: "CORE SUBGRID // SIGNAL ROUTING", ru: "ЯДРО СЕТИ // МАРШРУТИЗАЦИЯ" },
+  "vr.finaleHex": { en: "ICE KERNEL // HEXLATTICE PURGE", ru: "ЯДРО ICE // СБРОС РЕШЁТКИ" },
+  "vr.finaleCipher": { en: "MEMORY CORE // CIPHER DECODE", ru: "ЯДРО ПАМЯТИ // ДЕКОДЕР" },
+  "vr.breakerHall": { en: "HALL FLOODLIGHTS", ru: "ПРОЖЕКТОРЫ ЗАЛА" },
+  "vr.breakerProj": { en: "STAGE PROJECTORS", ru: "ПРОЕКТОРЫ СЦЕНЫ" },
+  "vr.breakerBallast": { en: "BACKUP BALLAST", ru: "РЕЗЕРВНЫЙ БАЛЛАСТ" },
+  "vr.blackoutHeader": { en: "{code} LIGHTING DISTRIBUTION TERMINAL", ru: "ЩИТ ОСВЕЩЕНИЯ {code}" },
+  "vr.blackoutHint": {
+    en: "Isolate all three lighting relays [1/2/3] and drop main power to complete sabotage.",
+    ru: "Отключите все три реле освещения [1/2/3] и сбросьте главное питание для завершения диверсии.",
+  },
+  "vr.circuit": { en: "RELAY", ru: "РЕЛЕ" },
+  "vr.online": { en: "POWERED", ru: "ПОД ТОКОМ" },
+  "vr.isolated": { en: "ISOLATED", ru: "ОБЕСТОЧЕНО" },
+  "vr.cutPower": { en: "CUT MAIN POWER // BLACKOUT", ru: "ВЫРУБИТЬ СВЕТ // ДИВЕРСИЯ" },
+  "vr.cutting": { en: "SEVERING GRID …", ru: "ОТКЛЮЧЕНИЕ СЕТИ …" },
+  "vr.blackoutDone": { en: "LIGHTS SEVERED // SABOTAGE CONFIRMED", ru: "СВЕТ ОТКЛЮЧЁН // ДИВЕРСИЯ ВЫПОЛНЕНА" },
+  "vr.victoryTitle": { en: "VIRTUALITY BREACHED", ru: "СИСТЕМА ВЗЛОМАНА" },
+  "vr.victorySub": {
+    en: "Core subsystem compromised inside {code}. Local links unlocked.",
+    ru: "Ядро {code} скомпрометировано. Соседние маршруты открыты.",
+  },
+  "vr.victoryBlackout": { en: "BLACKOUT SABOTAGE COMPLETE", ru: "ДИВЕРСИЯ ЗАВЕРШЕНА // БЛЭКАУТ" },
+  "vr.victoryBlackoutSub": {
+    en: "{code} lighting power cut and node compromised. The exhibition hall is dark.",
+    ru: "Питание освещения {code} отключено, узел захвачен. Павильон погружён во тьму.",
+  },
+  "vr.defeatTitle": { en: "NEURAL LINK SEVERED", ru: "НЕЙРОЛИНК РАЗОРВАН" },
+  "vr.defeatSub": {
+    en: "ICE counter-intrusion terminated your VR projection · -{n} REP · identity burn triggered.",
+    ru: "Контратака ICE уничтожила проекцию · -{n} REP · требуется сброс личности.",
+  },
+  "vr.defeatOverload": {
+    en: "Core reactor detonation caught your link before extraction · -{n} REP.",
+    ru: "Взрыв ядра перехватил канал до выхода · -{n} REP.",
+  },
+  "vr.statTime": { en: "ELAPSED", ru: "ВРЕМЯ" },
+  "vr.statIce": { en: "ICE PURGED", ru: "УБИТО ICE" },
+  "vr.statHits": { en: "HITS TAKEN", ru: "ПОПАДАНИЯ" },
+  "vr.exitGrid": { en: "RETURN TO NETWORK GRID", ru: "ВЕРНУТЬСЯ В СЕТЬ" },
+  "vr.controlsHint": {
+    en: "WASD/ARROWS MOVE · SPACE JUMP · SHIFT/K DASH-SLASH · J/Z/ENTER FIRE · E OVERRIDE/TERMINAL · Q WEAPON · P PAUSE",
+    ru: "WASD/СТРЕЛКИ ДВИЖЕНИЕ · SPACE ПРЫЖОК · SHIFT/K РЫВОК · J/Z/ENTER ОГОНЬ · E ВЗАИМОДЕЙСТВИЕ · Q ОРУЖИЕ · P ПАУЗА",
+  },
 };
 
 const interpolate = (s: string, p?: Record<string, string | number>) =>

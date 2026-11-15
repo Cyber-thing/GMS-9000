@@ -96,6 +96,7 @@ export function setSfxMode(next: SfxMode) {
   store.set("sfx.mode", next);
 
   if (next === "off") {
+    stopVrBassLoop();
     /* 掐断正在响的一切，并且不留悬挂节点 */
     if (active) {
       active.stopAll();
@@ -179,6 +180,33 @@ export function sfx(name: SfxName) {
   ensureEngine()?.play(name);
 }
 
+let vrBassTimer: number | null = null;
+let vrBassStep = 0;
+
+/** Cyberpunk VR pulse loop routed strictly through the main game's sfx() synthesizer. */
+export function startVrBassLoop(bpm = 114) {
+  if (vrBassTimer !== null) return;
+  if (typeof window === "undefined") return;
+  const stepMs = Math.round((60 / bpm / 2) * 1000);
+  vrBassStep = 0;
+  vrBassTimer = window.setInterval(() => {
+    if (mode === "off") return;
+    const ac = ctx;
+    if (!ac || ac.state !== "running") return;
+    const barStep = vrBassStep % 8;
+    if (barStep === 0 || barStep === 4) sfx("vrBassAccent");
+    else if (barStep === 2 || barStep === 6 || barStep === 7) sfx("vrBass");
+    vrBassStep++;
+  }, stepMs);
+}
+
+export function stopVrBassLoop() {
+  if (vrBassTimer !== null) {
+    window.clearInterval(vrBassTimer);
+    vrBassTimer = null;
+  }
+}
+
 /** 音频解锁后，把等待中的那一个补放出来。 */
 function flushPending() {
   if (mode === "off" || !pending) { pending = null; return; }
@@ -205,6 +233,9 @@ export const SFX_EVENTS: SfxName[] = [
   "hackStart", "hackOk", "hackFail", "alarm",
   "scan", "found", "download", "money", "place",
   "boot", "powerOn", "login", "logout",
+  "vrDive", "vrBuild", "vrShoot", "vrShotgun", "vrSmg", "vrEnemyShoot",
+  "vrJump", "vrDash", "vrHit", "vrKill", "vrHurt", "vrPickup",
+  "vrDoor", "vrExplosion", "vrBlackout", "vrBass", "vrBassAccent",
 ];
 
 if (typeof window !== "undefined") {

@@ -404,6 +404,74 @@ export function createFmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
         seq([[nt("C", 4), 0.08], [nt("A", 3), 0.08], [nt("E", 3), 0.09], [nt("A", 2), 0.24]],
             { gain: 0.11, wave: "triangle", sub: true, ...FM.anvil });
         break;
+
+      /* ---- Virtuality Breach 2D VR ---- */
+      case "vrDive":
+        tone({ freq: nt("D", 1), to: nt("D", 3), dur: 0.55, gain: 0.13, wave: "sawtooth", sub: true, ...FM.steel });
+        seq([[nt("D", 3), 0.08], [nt("F", 3), 0.08], [nt("A", 3), 0.08], [nt("D", 4), 0.2]], { gain: 0.1, ...FM.bell });
+        break;
+      case "vrBuild":
+        if (!throttled("vrBuild", 55)) return;
+        tone({ freq: rotate("vrBuild", [nt("D", 4), nt("F", 4), nt("A", 4), nt("C", 5)]), dur: 0.035, gain: 0.06, ...FM.data });
+        break;
+      case "vrShoot":
+        if (!throttled("vrShoot", 50)) return;
+        tone({ freq: 820, to: 170, dur: 0.08, gain: 0.11, wave: "square", ...FM.relay });
+        break;
+      case "vrShotgun":
+        if (!throttled("vrShotgun", 110)) return;
+        tone({ freq: 240, to: 45, dur: 0.2, gain: 0.16, wave: "sawtooth", sub: true, ...FM.anvil });
+        noise(0.15, 0.12, 0, 500);
+        break;
+      case "vrSmg":
+        if (!throttled("vrSmg", 45)) return;
+        tone({ freq: 980, to: 260, dur: 0.045, gain: 0.08, wave: "triangle", ...FM.data });
+        break;
+      case "vrEnemyShoot":
+        if (!throttled("vrEnemyShoot", 85)) return;
+        tone({ freq: 340, to: 140, dur: 0.09, gain: 0.08, wave: "sawtooth", ...FM.siren });
+        break;
+      case "vrJump":
+        if (!throttled("vrJump", 70)) return;
+        tone({ freq: nt("D", 3), to: nt("A", 4), dur: 0.1, gain: 0.09, wave: "triangle", ...FM.data });
+        break;
+      case "vrDash":
+        if (!throttled("vrDash", 90)) return;
+        tone({ freq: nt("A", 4), to: nt("D", 3), dur: 0.12, gain: 0.1, wave: "sawtooth", ...FM.steel });
+        break;
+      case "vrHit":
+        if (!throttled("vrHit", 35)) return;
+        tone({ freq: nt("C", 3), to: nt("D", 2), dur: 0.07, gain: 0.11, wave: "square", ...FM.anvil });
+        break;
+      case "vrKill":
+        if (!throttled("vrKill", 50)) return;
+        tone({ freq: nt("D", 3), to: nt("D", 1), dur: 0.2, gain: 0.14, wave: "sawtooth", sub: true, ...FM.anvil });
+        noise(0.12, 0.09, 0, 600);
+        break;
+      case "vrHurt":
+        if (!throttled("vrHurt", 180)) return;
+        tone({ freq: nt("Ds", 3), to: nt("A", 1), dur: 0.24, gain: 0.15, wave: "sawtooth", sub: true, ...FM.siren });
+        break;
+      case "vrPickup":
+        seq([[nt("D", 4), 0.05], [nt("F", 4), 0.05], [nt("A", 4), 0.09]], { gain: 0.1, ...FM.bell });
+        break;
+      case "vrDoor":
+        tone({ freq: nt("D", 2), to: nt("A", 2), dur: 0.2, gain: 0.11, wave: "triangle", ...FM.steel });
+        break;
+      case "vrExplosion":
+        tone({ freq: nt("D", 3), to: nt("D", 1), dur: 0.36, gain: 0.18, wave: "sawtooth", sub: true, ...FM.anvil });
+        noise(0.32, 0.15, 0, 220);
+        break;
+      case "vrBlackout":
+        tone({ freq: nt("A", 3), to: nt("D", 1), dur: 0.72, gain: 0.16, wave: "sawtooth", sub: true, ...FM.anvil });
+        seq([[nt("A", 3), 0.09], [nt("F", 3), 0.1], [nt("D", 3), 0.12], [nt("A", 2), 0.28]], { gain: 0.12, ...FM.siren });
+        break;
+      case "vrBass":
+        tone({ freq: rotate("vrBass", [nt("D", 2), nt("D", 2), nt("D", 3), nt("D", 2), nt("F", 2), nt("D", 2), nt("A", 2), nt("G", 2)]), dur: 0.08, gain: 0.055, wave: "sawtooth", ...FM.data });
+        break;
+      case "vrBassAccent":
+        tone({ freq: nt("D", 2), dur: 0.11, gain: 0.075, wave: "sawtooth", sub: true, ...FM.data });
+        break;
     }
   }
   

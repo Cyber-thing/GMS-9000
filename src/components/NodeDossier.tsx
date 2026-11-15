@@ -12,6 +12,7 @@ import { usesVault } from "../game/vault";
 import { usesRouting } from "../game/routing";
 import { usesHexwall } from "../game/hexwall";
 import { usesMemdump } from "../game/memdump";
+import { usesVirtualityBreach } from "../game/vr/levels";
 import { useTut } from "../game/tutorial";
 
 export const NODE_STATE_COLOR: Record<string, string> = {
@@ -97,6 +98,7 @@ export default function NodeDossier({
   const routing = usesRouting(node.type, meta.warden);
   const hexwall = usesHexwall(node.type, meta.warden);
   const memdump = usesMemdump(node.type, meta.warden);
+  const vr = usesVirtualityBreach(node.id);
   /* ARC-N05 在提前闯入时只是「损坏」，恢复入口只能在真正接单后启用。
      完成后仍可再次打开，查看「档案已被洗过」的状态。 */
   const archiveContract = g.contracts["ct_archive"];
@@ -236,13 +238,15 @@ export default function NodeDossier({
                   : t("dos.hackRepeat")
                 : sealed
                   ? t("dos.sealed")
-                  : routing
-                    ? t("dos.routing")
-                    : hexwall
-                      ? t("dos.hexwall")
-                      : memdump
-                        ? t("dos.memdump")
-                        : t("dos.hack")
+                  : vr
+                    ? t("dos.vr")
+                    : routing
+                      ? t("dos.routing")
+                      : hexwall
+                        ? t("dos.hexwall")
+                        : memdump
+                          ? t("dos.memdump")
+                          : t("dos.hack")
               : chk.reason === "LOCKED"
                 ? t("dos.lockedBtn")
                 : chk.reason === "RESTRICTED"

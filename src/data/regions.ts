@@ -45,6 +45,7 @@ const W1_NODES: NetNode[] = [
   { id: "w1n_dsv", code: "DSV-N03", type: "DATA SERVER", sector: "w1_north", x: 560, y: 75, status: "ONLINE", desc: "Hydro utility data vault. Meter archives since '71." },
   { id: "w1n_rly2", code: "RLY-N04", type: "RELAY", sector: "w1_north", x: 690, y: 140, status: "ONLINE", desc: "Hudson Bay relay. Weatherproofed and lonely." },
   { id: "w1n_arc", code: "ARC-N05", type: "ARCHIVE", sector: "w1_north", x: 390, y: 150, status: "OFFLINE", desc: "Government tape archive. Budget cut in '93." },
+  { id: "w1n_crp", code: "CRP-N06", type: "CORPORATE", sector: "w1_north", x: 645, y: 102, status: "ONLINE", desc: "Slayer hydro substation proxy. Siphons unbilled megawatts off Northline." },
 
   /* 太平洋交换区 */
   { id: "w1p_acc", code: "ACC-P01", type: "ACCESS", sector: "w1_pac", x: 316, y: 308, status: "ONLINE", desc: "Bay area access concentrator. 96 lines, all screeching." },
@@ -74,6 +75,7 @@ const W1_NODES: NetNode[] = [
   { id: "w1g_rly", code: "RLY-G03", type: "RELAY", sector: "w1_gulf", x: 765, y: 460, status: "ONLINE", desc: "Gulf coastal relay. Hurricane-rated enclosure." },
   { id: "w1g_prv", code: "PRV-G04", type: "PRIVATE", sector: "w1_gulf", x: 560, y: 565, status: "OFFLINE", desc: "Shrimp boat packet node. It sank." },
   { id: "w1g_prv2", code: "PRV-G05", type: "PRIVATE", sector: "w1_gulf", x: 710, y: 575, status: "RESTRICTED", desc: "Military reservation gateway. Test range traffic only." },
+  { id: "w1g_crp", code: "CRP-G06", type: "CORPORATE", sector: "w1_gulf", x: 602, y: 454, status: "ONLINE", desc: "Fusion Cybernetics core telemetry vault. Hardened neural ICE." },
 
   /* Gexogen Medical：每个扇区一处诊所节点 */
   { id: "w1a_gex", code: "CRP-X09", type: "CORPORATE", sector: "w1_arct", x: 222, y: 60, status: "ONLINE", desc: "Gexogen polar clinic. Two staff, one surgeon, a very warm server room." },
@@ -101,6 +103,8 @@ const W1_LINKS: NetLink[] = [
   { a: "w1n_rly", b: "w1n_rly2", state: "stable" },
   { a: "w1n_acc", b: "w1n_arc", state: "weak" },
   { a: "w1n_arc", b: "w1n_rly", state: "weak" },
+  { a: "w1n_dsv", b: "w1n_crp", state: "stable" },
+  { a: "w1n_rly2", b: "w1n_crp", state: "weak" },
   /* 太平洋区域 */
   { a: "w1p_acc", b: "w1p_dsv", state: "stable" },
   { a: "w1p_dsv", b: "w1p_prv", state: "weak" },
@@ -126,6 +130,8 @@ const W1_LINKS: NetLink[] = [
   { a: "w1g_dsv", b: "w1g_rly", state: "stable" },
   { a: "w1g_acc", b: "w1g_prv", state: "down" },
   { a: "w1g_dsv", b: "w1g_prv2", state: "weak" },
+  { a: "w1g_acc", b: "w1g_crp", state: "weak" },
+  { a: "w1g_dsv", b: "w1g_crp", state: "stable" },
   /* WEST1 跨扇区骨干链路 */
   { a: "w1a_rly", b: "w1n_rly2", state: "weak", backbone: true },
   { a: "w1n_acc", b: "w1p_acc", state: "stable", backbone: true },

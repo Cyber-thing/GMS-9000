@@ -109,6 +109,11 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     owner: "civic", cls: "GOVERNMENT", warden: 2, rep: 16,
     files: [], password: "CORE1MAX32", passwordFrom: "f_wardenpass",
   },
+  w1n_crp: {
+    owner: "slayer", cls: "CORPORATE", warden: 1, rep: 14,
+    files: ["f_north_power"], codex: ["f_slayer"],
+    intel: "Slayer subsidiary substation tapping unmetered hydro feed from Northline.",
+  },
 
   w1m_sec: {
     owner: "slayer", cls: "CORPORATE", warden: 5, rep: 32, restricted: true,
@@ -143,6 +148,11 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     owner: "fusion", cls: "CORPORATE", warden: 3, rep: 16,
     files: ["f_queue_memo"], codex: ["f_fusion"],
     intel: "Bio-implant sales. The waiting list is edited by hand whenever a premium client gets impatient.",
+  },
+  w1g_crp: {
+    owner: "fusion", cls: "CORPORATE", warden: 5, rep: 32,
+    files: ["f_fusion_grid"], codex: ["f_fusion"],
+    intel: "Fusion Cybernetics core telemetry vault. Protects the neural implant firmware keys.",
   },
   w1g_prv2: { owner: "civic", cls: "GOVERNMENT", warden: 5, rep: 30, restricted: true, req: { rep: 70 }, files: ["f_range"] },
 
@@ -300,6 +310,8 @@ export const FILES: DataFile[] = [
   F("f_manifest", "PORT-MANIFESTS", "ПОРТОВЫЕ-МАНИФЕСТЫ", "港口舱单", "CORPORATE DATA", "wls_crp", "harbor", 320),
   F("f_capeecho", "CAPE-REVERSE-ECHO", "ЭХО-МЫСА-ОБРАТНОЕ", "岬角-倒置回波", "INTEL", "wlc_rly", "indep", 540),
   F("f_skydump", "OBSERVATORY-SKYDUMP", "ВЫГРУЗКА-НЕБА", "天文台-夜空转储", "INTEL", "wld_res", "civic", 220),
+  F("f_north_power", "NORTHLINE-DRAW-LEDGER", "NORTHLINE-НЕУЧТЁНКА", "NORTHLINE-暗账电量", "CORPORATE DATA", "w1n_crp", "slayer", 240),
+  F("f_fusion_grid", "FUSION-NEURAL-FIRMWARE", "FUSION-НЕЙРОПРОШИВКА", "FUSION-神经固件", "CLASSIFIED DATA", "w1g_crp", "fusion", 960),
 ];
 
 export const fileById = (id: string) => FILES.find((f) => f.id === id);

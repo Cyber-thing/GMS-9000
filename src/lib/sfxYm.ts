@@ -862,6 +862,90 @@ export function createYmEngine(ac: AudioContext, dest: AudioNode): SfxEngine {
         seq([[nt("C", 3), 0.09], [nt("A", 2), 0.09], [nt("E", 2), 0.1]], P.steel, 0.4, { prio: 3 });
         fmVoice({ freq: nt("A", 1), to: nt("A", 0), dur: 0.42, gain: 0.55, patch: P.bass, delay: 0.26, prio: 3 });
         break;
+
+      /* ===== Virtuality Breach 2D VR 音效 (YM2612 FM) ===== */
+      case "vrDive": {
+        const echo = makeEcho({ time: 0.22, feedback: 0.55, tone: 1900, wet: 0.45, life: 2.2, bus: "fm" });
+        fmVoice({ freq: nt("D", 1), to: nt("D", 3), dur: 0.65, gain: 0.48, patch: P.bass, prio: 4, send: echo, sendGain: 0.5 });
+        seq([[nt("D", 2), 0.09], [nt("F", 2), 0.09], [nt("A", 2), 0.09], [nt("D", 3), 0.14], [nt("A", 3), 0.24]], P.bell, 0.38, { prio: 3 });
+        noise(0.45, 0.05, 0.05, 1100, 3, "fm", echo, 0.35);
+        break;
+      }
+      case "vrBuild":
+        if (!throttled("vrBuild", 55)) return;
+        fmVoice({
+          freq: rotate("vrBuild", [nt("D", 3), nt("F", 3), nt("A", 3), nt("C", 4), nt("D", 4), nt("F", 4)]),
+          dur: 0.045, gain: 0.24, patch: P.data, prio: 0,
+        });
+        break;
+      case "vrShoot":
+        if (!throttled("vrShoot", 50)) return;
+        fmVoice({ freq: 880, to: 160, dur: 0.09, gain: 0.34, patch: P.relay, prio: 2 });
+        noise(0.05, 0.07, 0, 1400, 2, "fm");
+        break;
+      case "vrShotgun":
+        if (!throttled("vrShotgun", 110)) return;
+        fmVoice({ freq: nt("D", 2), to: nt("D", 0), dur: 0.22, gain: 0.52, patch: P.impact, prio: 3 });
+        noise(0.18, 0.14, 0, 520, 2, "heavy");
+        break;
+      case "vrSmg":
+        if (!throttled("vrSmg", 45)) return;
+        fmVoice({ freq: 1050, to: 240, dur: 0.055, gain: 0.25, patch: P.data, prio: 1 });
+        noise(0.035, 0.05, 0, 1800, 2, "fm");
+        break;
+      case "vrEnemyShoot":
+        if (!throttled("vrEnemyShoot", 85)) return;
+        fmVoice({ freq: 380, to: 145, dur: 0.1, gain: 0.22, patch: P.corrupt, prio: 1 });
+        break;
+      case "vrJump":
+        if (!throttled("vrJump", 70)) return;
+        fmVoice({ freq: nt("D", 2), to: nt("A", 3), dur: 0.11, gain: 0.26, patch: P.panel, prio: 1 });
+        break;
+      case "vrDash":
+        if (!throttled("vrDash", 90)) return;
+        fmVoice({ freq: nt("A", 3), to: nt("D", 2), dur: 0.14, gain: 0.28, patch: P.steel, prio: 2 });
+        noise(0.11, 0.07, 0, 900, 3, "glitch");
+        break;
+      case "vrHit":
+        if (!throttled("vrHit", 35)) return;
+        fmVoice({ freq: nt("C", 3), to: nt("D", 1), dur: 0.08, gain: 0.36, patch: P.impact, prio: 2 });
+        break;
+      case "vrKill":
+        if (!throttled("vrKill", 50)) return;
+        fmVoice({ freq: nt("D", 2), to: nt("D", 0), dur: 0.22, gain: 0.46, patch: P.impact, prio: 3 });
+        noise(0.14, 0.1, 0, 620, 4, "glitch");
+        break;
+      case "vrHurt":
+        if (!throttled("vrHurt", 180)) return;
+        fmVoice({ freq: nt("Ds", 2), to: nt("A", 0), dur: 0.28, gain: 0.52, patch: P.corrupt, prio: 4 });
+        noise(0.15, 0.12, 0, 350, 6, "glitch");
+        break;
+      case "vrPickup":
+        seq([[nt("D", 3), 0.05], [nt("F", 3), 0.05], [nt("A", 3), 0.09]], P.bell, 0.34, { prio: 2 });
+        break;
+      case "vrDoor":
+        fmVoice({ freq: nt("D", 1), to: nt("A", 1), dur: 0.24, gain: 0.38, patch: P.steel, prio: 2 });
+        break;
+      case "vrExplosion":
+        fmVoice({ freq: nt("D", 2), to: nt("D", 0), dur: 0.45, gain: 0.6, patch: P.impact, prio: 4 });
+        noise(0.36, 0.16, 0, 180, 2, "heavy");
+        break;
+      case "vrBlackout": {
+        /* 切断灯光与投影控制器的断电沉降 */
+        fmVoice({ freq: nt("A", 2), to: nt("D", 0), dur: 0.85, gain: 0.58, patch: P.bass, prio: 4 });
+        seq([[nt("A", 2), 0.09], [nt("F", 2), 0.11], [nt("D", 2), 0.14], [nt("A", 1), 0.34]], P.corrupt, 0.42, { prio: 4 });
+        noise(0.35, 0.08, 0.04, 320, 4, "heavy");
+        break;
+      }
+      case "vrBass":
+        fmVoice({
+          freq: rotate("vrBass", [nt("D", 1), nt("D", 1), nt("D", 2), nt("D", 1), nt("F", 1), nt("D", 1), nt("A", 1), nt("G", 1)]),
+          dur: 0.09, gain: 0.16, patch: P.bass, prio: 0,
+        });
+        break;
+      case "vrBassAccent":
+        fmVoice({ freq: nt("D", 1), dur: 0.12, gain: 0.22, patch: P.bass, prio: 0 });
+        break;
     }
   }
 

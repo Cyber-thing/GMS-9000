@@ -1,0 +1,6 @@
+{
+  "name": "GNS-9000 // Virtuality Breach",
+  "description": "Global network operations console featuring Virtuality Breach 2D cyberpunk VR infiltration levels across corporate nodes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

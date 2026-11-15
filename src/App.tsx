@@ -9,6 +9,7 @@ import SidePanel from "./components/SidePanel";
 import Resizer from "./components/Resizer";
 import ConfirmDialog from "./components/ConfirmDialog";
 import BreachGame from "./components/BreachGame";
+import VirtualityBreachModal from "./components/vr/VirtualityBreachModal";
 import DataVault from "./components/DataVault";
 import BlackMarket from "./components/BlackMarket";
 import Splash from "./components/Splash";
@@ -23,6 +24,7 @@ import MessageToast from "./components/MessageToast";
 import { ROUTING_TIERS, usesRouting } from "./game/routing";
 import { HEXWALL_TIERS, usesHexwall } from "./game/hexwall";
 import { DUMP_TIERS, usesMemdump } from "./game/memdump";
+import { usesVirtualityBreach } from "./game/vr/levels";
 import TutorialCall from "./components/TutorialCall";
 import { MEMO_ASIDE, tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
 import { useColumns } from "./hooks/useColumns";
@@ -114,9 +116,14 @@ export default function App() {
   }, []);
 
   /* ---------- 会话 ---------- */
-  const [splash, setSplash] = useState(true);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [operator, setOperator] = useState(() => store.get("operator", "UNKNOWN"));
+  const autoBoot =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("autostart") === "1";
+  const [splash, setSplash] = useState(!autoBoot);
+  const [loggedIn, setLoggedIn] = useState(autoBoot);
+  const [operator, setOperator] = useState(() =>
+    autoBoot ? "OPERATOR" : store.get("operator", "UNKNOWN")
+  );
   const [fx, setFx] = useState(() => store.get("fx", true));
   /* 复古噪点滤镜，和 CRT 独立开关 */
   const [noise, setNoise] = useState(() => store.get("noise", true));
@@ -156,6 +163,7 @@ export default function App() {
   const hackIv = useRef<number | null>(null);
   /** 当前正在进行入侵小游戏的节点。 */
   const [breachId, setBreachId] = useState<string | null>(null);
+  const [vrId, setVrId] = useState<string | null>(null);
   /** 当前已打开文件系统的数据服务器。 */
   const [vaultId, setVaultId] = useState<string | null>(null);
   const [marketOpen, setMarketOpen] = useState(false);
@@ -450,13 +458,19 @@ export default function App() {
 
   const runHack = useCallback(
     (id: string) => {
-      if (hackingId || breachId) return;
+      if (hackingId || breachId || vrId) return;
       const chk = canHack(id);
       const n = ALL_NODES.find((x) => x.id === id);
       if (!n) return;
       if (!chk.ok) {
         sfx("deny");
         print(t("hk.blocked", { r: chk.reason ?? "" }), "err");
+        return;
+      }
+
+      if (usesVirtualityBreach(id)) {
+        setVrId(id);
+        print(t("t.vrStart", { code: n.code }), "ok");
         return;
       }
 
@@ -514,7 +528,7 @@ export default function App() {
         completeHack(id);
       }, 2750);
     },
-    [hackingId, breachId, canHack, completeHack, print, later, t, tutFire]
+    [hackingId, breachId, vrId, canHack, completeHack, print, later, t, tutFire, g.nodeStates]
   );
 
   const breachWin = useCallback(() => {
@@ -696,14 +710,52 @@ export default function App() {
 
   /* ---------- 破坏 ---------- */
   const runSabotage = useCallback(
-    (id: string) => {
+    (id: string, forceCompromised = false) => {
       const n = ALL_NODES.find((x) => x.id === id);
-      if (!sabotage(id) || !n) return;
+      if (!sabotage(id, forceCompromised ? { forceCompromised: true } : undefined) || !n) return;
       print(t("t.sabotage", { code: n.code }), "err");
       pushEvent(t("e.sabotage", { code: n.code }), "bad");
     },
     [sabotage, print, pushEvent, t]
   );
+
+  const vrWin = useCallback(
+    (info: { sabotaged: boolean }) => {
+      const id = vrId;
+      setVrId(null);
+      if (!id) return;
+      const n = ALL_NODES.find((x) => x.id === id);
+      completeHack(id, { silent: true });
+      if (n) {
+        if (info.sabotaged) {
+          print(t("t.vrBlackout", { code: n.code }), "warn");
+          pushEvent(t("e.vrBlackout", { code: n.code }), "bad");
+          runSabotage(id, true);
+        } else {
+          print(t("t.vrWin", { code: n.code }), "ok");
+        }
+      }
+    },
+    [vrId, completeHack, runSabotage, print, pushEvent, t]
+  );
+
+  const vrLose = useCallback(
+    (info: { failRep: number }) => {
+      const id = vrId;
+      setVrId(null);
+      if (!id) return;
+      const n = ALL_NODES.find((x) => x.id === id);
+      print(t("t.vrFail", { n: info.failRep }), "err");
+      failBreach(id, info.failRep);
+      if (n) pushEvent(t("e.bgTimeout", { code: n.code }), "bad");
+    },
+    [vrId, failBreach, print, pushEvent, t]
+  );
+
+  const vrAbort = useCallback(() => {
+    setVrId(null);
+    print(t("t.vrAbort"), "warn");
+  }, [print, t]);
 
   const callId = tut.call?.script.id ?? null;
   const prevCall = useRef<string | null>(null);
@@ -849,6 +901,7 @@ export default function App() {
     setArchiveId(null);
     setVaultId(null);
     setBreachId(null);
+    setVrId(null);
     setHackingId(null);
     setHackPct(0);
     setTrace(null);
@@ -1052,7 +1105,7 @@ export default function App() {
               links={links}
               statuses={nodeStates}
               connected={compromised}
-              connectingId={hackingId ?? breachId}
+              connectingId={hackingId ?? breachId ?? vrId}
               selectedSector={selectedSector}
               selectedNode={selectedNode}
               onSelectSector={selectSector}
@@ -1146,6 +1199,16 @@ export default function App() {
       <div className={cn(tut.gating && "tut-gated")}>
         <TerminalBar lines={termLines} expanded={termOpen} onToggle={() => setTermOpen((o) => !o)} />
       </div>
+
+      {vrId && (
+        <VirtualityBreachModal
+          key={vrId}
+          nodeId={vrId}
+          onWin={vrWin}
+          onLose={vrLose}
+          onAbort={vrAbort}
+        />
+      )}
 
       {breachId && (() => {
         const bn = ALL_NODES.find((x) => x.id === breachId);

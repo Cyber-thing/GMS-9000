@@ -265,6 +265,74 @@ export function createLegacyEngine(ac: AudioContext, dest: AudioNode): SfxEngine
       case "logout":
         seq([[nt("C", 6), 0.07], [nt("G", 5), 0.07], [nt("C", 5), 0.18]], { gain: 0.09, wave: "triangle" });
         break;
+
+      /* ---- Virtuality Breach 2D VR (8-bit) ---- */
+      case "vrDive":
+        tone({ freq: nt("D", 3), to: nt("D", 5), dur: 0.45, gain: 0.09, wave: "sawtooth" });
+        seq([[nt("D", 5), 0.07], [nt("F", 5), 0.07], [nt("A", 5), 0.07], [nt("D", 6), 0.16]], { gain: 0.08, wave: "square" });
+        break;
+      case "vrBuild":
+        if (!throttled("vrBuild", 55)) return;
+        tone({ freq: nt("A", 5), dur: 0.03, gain: 0.05, wave: "triangle" });
+        break;
+      case "vrShoot":
+        if (!throttled("vrShoot", 50)) return;
+        tone({ freq: 860, to: 180, dur: 0.07, gain: 0.08, wave: "square" });
+        break;
+      case "vrShotgun":
+        if (!throttled("vrShotgun", 110)) return;
+        tone({ freq: 220, to: 55, dur: 0.18, gain: 0.11, wave: "sawtooth" });
+        noise(0.14, 0.08, 0, 500);
+        break;
+      case "vrSmg":
+        if (!throttled("vrSmg", 45)) return;
+        tone({ freq: 1020, to: 280, dur: 0.04, gain: 0.06, wave: "square" });
+        break;
+      case "vrEnemyShoot":
+        if (!throttled("vrEnemyShoot", 85)) return;
+        tone({ freq: 360, to: 150, dur: 0.08, gain: 0.07, wave: "sawtooth" });
+        break;
+      case "vrJump":
+        if (!throttled("vrJump", 70)) return;
+        tone({ freq: 240, to: 520, dur: 0.09, gain: 0.07, wave: "square" });
+        break;
+      case "vrDash":
+        if (!throttled("vrDash", 90)) return;
+        tone({ freq: 520, to: 180, dur: 0.1, gain: 0.08, wave: "triangle" });
+        break;
+      case "vrHit":
+        if (!throttled("vrHit", 35)) return;
+        tone({ freq: 180, to: 75, dur: 0.06, gain: 0.09, wave: "square" });
+        break;
+      case "vrKill":
+        if (!throttled("vrKill", 50)) return;
+        tone({ freq: 260, to: 65, dur: 0.18, gain: 0.1, wave: "sawtooth" });
+        noise(0.11, 0.06, 0, 700);
+        break;
+      case "vrHurt":
+        if (!throttled("vrHurt", 180)) return;
+        tone({ freq: 190, to: 60, dur: 0.22, gain: 0.11, wave: "sawtooth" });
+        break;
+      case "vrPickup":
+        seq([[nt("D", 5), 0.045], [nt("F", 5), 0.045], [nt("A", 5), 0.08]], { gain: 0.08, wave: "square" });
+        break;
+      case "vrDoor":
+        tone({ freq: nt("D", 3), to: nt("A", 3), dur: 0.18, gain: 0.08, wave: "triangle" });
+        break;
+      case "vrExplosion":
+        tone({ freq: 200, to: 42, dur: 0.34, gain: 0.12, wave: "sawtooth" });
+        noise(0.28, 0.09, 0, 240);
+        break;
+      case "vrBlackout":
+        tone({ freq: nt("A", 4), to: nt("D", 2), dur: 0.65, gain: 0.11, wave: "sawtooth" });
+        seq([[nt("A", 4), 0.08], [nt("F", 4), 0.09], [nt("D", 4), 0.11], [nt("A", 3), 0.24]], { gain: 0.09, wave: "square" });
+        break;
+      case "vrBass":
+        tone({ freq: nt("D", 2), dur: 0.07, gain: 0.04, wave: "triangle" });
+        break;
+      case "vrBassAccent":
+        tone({ freq: nt("D", 2), dur: 0.1, gain: 0.055, wave: "sawtooth" });
+        break;
     }
   }
 

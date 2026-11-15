@@ -9,7 +9,11 @@ export type SfxName =
   | "scan" | "found" | "download" | "money"
   | "boot" | "login" | "logout" | "alarm" | "place" | "pop" | "powerOn"
   /* 不同区块的点击音 */
-  | "uiSys" | "uiMap" | "uiNode" | "uiChat" | "uiGame" | "uiTrade" | "uiDanger";
+  | "uiSys" | "uiMap" | "uiNode" | "uiChat" | "uiGame" | "uiTrade" | "uiDanger"
+  /* Virtuality Breach 2D VR 音效 */
+  | "vrDive" | "vrBuild" | "vrShoot" | "vrShotgun" | "vrSmg" | "vrEnemyShoot"
+  | "vrJump" | "vrDash" | "vrHit" | "vrKill" | "vrHurt" | "vrPickup"
+  | "vrDoor" | "vrExplosion" | "vrBlackout" | "vrBass" | "vrBassAccent";
 
 export interface SfxEngine {
   /** 触发一个音效。 */
