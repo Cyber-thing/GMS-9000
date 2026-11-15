@@ -5,7 +5,7 @@ import { KV, Panel, STATUS_COLOR, StatusDot } from "./chrome";
 import { TypeGlyphShape } from "./InfoPanels";
 import { alfa, blockBar } from "../lib/util";
 import { pickL, useT } from "../i18n";
-import { useGame } from "../game/state";
+import { isHostileFaction, useGame } from "../game/state";
 import { CFG, NODE_META, SECTOR_REP, factionById, filesOfNode } from "../game/data";
 import { ALL_NODES } from "../data/regions";
 import { usesVault } from "../game/vault";
@@ -88,6 +88,7 @@ export default function NodeDossier({
   const st = nodeState(node.id);
   const color = NODE_STATE_COLOR[st];
   const owner = factionById(meta.owner);
+  const hostile = isHostileFaction(meta.owner, g.relations);
   const hacking = hackingId === node.id;
   const chk = canHack(node.id);
   const breached = (g.hackCount[node.id] ?? 0) > 0;
@@ -95,6 +96,8 @@ export default function NodeDossier({
   const vault = usesVault(node.id);
   const corp = node.type === "CORPORATE";
   const sealed = !!meta.password;
+  /* Только архивы открывают окно хранилища после ввода пароля; CRP с паролем ведёт в Virtuality. */
+  const isArchive = sealed && node.type === "ARCHIVE";
   const routing = usesRouting(node.type, meta.warden);
   const hexwall = usesHexwall(node.type, meta.warden);
   const memdump = usesMemdump(node.type, meta.warden);
@@ -156,8 +159,8 @@ export default function NodeDossier({
     <Panel
       data-zone="Node"
       title={t("panel.node")}
-      className="min-h-0 shrink-0"
-      accent={color}
+      className={cn("min-h-0 shrink-0", hostile && "!border-[#ff3b3b] shadow-[0_0_14px_rgba(255,59,59,0.25)]")}
+      accent={hostile ? "#ff3b3b" : color}
       right={<span className="text-[8px] tracking-[0.16em] text-faint">{sectorCode}</span>}
     >
       <div className="p-3">
@@ -176,6 +179,12 @@ export default function NodeDossier({
           </span>
         </div>
 
+        {hostile && (
+          <div className="mt-2 flex items-center gap-1.5 border border-[#ff3b3b] bg-[#ff3b3b]/10 px-2 py-[4px] text-[8.5px] font-bold uppercase tracking-[0.14em] text-[#ff7a7a]">
+            <ShieldAlert size={10} className="shrink-0 animate-softpulse" /> {t("dos.hostile")}
+          </div>
+        )}
+
         {/* ---- 主要操作 ---- */}
         {hacking ? (
           <div className="mt-2.5 border border-amberdim/60 bg-amber/5 px-2.5 py-2">
@@ -187,12 +196,12 @@ export default function NodeDossier({
             </div>
             <div className="blocksbar mt-1.5 text-[16px] text-amber">{blockBar(hackPct, 18)}</div>
           </div>
-        ) : sealed && st === "COMPROMISED" && !archiveCanOpen ? (
+        ) : isArchive && st === "COMPROMISED" && !archiveCanOpen ? (
           /* 早于委托闯进来：这里只显示状态，不给可点击的恢复按钮。 */
           <div className="mt-2.5 flex w-full cursor-not-allowed items-center justify-center gap-2 border border-oxide/40 bg-oxide/5 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-oxide/70">
             <ShieldOff size={11} /> {t("arc.damaged")}
           </div>
-        ) : sealed && st === "COMPROMISED" ? (
+        ) : isArchive && st === "COMPROMISED" ? (
           <button
             onClick={() => onOpenArchive(node.id)}
             className="mt-2.5 flex w-full items-center justify-center gap-2 border border-steel/70 bg-steel/10 px-3 py-[8px] text-[10px] font-bold uppercase tracking-[0.18em] text-steel transition-all hover:bg-steel hover:text-ink"

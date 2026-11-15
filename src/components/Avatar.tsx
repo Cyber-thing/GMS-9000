@@ -68,6 +68,7 @@ export const avatarOf = (id: string): { kind: AvatarKind; color: string; plain?:
     case "op17":   return { kind: "plainbust", color: "var(--color-dim)", plain: true };
     case "freddy": return { kind: "plainbust", color: "var(--color-dim)", plain: true };
     case "marla":  return { kind: "visor", color: UNIFORM };
+    case "sato":   return { kind: "shades", color: UNIFORM };
     default: {
       /* 玩家自己：用他挑选的那张脸 */
       if (id === "OP" || id.startsWith("OP:")) {

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Bomb, Pause, Play, Power, ShieldAlert, Skull, Unplug, Volume2, VolumeX, Zap } from "lucide-react";
-import { cn } from "../../utils/cn";
 import { buildVrLevel } from "../../game/vr/levels";
 import { VrEngine } from "../../game/vr/engine";
+import { setVrLang, vtr } from "../../game/vr/vrText";
 import { DOOR_COLORS, INTERNAL_HEIGHT, INTERNAL_WIDTH, WEAPONS } from "../../game/vr/themes";
 import type { VrHudSnapshot } from "../../game/vr/types";
 import { cycleSfxMode, sfx, sfxMode, sfxSubscribe } from "../../lib/sfx";
@@ -28,7 +28,9 @@ export default function VirtualityBreachModal({
   onLose,
   onAbort,
 }: Props) {
-  const { t } = useT();
+  const { t, lang } = useT();
+  /* язык надписей внутри уровня: ставим синхронно, до первого кадра canvas */
+  setVrLang(lang);
   const level = useMemo(() => buildVrLevel(nodeId), [nodeId]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<VrEngine | null>(null);
@@ -208,7 +210,7 @@ export default function VirtualityBreachModal({
                 color: DOOR_COLORS[d.color].main,
               }}
             >
-              {DOOR_COLORS[d.color].label} {d.timerRemaining!.toFixed(1)}s
+              {vtr(DOOR_COLORS[d.color].label)} {d.timerRemaining!.toFixed(1)}{lang === "ru" ? "с" : lang === "zh" ? "秒" : "s"}
             </span>
           ))}
 

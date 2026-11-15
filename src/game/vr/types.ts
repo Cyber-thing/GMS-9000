@@ -11,6 +11,8 @@ export type VrPhase =
 export type WeaponId = "pistol" | "shotgun" | "smg";
 export type DoorColor = "red" | "blue" | "green";
 export type EnemyKind = "thug" | "heavy" | "drone" | "turret";
+/** Вариант моба: swift — частые выстрелы, plated — +броня, volley — быстрые снаряды. */
+export type EnemyVariant = "std" | "swift" | "plated" | "volley";
 export type EnemyAIState = "patrol" | "alert" | "attack" | "retreat" | "dead";
 export type PropKind = "crate" | "monitor" | "barrel";
 export type PickupKind = "health" | "shotgun" | "smg" | "ammo";
@@ -30,6 +32,7 @@ export type VrFinaleKind =
   | "SIGNAL_ROUTING"
   | "HEX_PURGE"
   | "CIPHER_DECODE"
+  | "DATA_HEIST"
   | "CORE_EXTRACTION";
 
 export interface VrCorpTheme {
@@ -130,6 +133,7 @@ export interface EnemySpawnDef {
   facing: 1 | -1;
   patrolMinCol: number;
   patrolMaxCol: number;
+  variant?: EnemyVariant;
 }
 
 export interface PropSpawnDef {
@@ -187,6 +191,8 @@ export interface VrLevelDef {
   elevators: ElevatorDef[];
   doors: DoorDef[];
   buttons: ButtonDef[];
+  /** Верхние строки этажей (сверху вниз по индексу = снизу вверх). */
+  floorRows: number[];
   enemies: EnemySpawnDef[];
   props: PropSpawnDef[];
   pickups: PickupSpawnDef[];

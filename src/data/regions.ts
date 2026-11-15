@@ -126,10 +126,9 @@ const W1_LINKS: NetLink[] = [
   { a: "w1e_dsv", b: "w1e_sec", state: "stable" },
   { a: "w1e_rly", b: "w1e_sec", state: "weak" },
   /* 海湾区域 */
-  { a: "w1g_acc", b: "w1g_dsv", state: "stable" },
-  { a: "w1g_dsv", b: "w1g_rly", state: "stable" },
+  /* DSV-G02 теперь доступен только через CRP-G06 */
   { a: "w1g_acc", b: "w1g_prv", state: "down" },
-  { a: "w1g_dsv", b: "w1g_prv2", state: "weak" },
+  { a: "w1g_rly", b: "w1g_prv2", state: "weak" },
   { a: "w1g_acc", b: "w1g_crp", state: "weak" },
   { a: "w1g_dsv", b: "w1g_crp", state: "stable" },
   /* WEST1 跨扇区骨干链路 */
@@ -139,7 +138,6 @@ const W1_LINKS: NetLink[] = [
   { a: "w1n_rly2", b: "w1e_acc", state: "stable", backbone: true },
   { a: "w1m_sec", b: "w1e_dsv", state: "weak", backbone: true },
   { a: "w1p_acc", b: "w1g_acc", state: "stable", backbone: true },
-  { a: "w1m_dsv", b: "w1g_dsv", state: "stable", backbone: true },
   { a: "w1e_rly", b: "w1g_rly", state: "weak", backbone: true },
   { a: "w1p_rly", b: "w1g_prv", state: "down", backbone: true },
 
@@ -217,7 +215,7 @@ const WL_NODES: NetNode[] = [
   { id: "wlp_acc", code: "ACC-PA01", type: "ACCESS", sector: "wl_pam", x: 400, y: 450, status: "ONLINE", desc: "Buenos Aires access. Passionate about uptime." },
   { id: "wlp_rly", code: "RLY-PA02", type: "RELAY", sector: "wl_pam", x: 545, y: 480, status: "ONLINE", desc: "Pampeano backbone relay. Grass-fed packets." },
   { id: "wlp_dsv", code: "DSV-PA03", type: "DATA SERVER", sector: "wl_pam", x: 665, y: 430, status: "ONLINE", desc: "Cattle futures vault. Volatile." },
-  { id: "wlp_prv", code: "PRV-PA04", type: "PRIVATE", sector: "wl_pam", x: 460, y: 558, status: "OFFLINE", desc: "Estancia node. Generator out of diesel." },
+  { id: "wlp_prv", code: "PRV-PA04", type: "PRIVATE", sector: "wl_pam", x: 460, y: 558, status: "ONLINE", desc: "Estancia node. A security officer's private workstation hides behind the ranch gate." },
 
   /* 南部海角 */
   { id: "wlc_rly", code: "RLY-CA01", type: "RELAY", sector: "wl_cape", x: 320, y: 610, status: "UNKNOWN", desc: "Cape relay. Signal bends wrong here. Count the echoes." },

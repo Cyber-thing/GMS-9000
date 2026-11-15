@@ -285,6 +285,16 @@ const PAYLOAD_TEXT: Record<string, [string, string, string?]> = {
     "НЕ ХРАНИТЬ НА СЕРВЕРЕ!\nКорпораты решили проспонсировать нас, дали нам доступ к WARDEN PASS. Не знаю зачем им это, может решили скрыть какие-то свои косяки. Нужно не забыть разослать сотрудникам временный пароль \"CORE1MAX32\". Также на сервере есть и другие данные которые можно украсть, как мы делали ранее.",
     "别存服务器上！\n企业那边决定当我们的金主——给了我们 WARDEN PASS 权限。不知道图啥，可能是想盖自己的烂摊子。记得把临时密码 \"CORE1MAX32\" 群发给员工。服务器上还有别的数据，跟上次一样，值得顺走。",
   ],
+  f_marrow_chart: [
+    "PATIENT CHART JM-0417 — post-operative follow-up.\nPatient: J. MARROW, head of security, Slayer Incorporated, NORTHLINE sector. Neural-port revision completed; recovery clean. Discharged to remote care.\nContact on file: personal workstation at the patient's residence in South America — PANAMA, a private estancia node in the PAMPA RELAY sector (PRV class). The patient reads work mail from there during convalescence and has asked the clinic not to call the office.",
+    "КАРТА ПАЦИЕНТА JM-0417 — послеоперационное наблюдение.\nПациент: J. MARROW, глава службы безопасности Slayer Incorporated, сектор NORTHLINE. Ревизия нейропорта завершена, восстановление без осложнений. Выписан на удалённое наблюдение.\nКонтакт в карте: личный компьютер по месту жительства пациента в Южной Америке — ПАНАМА, частный узел эстансии в секторе PAMPA RELAY (класс PRV). На время восстановления пациент читает рабочую почту оттуда и просил клинику не звонить в офис.",
+    "病历 JM-0417 —— 术后随访。\n患者：J. MARROW，Slayer Incorporated NORTHLINE 扇区安保主管。神经接口翻修完成，恢复良好。已转入远程随访。\n档案联系方式：患者在南美洲住所的私人工作站 —— 巴拿马，PAMPA RELAY 扇区里的一个私人庄园节点（PRV 类）。康复期间患者在那里收看工作邮件，并要求诊所不要往办公室打电话。",
+  ],
+  f_slayer_vr_dump: [
+    "SLAYER VR CORE DUMP — Northline substation construct. Telemetry of the unmetered feed, the security rota, and a copy of the Virtuality maintenance keys. Exfiltrated mid-session; a dormant payload now sleeps in the construct.",
+    "ДАМП ЯДРА SLAYER VR — конструкт подстанции Northline. Телеметрия неучтённой линии, график охраны и копия ключей обслуживания Virtuality. Выгружено прямо во время сеанса; в конструкте теперь спит дремлющая нагрузка.",
+    "SLAYER VR 核心转储 —— Northline 变电站构造体。暗线遥测、安保轮班表，以及一份 Virtuality 维护密钥的副本。在会话中途被提走；构造体里现在潜伏着一份休眠载荷。",
+  ],
   f_icx_payroll: [
     "Q4 payroll routing. Nine salary lines terminate at a holding company with no staff and no address. The transfer schedule matches Slayer Incorporated's procurement calendar to the day.",
     "Маршруты зарплат за Q4. Девять строк уходят в холдинг без сотрудников и без адреса. График переводов день в день совпадает с закупочным календарём Slayer Incorporated.",

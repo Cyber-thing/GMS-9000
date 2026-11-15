@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HardDrive, Mail, Power, Settings2, ShieldAlert, Terminal, X } from "lucide-react";
+import MailWindow from "./MailWindow";
+import type { MARROW_MAILBOX } from "../game/mail";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
 import { sfx } from "../lib/sfx";
@@ -135,21 +137,37 @@ const ICON_OF: Record<DeskIcon, typeof Mail> = {
   disk: HardDrive,
 };
 
-function Desktop({ nodeCode, onExit }: { nodeCode: string; onExit: () => void }) {
+function Desktop({
+  nodeCode, onExit, mailbox,
+}: {
+  nodeCode: string;
+  onExit: () => void;
+  /** Если у станции есть живой почтовый ящик — иконка MAIL открывает его. */
+  mailbox?: typeof MARROW_MAILBOX;
+}) {
   const { t } = useT();
   const [denied, setDenied] = useState<DeskIcon | null>(null);
+  const [mailOpen, setMailOpen] = useState(false);
   const timer = useRef<number | null>(null);
 
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   const tap = (ic: DeskIcon) => {
+    if (ic === "mail" && mailbox) {
+      sfx("click");
+      setMailOpen(true);
+      return;
+    }
     setDenied(ic);
     if (timer.current) clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setDenied(null), 2200);
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-well">
+    <div className="relative flex min-h-0 flex-1 flex-col bg-well">
+      {mailOpen && mailbox && (
+        <MailWindow nodeCode={nodeCode} mailbox={mailbox} onClose={() => setMailOpen(false)} />
+      )}
       {/* 桌面顶栏 */}
       <div className="flex shrink-0 items-center gap-2 border-b border-line bg-panel2 px-2.5 py-[5px] text-[8px] uppercase tracking-[0.16em]">
         <Terminal size={10} className="text-phos" />
@@ -219,9 +237,10 @@ function Desktop({ nodeCode, onExit }: { nodeCode: string; onExit: () => void })
 /* ---------- 主组件 ---------- */
 
 export default function MemdumpGame({
-  nodeCode, warden, tier, known = false, onCracked, onWin, onLose, onAbort, onLog,
+  nodeCode, warden, tier, known = false, mailbox, onCracked, onWin, onLose, onAbort, onLog,
 }: {
   nodeCode: string;
+  mailbox?: typeof MARROW_MAILBOX;
   warden: number;
   tier: DumpTier;
   /** 口令已经记在本子上了：直接进桌面，不再重猜。 */
@@ -352,7 +371,7 @@ export default function MemdumpGame({
         </div>
 
         {cracked ? (
-          <Desktop nodeCode={nodeCode} onExit={onWin} />
+          <Desktop nodeCode={nodeCode} onExit={onWin} mailbox={mailbox} />
         ) : (
           <>
             {/* 状态条 */}

@@ -1,4 +1,5 @@
 import { sfx, startVrBassLoop, stopVrBassLoop } from "../../lib/sfx";
+import { vrFont, vtr } from "./vrText";
 import { VrBackgroundRenderer } from "./background";
 import { createEnemy, type Enemy } from "./enemies";
 import { Bullet, ButtonTerminal, Door, Elevator, Pickup, Prop } from "./entities";
@@ -123,6 +124,9 @@ export class VrEngine {
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
     window.addEventListener("blur", this.onWindowBlur);
+    canvas.addEventListener("mousedown", this.onMouseDown);
+    canvas.addEventListener("contextmenu", this.onContextMenu);
+    window.addEventListener("mouseup", this.onMouseUp);
 
     sfx("vrDive");
     this.emitHud(true);
@@ -154,6 +158,9 @@ export class VrEngine {
     window.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("keyup", this.onKeyUp);
     window.removeEventListener("blur", this.onWindowBlur);
+    this.canvas.removeEventListener("mousedown", this.onMouseDown);
+    this.canvas.removeEventListener("contextmenu", this.onContextMenu);
+    window.removeEventListener("mouseup", this.onMouseUp);
   }
 
   public setCrtEnabled(enabled: boolean): void {
@@ -294,6 +301,8 @@ export class VrEngine {
       e.preventDefault();
     }
 
+    if (code === "ControlLeft" || code === "ControlRight") e.preventDefault();
+
     if (code === "Escape" || code === "KeyP") {
       if (this.phase === "playing") {
         this.pause();
@@ -320,7 +329,22 @@ export class VrEngine {
     this.keysDown.delete(e.code);
   };
 
+  /** ЛКМ удерживается над игровым полем. */
+  private mouseShoot = false;
+
+  private onMouseDown = (e: MouseEvent): void => {
+    if (e.button !== 0 || this.phase !== "playing") return;
+    e.preventDefault();
+    if (!this.mouseShoot) this.keysPressed.add("MouseShoot");
+    this.mouseShoot = true;
+  };
+  private onMouseUp = (): void => {
+    this.mouseShoot = false;
+  };
+  private onContextMenu = (e: Event): void => e.preventDefault();
+
   private onWindowBlur = (): void => {
+    this.mouseShoot = false;
     this.keysDown.clear();
     this.virtualHolds = { left: false, right: false, up: false, down: false, jump: false, shoot: false };
   };
@@ -343,11 +367,14 @@ export class VrEngine {
       right: k.has("KeyD") || k.has("ArrowRight") || v.right,
       up: k.has("KeyW") || k.has("ArrowUp") || v.up,
       down: k.has("KeyS") || k.has("ArrowDown") || v.down,
-      jumpHeld: k.has("Space") || k.has("KeyW") || k.has("ArrowUp") || v.jump,
-      jumpPressed: p.has("Space") || p.has("KeyW") || p.has("ArrowUp") || p.has("VirtualJump"),
-      shootHeld: k.has("KeyJ") || k.has("KeyZ") || k.has("Enter") || v.shoot,
-      shootPressed: p.has("KeyJ") || p.has("KeyZ") || p.has("Enter") || p.has("VirtualShoot"),
-      dashPressed: p.has("ShiftLeft") || p.has("ShiftRight") || p.has("KeyK") || p.has("KeyX") || p.has("VirtualDash"),
+      /* прыжок — только пробел; W / ↑ теперь целятся вверх (с A/D — под углом) */
+      jumpHeld: k.has("Space") || v.jump,
+      jumpPressed: p.has("Space") || p.has("VirtualJump"),
+      /* выстрел — Ctrl или клик мыши по игровому полю */
+      shootHeld: k.has("ControlLeft") || k.has("ControlRight") || this.mouseShoot || v.shoot,
+      shootPressed:
+        p.has("ControlLeft") || p.has("ControlRight") || p.has("MouseShoot") || p.has("VirtualShoot"),
+      dashPressed: p.has("ShiftLeft") || p.has("ShiftRight") || p.has("VirtualDash"),
       interactPressed: p.has("KeyE") || p.has("KeyF") || p.has("VirtualInteract"),
       cycleWeaponPressed: p.has("KeyQ") || p.has("KeyC") || p.has("VirtualCycle"),
       selectWeapon,
@@ -1040,6 +1067,11 @@ export class VrEngine {
     if (buildFraction >= 0.72) {
       for (const e of this.enemies) {
         e.render(ctx, drawCamX, drawCamY, this.level.theme);
+        if (e.variant !== "std" && e.isAlive()) {
+          /* метка варианта над головой: swift — голубая, plated — белая, volley — оранжевая */
+          ctx.fillStyle = e.variant === "swift" ? "#4df0ff" : e.variant === "plated" ? "#f2f2f2" : "#ff9a2e";
+          ctx.fillRect(Math.round(e.x + e.w * 0.5 - drawCamX) - 2, Math.round(e.y - drawCamY) - 6, 4, 3);
+        }
       }
     }
 
@@ -1054,10 +1086,10 @@ export class VrEngine {
 
     if (this.phase === "materialize") {
       this.background.renderMaterializeSweep(ctx, drawCamX, this.level, buildFraction);
-      ctx.font = 'bold 8px "IBM Plex Mono", monospace';
+      ctx.font = vrFont(8);
       ctx.textAlign = "center";
       ctx.fillStyle = this.level.theme.primary;
-      ctx.fillText("CONSTRUCTING VIRTUAL ARCHITECTURE ...", INTERNAL_WIDTH * 0.5, 22);
+      ctx.fillText(vtr("CONSTRUCTING VIRTUAL ARCHITECTURE ..."), INTERNAL_WIDTH * 0.5, 22);
       ctx.textAlign = "left";
     }
 
@@ -1068,35 +1100,39 @@ export class VrEngine {
     if (this.promptText && this.phase === "playing") {
       const px = Math.round(this.player.x + this.player.w * 0.5 - drawCamX);
       const py = Math.max(22, Math.round(this.player.y - drawCamY - 14));
-      const tw = Math.max(76, this.promptText.length * 5.2 + 12);
+      const promptLoc = vtr(this.promptText);
+      ctx.font = vrFont(7);
+      const tw = Math.max(76, ctx.measureText(promptLoc).width + 12);
       const bx = Math.max(8, Math.min(INTERNAL_WIDTH - tw - 8, px - (tw >> 1)));
       ctx.fillStyle = "rgba(5, 8, 16, 0.9)";
       ctx.fillRect(bx, py - 10, tw, 13);
       ctx.strokeStyle = this.level.theme.primary;
       ctx.lineWidth = 1;
       ctx.strokeRect(bx + 0.5, py - 9.5, tw - 1, 12);
-      ctx.font = 'bold 7px "IBM Plex Mono", monospace';
+      ctx.font = vrFont(7);
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#f2fbff";
-      ctx.fillText(this.promptText, bx + tw * 0.5, py - 3.5);
+      ctx.fillText(promptLoc, bx + tw * 0.5, py - 3.5);
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
     }
 
     if (this.bannerText && (this.phase === "playing" || this.phase === "blackout")) {
-      const bw = Math.min(INTERNAL_WIDTH - 28, Math.max(180, this.bannerText.length * 6 + 24));
+      const bannerLoc = vtr(this.bannerText);
+      ctx.font = vrFont(8);
+      const bw = Math.min(INTERNAL_WIDTH - 28, Math.max(180, ctx.measureText(bannerLoc).width + 24));
       const bx = (INTERNAL_WIDTH - bw) >> 1;
       ctx.fillStyle = "rgba(4, 7, 15, 0.9)";
       ctx.fillRect(bx, 12, bw, 16);
       ctx.strokeStyle = this.blackoutActive || this.overloadActive ? this.level.theme.danger : this.level.theme.primary;
       ctx.lineWidth = 1;
       ctx.strokeRect(bx + 0.5, 12.5, bw - 1, 15);
-      ctx.font = 'bold 8px "IBM Plex Mono", monospace';
+      ctx.font = vrFont(8);
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = this.blackoutActive || this.overloadActive ? "#ff7a8a" : this.level.theme.primary;
-      ctx.fillText(this.bannerText, INTERNAL_WIDTH * 0.5, 20);
+      ctx.fillText(bannerLoc, INTERNAL_WIDTH * 0.5, 20);
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
     }

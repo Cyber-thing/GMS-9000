@@ -1,4 +1,5 @@
 import { DOOR_COLORS, INTERNAL_HEIGHT, INTERNAL_WIDTH, TILE_SIZE } from "./themes";
+import { vrFont, vtr } from "./vrText";
 import type { VrLevelDef } from "./types";
 
 interface SkylineBuilding {
@@ -89,13 +90,13 @@ export class VrBackgroundRenderer {
     ctx.strokeStyle = theme.primary;
     ctx.strokeRect(bx + 0.5, by + 0.5, boxW - 1, boxH - 1);
 
-    ctx.font = 'bold 8px "IBM Plex Mono", monospace';
+    ctx.font = vrFont(8);
     ctx.textAlign = "center";
     ctx.fillStyle = theme.primary;
-    ctx.fillText(`NEURAL LINK :: ${level.nodeCode} [WARDEN T${level.tier}]`, cx, by + 16);
+    ctx.fillText(vtr(`NEURAL LINK :: ${level.nodeCode} [WARDEN T${level.tier}]`), cx, by + 16);
     ctx.fillStyle = "#e2f8ff";
-    ctx.font = '7px "IBM Plex Mono", monospace';
-    ctx.fillText(theme.corpLabel, cx, by + 29);
+    ctx.font = vrFont(7, false);
+    ctx.fillText(vtr(theme.corpLabel), cx, by + 29);
 
     // Loading progress bar inside dive reticle
     const barW = 180;
@@ -369,7 +370,7 @@ export class VrBackgroundRenderer {
     blackout: boolean
   ): void {
     if (blackout) return;
-    ctx.font = 'bold 7px "IBM Plex Mono", monospace';
+    ctx.font = vrFont(7);
     ctx.textBaseline = "top";
     for (let i = 0; i < level.signs.length; i++) {
       const s = level.signs[i];
@@ -378,7 +379,8 @@ export class VrBackgroundRenderer {
       if (sx > viewW + 20 || sx + 120 < 0) continue;
       const color = s.color ?? (i % 2 === 0 ? level.theme.primary : level.theme.secondary);
       const flicker = Math.sin(time * 18 + i * 7.3) > -0.92 ? 1 : 0.3;
-      const tw = s.text.length * 4.5 + 10;
+      const label = vtr(s.text);
+      const tw = ctx.measureText(label).width + 10;
       ctx.fillStyle = "rgba(4, 7, 15, 0.85)";
       ctx.fillRect(sx, sy, tw, 13);
       ctx.strokeStyle = color;
@@ -386,7 +388,7 @@ export class VrBackgroundRenderer {
       ctx.lineWidth = 1;
       ctx.strokeRect(sx + 0.5, sy + 0.5, tw - 1, 12);
       ctx.fillStyle = color;
-      ctx.fillText(s.text, sx + 5, sy + 3);
+      ctx.fillText(label, sx + 5, sy + 3);
       ctx.globalAlpha = 1;
     }
     ctx.textBaseline = "alphabetic";

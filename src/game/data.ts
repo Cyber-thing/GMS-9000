@@ -21,6 +21,7 @@ export const CFG = {
   repPerWarden: 6,        // REP 计算公式
   relHitPerWarden: -3,    // 每级 WARDEN 对所有者关系的影响
   relRepeatMult: 0.4,     // 重复入侵时的关系影响倍率
+  hostileAt: -20,         // отношения фракции ≤ этого значения — враждебные
   startCredits: 250,
   startRep: 0,
   marketPrice: 1500,       // 解锁黑市所需信用点
@@ -110,9 +111,11 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     files: [], password: "CORE1MAX32", passwordFrom: "f_wardenpass",
   },
   w1n_crp: {
-    owner: "slayer", cls: "CORPORATE", warden: 1, rep: 14,
+    owner: "slayer", cls: "CORPORATE", warden: 5, rep: 38,
     files: ["f_north_power"], codex: ["f_slayer"],
-    intel: "Slayer subsidiary substation tapping unmetered hydro feed from Northline.",
+    /* WARDEN MAX: нужен пароль от Virtuality. Его пишет в письме глава защиты сектора. */
+    password: "NL-VR-4471",
+    intel: "Slayer subsidiary substation tapping unmetered hydro feed from Northline. Sealed under WARDEN MAX.",
   },
 
   w1m_sec: {
@@ -175,7 +178,11 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
 
   /* ---- Gexogen Medical：遍布各扇区的诊所与中央档案 ---- */
   w1a_gex: { owner: "gexogen", cls: "CORPORATE", warden: 2, rep: 14, codex: ["f_gexogen"] },
-  w1n_gex: { owner: "gexogen", cls: "CORPORATE", warden: 3, rep: 18, codex: ["f_gexogen"] },
+  w1n_gex: {
+    owner: "gexogen", cls: "CORPORATE", warden: 3, rep: 18, codex: ["f_gexogen"],
+    files: ["f_marrow_chart"],
+    intel: "Regional clinic. One patient chart is flagged: a Slayer security chief with a remote workstation overseas.",
+  },
   w1p_gex: { owner: "gexogen", cls: "CORPORATE", warden: 3, rep: 18, codex: ["f_gexogen"] },
   w1m_gex: { owner: "gexogen", cls: "CORPORATE", warden: 4, rep: 22, codex: ["f_gexogen"] },
   w1e_gex: {
@@ -311,6 +318,8 @@ export const FILES: DataFile[] = [
   F("f_capeecho", "CAPE-REVERSE-ECHO", "ЭХО-МЫСА-ОБРАТНОЕ", "岬角-倒置回波", "INTEL", "wlc_rly", "indep", 540),
   F("f_skydump", "OBSERVATORY-SKYDUMP", "ВЫГРУЗКА-НЕБА", "天文台-夜空转储", "INTEL", "wld_res", "civic", 220),
   F("f_north_power", "NORTHLINE-DRAW-LEDGER", "NORTHLINE-НЕУЧТЁНКА", "NORTHLINE-暗账电量", "CORPORATE DATA", "w1n_crp", "slayer", 240),
+  F("f_marrow_chart", "PATIENT-CHART-JM-0417", "КАРТА-ПАЦИЕНТА-JM-0417", "病历-JM-0417", "PERSONAL DATA", "w1n_gex", "gexogen", 320),
+  F("f_slayer_vr_dump", "SLAYER-VR-CORE-DUMP", "SLAYER-VR-ДАМП-ЯДРА", "SLAYER-VR-核心转储", "CLASSIFIED DATA", "w1n_crp", "slayer", 1350),
   F("f_fusion_grid", "FUSION-NEURAL-FIRMWARE", "FUSION-НЕЙРОПРОШИВКА", "FUSION-神经固件", "CLASSIFIED DATA", "w1g_crp", "fusion", 960),
 ];
 
@@ -505,6 +514,10 @@ export const CONTACTS: ContactDef[] = [
     intro: "", introRu: "", introZh: "", silent: true,
   },
   {
+    id: "sato", nick: "h.sato", faction: "takamuri", role: "branch deputy", roleRu: "замдиректора филиала", roleZh: "分部副主管", repReq: 9999,
+    intro: "", introRu: "", introZh: "", silent: true,
+  },
+  {
     id: "sablec", nick: "sable", faction: "intercell", role: "unknown", roleRu: "неизвестно", roleZh: "不明", repReq: 9999,
     intro: "",
     introRu: "",
@@ -553,7 +566,18 @@ export const CONTRACTS: ContractDef[] = [
     briefZh: "把 Takamuri 货运部的投影掐掉几个小时。今天那儿有场演示。",
     target: "w1p_crp2", credits: 300, rep: 12, relation: 10, repReq: 0, scripted: true,
   },
+  {
+    id: "ct_vrvirus", kind: "DATA", contact: "sato", client: "takamuri",
+    title: "ROOT OF THE BLACKOUT", titleRu: "КОРЕНЬ БЛЭКАУТА", titleZh: "停电之根",
+    brief: "Plant a virus inside the Slayer Incorporated Virtuality on Northline (CRP-N06). It is sealed under WARDEN MAX.",
+    briefRu: "Подсадить вирус в Virtuality Slayer Incorporated в Northline (CRP-N06). Узел защищён WARDEN MAX.",
+    briefZh: "往 Northline 的 Slayer Incorporated Virtuality（CRP-N06）里种一个病毒。该节点由 WARDEN MAX 封锁。",
+    target: "w1n_crp", credits: 900, rep: 40, relation: 30, repReq: 0, scripted: true,
+  },
 ];
+
+export const SATO_CONTRACT = "ct_vrvirus";
+export const SATO = "sato";
 
 export const contractById = (id: string) => CONTRACTS.find((c) => c.id === id);
 

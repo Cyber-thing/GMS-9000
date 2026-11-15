@@ -13,6 +13,7 @@ import {
   MARLA_PROJ, MARLA_PROJ_2, MARLA_PROJ_3, MARLA_PROJ_READY, MARLA_PROJ_ALREADY,
   MARLA_PROJ_WRECKED, MARLA_PROJ_DONE,
   ARCHIVE_PAY, ARCHIVE_REL,
+  SATO_INTRO, SATO_2, SATO_3, SATO_READY, SATO_ALREADY, SATO_DONE, SATO_PAY,
   type Beat,
 } from "./questArchive";
 import {
@@ -84,6 +85,10 @@ export function nodeStateOf(id: string, s: GameState): NodeState {
 
 export const repOf = (id: string, s: GameState) => s.relations[id] ?? 0;
 
+/** Фракция враждебна: все её узлы подсвечиваются красным и отслеживают вторжение. */
+export const isHostileFaction = (owner: string, relations: Record<string, number>): boolean =>
+  owner !== "indep" && (relations[owner] ?? 0) <= CFG.hostileAt;
+
 export interface HackResult {
   ok: boolean;
   repeat: boolean;
@@ -114,6 +119,9 @@ interface Ctx {
   openFreddy: () => void;
   openMarla: () => void;
   openArchiveJob: () => void;
+  openSato: () => void;
+  plantVirus: () => void;
+  revealKey: (nodeId: string) => void;
   setFlag: (k: string, v?: string | boolean) => void;
   pushBeat: (b: Beat, thread?: string) => void;
   openMarket: () => boolean;
@@ -490,6 +498,70 @@ export function GameProvider({ children }: { children: ReactNode }) {
     MARLA_PROJ.forEach((b) => pushBeat(b, "marla"));
   }, [g.flags.marla_intro, setFlag, pushBeat]);
 
+  /* Takamuri: «Корень блэкаута» — приходит после квеста со светом в зале. */
+  const openSato = useCallback(() => {
+    if (g.flags.sato_intro) return;
+    setFlag("sato_intro");
+    setG((s) => ({
+      ...s,
+      contacts: s.contacts.includes("sato") ? s.contacts : [...s.contacts, "sato"],
+    }));
+    SATO_INTRO.forEach((b) => pushBeat(b, "sato"));
+  }, [g.flags.sato_intro, setFlag, pushBeat]);
+
+  /* Показывает пароль узла нижним баннером (KeyBanner). */
+  const revealKey = useCallback((nodeId: string) => {
+    const meta = NODE_META[nodeId];
+    if (!meta?.password) return;
+    if (gRef.current.flags[`key_${nodeId}`] === meta.password) return;
+    const n = ALL_NODES.find((x) => x.id === nodeId);
+    notify("KEY RECOVERED", `${n?.code ?? nodeId} — ${meta.password}`, "CODEX");
+    setG((s) => ({ ...s, flags: { ...s.flags, [`key_${nodeId}`]: meta.password!, [`key_${nodeId}_hid`]: false } }));
+  }, [notify]);
+
+  /* Virtuality CRP-N06 пройден до конца: данные украдены, вирус подсажен. */
+  const plantVirus = useCallback(() => {
+    const cur = gRef.current;
+    if (cur.flags.vr_virus) return;
+    const f = resolveFile("f_slayer_vr_dump");
+    const st = cur.contracts.ct_vrvirus?.state;
+    const live = st === "ACCEPTED" || st === "TARGET ACCESSED";
+    setG((s) => ({
+      ...s,
+      flags: { ...s.flags, vr_virus: true },
+      files:
+        s.files.includes("f_slayer_vr_dump") || s.burned.includes("f_slayer_vr_dump")
+          ? s.files
+          : [...s.files, "f_slayer_vr_dump"],
+      stats: {
+        ...s.stats,
+        files: s.files.includes("f_slayer_vr_dump") ? s.stats.files : s.stats.files + 1,
+      },
+    }));
+    if (f) notify("DATA ACQUIRED", `${at(f.name, f.nameRu, f.nameZh)} → DATA STORED`, "STATUS");
+    if (!live) return;
+    setG((s) => ({
+      ...s,
+      contracts: { ...s.contracts, ct_vrvirus: { state: "COMPLETED" } },
+      credits: s.credits + SATO_PAY.credits,
+      rep: s.rep + SATO_PAY.rep,
+      relations: {
+        ...s.relations,
+        takamuri: (s.relations.takamuri ?? 0) + SATO_PAY.relTakamuri,
+        slayer: (s.relations.slayer ?? 0) + SATO_PAY.relSlayer,
+      },
+      stats: { ...s.stats, contracts: s.stats.contracts + 1 },
+    }));
+    SATO_DONE.forEach((b, i) =>
+      timers.current.push(window.setTimeout(
+        () => pushBeat(i === SATO_DONE.length - 1 ? { ...b, payout: SATO_PAY.credits } : b, "sato"),
+        1200 + i * 900))
+    );
+    notify("CONTRACT COMPLETED", `+${SATO_PAY.credits}cr`, "CONTACTS");
+    notify("REP INCREASED", `+${SATO_PAY.rep} REP`, "STATUS");
+    notify("FACTION RELATIONS CHANGED", `Takamuri Global +${SATO_PAY.relTakamuri} · Slayer Incorporated ${SATO_PAY.relSlayer}`, "STATUS");
+  }, [notify, pushBeat]);
+
   const pickChoice = useCallback(
     (msgId: number, choiceId: string) => {
       
@@ -643,6 +715,56 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }));
         const script = hasMemo ? FREDDY_IMPLANT_PRE : inside ? FREDDY_IMPLANT_BREACHED : FREDDY_IMPLANT_4;
         script.forEach((b, i) => later(() => pushBeat(b, "freddy"), 800 + i * 1000));
+        return;
+      }
+
+      if (choiceId === "sa_what") {
+        pushBeat({ id: "sa_a1", from: "OP", line: { en: "What happened?", ru: "Что случилось?", zh: "出什么事了？" } }, "sato");
+        later(() => SATO_2.forEach((b) => pushBeat(b, "sato")), 800);
+        return;
+      }
+      if (choiceId === "sa_who") {
+        pushBeat({ id: "sa_a2", from: "OP", line: { en: "And who do you blame?", ru: "И кого ты винишь?", zh: "那你觉得是谁干的？" } }, "sato");
+        later(() => SATO_3.forEach((b) => pushBeat(b, "sato")), 800);
+        return;
+      }
+      if (choiceId === "sa_ok") {
+        pushBeat({
+          id: "sa_a3", from: "OP",
+          line: { en: "Taking it.", ru: "Берусь.", zh: "接了。" },
+          contract: "ct_vrvirus", action: "accepted",
+        }, "sato");
+        const cur = gRef.current;
+        const already = cur.flags.vr_virus === true;
+        if (already) {
+          setG((s) => ({
+            ...s,
+            contracts: { ...s.contracts, ct_vrvirus: { state: "COMPLETED", accepted: true } },
+            credits: s.credits + SATO_PAY.credits,
+            rep: s.rep + SATO_PAY.rep,
+            relations: {
+              ...s.relations,
+              takamuri: (s.relations.takamuri ?? 0) + SATO_PAY.relTakamuri,
+              slayer: (s.relations.slayer ?? 0) + SATO_PAY.relSlayer,
+            },
+            stats: { ...s.stats, contracts: s.stats.contracts + 1 },
+          }));
+          SATO_ALREADY.forEach((b, i) => later(() => pushBeat(b, "sato"), 850 + i * 1000));
+          later(() => pushBeat({ ...SATO_DONE[0], payout: SATO_PAY.credits }, "sato"), 2200);
+          notify("CONTRACT COMPLETED", `+${SATO_PAY.credits}cr`, "CONTACTS");
+          return;
+        }
+        setG((s) => ({
+          ...s,
+          contracts: {
+            ...s.contracts,
+            ct_vrvirus: {
+              state: cur.nodeStates["w1n_crp"] === "COMPROMISED" ? "TARGET ACCESSED" : "ACCEPTED",
+              accepted: true,
+            },
+          },
+        }));
+        SATO_READY.forEach((b, i) => later(() => pushBeat(b, "sato"), 850 + i * 1000));
         return;
       }
 
@@ -1214,13 +1336,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
     () => ({
       g, notifs, lastHack, nodeState, canHack, hack, download,
       acceptContract, deliverContract, recover, failBreach,
-      sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, setFlag, pushBeat,
+      sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, openSato, plantVirus, revealKey, setFlag, pushBeat,
       openMarket, buyScript, sellFile, fenceValue, buyUpgrade,
       markTab, markThreadRead, setOpenThread, isThreadOpen, isAnyThreadOpen, markCodexSeen, reset,
       lang: langRef.current, setLangRef,
     }),
     [g, notifs, lastHack, nodeState, canHack, hack, download, acceptContract,
-     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, setFlag, pushBeat,
+     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, openSato, plantVirus, revealKey, setFlag, pushBeat,
      openMarket, buyScript, sellFile, fenceValue,
      buyUpgrade, markTab, markThreadRead, setOpenThread, isThreadOpen, isAnyThreadOpen, markCodexSeen, reset, setLangRef]
   );

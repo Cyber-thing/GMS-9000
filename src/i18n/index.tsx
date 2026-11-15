@@ -922,10 +922,56 @@ export const DICT: Record<string, Entry> = {
   "vr.statIce": { en: "ICE PURGED", ru: "УБИТО ICE" },
   "vr.statHits": { en: "HITS TAKEN", ru: "ПОПАДАНИЯ" },
   "vr.exitGrid": { en: "RETURN TO NETWORK GRID", ru: "ВЕРНУТЬСЯ В СЕТЬ" },
-  "vr.controlsHint": {
-    en: "WASD/ARROWS MOVE · SPACE JUMP · SHIFT/K DASH-SLASH · J/Z/ENTER FIRE · E OVERRIDE/TERMINAL · Q WEAPON · P PAUSE",
-    ru: "WASD/СТРЕЛКИ ДВИЖЕНИЕ · SPACE ПРЫЖОК · SHIFT/K РЫВОК · J/Z/ENTER ОГОНЬ · E ВЗАИМОДЕЙСТВИЕ · Q ОРУЖИЕ · P ПАУЗА",
+  /* ---- враждебная фракция: слежка ---- */
+  "trk.header": { en: "TRACE DETECTED :: {code}", ru: "ОБНАРУЖЕНА ТРАССИРОВКА :: {code}", zh: "检测到追踪 :: {code}" },
+  "trk.title": { en: "YOU ARE BEING TRACKED", ru: "ВАС ОТСЛЕЖИВАЮТ", zh: "你正被追踪" },
+  "trk.body": {
+    en: "{owner} is hostile. Its counter-intrusion grid has locked on to your signal — repel the attack before you connect.",
+    ru: "{owner} враждебны. Их контрсеть уже поймала ваш сигнал — отбейте атаку, прежде чем подключаться.",
+    zh: "{owner} 对你怀有敌意。其反入侵网络已锁定你的信号——先击退攻击，再进行连接。",
   },
+  "trk.defend": { en: "DEFENSE", ru: "ЗАЩИТА", zh: "防御" },
+  "trk.defending": { en: "repelling cyber-attack …", ru: "отражение кибератаки …", zh: "正在抵御网络攻击 …" },
+  "trk.held": { en: "attack repelled · connecting", ru: "атака отбита · подключение", zh: "攻击已击退 · 正在连接" },
+  "trk.stub": {
+    en: "stub · the defense mini-game is coming later",
+    ru: "заглушка · мини-игра защиты появится позже",
+    zh: "占位 · 防御小游戏将在以后加入",
+  },
+  "trk.leave": { en: "disconnect", ru: "отключиться", zh: "断开" },
+  "trk.log": { en: "TRACE :: {owner} grid locked on your signal at {code}", ru: "ТРАССИРОВКА :: сеть {owner} поймала ваш сигнал на {code}", zh: "追踪 :: {owner} 的网络在 {code} 锁定了你的信号" },
+  "dos.hostile": { en: "HOSTILE TERRITORY · intrusion is traced", ru: "ВРАЖДЕБНАЯ ТЕРРИТОРИЯ · вторжение отслеживается", zh: "敌对领地 · 入侵将被追踪" },
+  /* ---- почта на личной станции ---- */
+  "mail.title": { en: "MAIL", ru: "ПОЧТА", zh: "邮件" },
+  "mail.close": { en: "desktop", ru: "рабочий стол", zh: "桌面" },
+  "mail.inbox": { en: "conversations · {n}", ru: "переписки · {n}", zh: "会话 · {n}" },
+  "mail.empty": { en: "mailbox is empty", ru: "ящик пуст", zh: "邮箱是空的" },
+  "mail.pick": { en: "select a conversation", ru: "выберите переписку", zh: "选择一个会话" },
+  "mail.delete": { en: "delete", ru: "удалить", zh: "删除" },
+  "mail.confirmDel": { en: "delete?", ru: "удалить?", zh: "确定删除？" },
+  "mail.cancel": { en: "no", ru: "нет", zh: "取消" },
+  "mail.readOnly": { en: "outbox sealed · WARDEN MAX · read only", ru: "исходящие запечатаны · WARDEN MAX · только чтение", zh: "发件箱已封存 · WARDEN MAX · 只读" },
+  "mail.keyNote": {
+    en: "ACCESS STRING COPIED TO THE KEY BANNER · enter it at CRP-N06 (NORTHLINE)",
+    ru: "СТРОКА ДОСТУПА ЗАПИСАНА В БАННЕР КЛЮЧА · введите её на CRP-N06 (NORTHLINE)",
+    zh: "访问串已记入密钥横幅 · 请在 CRP-N06（NORTHLINE）输入",
+  },
+  "t.vrHeist": {
+    en: "VR-LINK :: {code} data exfiltrated, virus planted in the construct",
+    ru: "VR-ЛИНК :: данные {code} украдены, в конструкт подсажен вирус",
+    zh: "VR 链路 :: {code} 数据已被窃取，构造体已植入病毒",
+  },
+  "e.vrHeist": {
+    en: "{code} Virtuality infected after a data heist",
+    ru: "{code}: Virtuality заражён после кражи данных",
+    zh: "{code} 的 Virtuality 在数据被盗后感染病毒",
+  },
+  "vr.controlsHint": {
+    en: "A/D MOVE · SPACE JUMP · CTRL / LMB FIRE · SHIFT DASH · W/↑ AIM UP (+A/D DIAGONAL) · S DUCK · E OVERRIDE · Q WEAPON · P PAUSE",
+    ru: "A/D ДВИЖЕНИЕ · ПРОБЕЛ ПРЫЖОК · CTRL / ЛКМ ОГОНЬ · SHIFT РЫВОК · W/↑ ПРИЦЕЛ ВВЕРХ (+A/D ПОД УГЛОМ) · S ПРИСЕСТЬ · E ВЗАИМОДЕЙСТВИЕ · Q ОРУЖИЕ · P ПАУЗА",
+    zh: "A/D 移动 · 空格 跳跃 · CTRL / 鼠标左键 开火 · SHIFT 冲刺 · W/↑ 向上瞄准（配合 A/D 斜向）· S 下蹲 · E 交互 · Q 换武器 · P 暂停",
+  },
+
 };
 
 const interpolate = (s: string, p?: Record<string, string | number>) =>

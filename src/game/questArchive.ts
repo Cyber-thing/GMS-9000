@@ -483,3 +483,77 @@ export const OP17_SOLD_REFUSAL: Beat[] = [
 
 export const FREDDY_PAY = { implant: 350 };
 export const MARLA_PAY = { proj: 300 };
+
+/* ---------------- Takamuri: «Корень блэкаута» (после квеста со светом) ---------------- */
+
+export const SATO_INTRO: Beat[] = [
+  {
+    id: "sa1", from: "sato",
+    line: L(
+      "Forgive me for writing to the first hacker I could find on the network. The matter is urgent and I have no one else.",
+      "Прошу прощения, что обращаюсь к первому попавшемуся хакеру из сети. Дело срочное, а больше мне обратиться не к кому.",
+      "抱歉，我找上了网里碰到的第一个黑客。事情很急，我没别人可找。"
+    ),
+    choices: [{ id: "sa_what", en: "What happened?", ru: "Что случилось?", zh: "出什么事了？" }],
+  },
+];
+
+export const SATO_2: Beat[] = [
+  {
+    id: "sa2", from: "sato",
+    line: L(
+      "Someone broke through our defences by a loophole in Virtuality and killed the lights in our hall in the middle of the most important presentation of the year, in front of the board of directors. The numbers on stage went dark with it. The board will dismiss the whole branch.",
+      "Кто-то ворвался в нашу защиту через лазейку в Virtuality и вырубил нам свет прямо во время важнейшей презентации перед советом директоров. Показатели на сцене погасли вместе с залом. Это повлияло на оценку, и теперь уволят весь наш филиал.",
+      "有人通过 Virtuality 里的一个漏洞闯进我们的防御，在全年最重要的董事会演示进行到一半时，把我们厅里的灯全灭了。台上的数据跟着一起黑掉。董事会要把整个分部都开掉。"
+    ),
+    choices: [{ id: "sa_who", en: "And who do you blame?", ru: "И кого ты винишь?", zh: "那你觉得是谁干的？" }],
+  },
+];
+
+export const SATO_3: Beat[] = [
+  {
+    id: "sa3", from: "sato",
+    line: L(
+      "Slayer Incorporated. The presentation was about competing with them — who else would want it dead? I need a virus planted inside the Slayer Incorporated Virtuality. I could not do it myself: that construct is sealed under WARDEN MAX.",
+      "Slayer Incorporated. Презентация была о конкуренции с ними — кому ещё это было нужно? Мне нужно, чтобы ты установил вирус в Virtuality Slayer Incorporated. Сам я не смог — он защищён Warden Max.",
+      "Slayer Incorporated。演示讲的就是和他们的竞争——不是他们还能是谁？我要你在 Slayer Incorporated 的 Virtuality 里装一个病毒。我自己搞不定：那个构造体被 WARDEN MAX 封着。"
+    ),
+    choices: [{ id: "sa_ok", en: "Taking it.", ru: "Берусь.", zh: "接了。" }],
+  },
+];
+
+export const SATO_READY: Beat[] = [
+  {
+    id: "sa4", from: "sato",
+    line: L(
+      "All I know: the head of security of that sector was treated at **Gexogen Medical** not long ago. Clinics keep records. People keep habits. Start there.",
+      "Всё, что мне известно: глава безопасности того сектора недавно проходил лечение в **Gexogen Medical**. Клиники хранят карты. У людей остаются привычки. Начни оттуда.",
+      "我只知道一件事：那个扇区的安保主管不久前在 **Gexogen Medical** 治过病。诊所会留病历，人会留习惯。从那儿查起。"
+    ),
+  },
+];
+
+/* Игрок уже успел взломать Virtuality Slayer до принятия задания */
+export const SATO_ALREADY: Beat[] = [
+  {
+    id: "sa5", from: "sato",
+    line: L(
+      "You already planted something in their Virtuality? Without being asked? ... Then the contract is yours. Check the payout.",
+      "Ты уже подсадил что-то в их Virtuality? Без просьбы? ... Тогда контракт твой. Проверь выплату.",
+      "你已经在他们的 Virtuality 里种了东西？没人让你做？……那合同归你。查收报酬。"
+    ),
+  },
+];
+
+export const SATO_DONE: Beat[] = [
+  {
+    id: "sa6", from: "sato",
+    line: L(
+      "The virus is live. Their construct is already stuttering. I will tell the board where to look. You have saved my people. Takamuri does not forget.",
+      "Вирус работает. Их конструкт уже запинается. Я скажу совету, куда смотреть. Ты спас моих людей. Takamuri этого не забывает.",
+      "病毒已经生效。他们的构造体已经开始卡顿。我会告诉董事会该往哪儿看。你救了我的人。Takamuri 不会忘。"
+    ),
+  },
+];
+
+export const SATO_PAY = { credits: 900, rep: 40, relTakamuri: 30, relSlayer: -30 };

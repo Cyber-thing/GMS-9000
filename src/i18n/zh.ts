@@ -727,5 +727,5 @@ export const ZH: Record<string, string> = {
   "vr.statIce": "击毁 ICE",
   "vr.statHits": "受伤次数",
   "vr.exitGrid": "返回网络地图",
-  "vr.controlsHint": "WASD/方向键 移动 · SPACE 跳跃 · SHIFT/K 冲刺斩 · J/Z/ENTER 射击 · E 交互/终端 · Q 切枪 · P 暂停",
+  "vr.controlsHint": "A/D 移动 · 空格 跳跃 · CTRL / 鼠标左键 开火 · SHIFT 冲刺 · W/↑ 向上瞄准（配合 A/D 斜向）· S 下蹲 · E 交互 · Q 换武器 · P 暂停",
 };

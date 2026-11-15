@@ -2,10 +2,11 @@ import { Bullet } from "./entities";
 import { renderVrDaemonSprite, renderVrSentrySprite, renderVrWardenSprite } from "./sprites";
 import { PHYSICS, TILE_SIZE } from "./themes";
 import type { Tilemap } from "./tilemap";
-import type { EnemyAIState, EnemyKind, EnemySpawnDef, PickupKind, Rect, TierTuning, VrCorpTheme } from "./types";
+import type { EnemyAIState, EnemyKind, EnemyVariant, EnemySpawnDef, PickupKind, Rect, TierTuning, VrCorpTheme } from "./types";
 
 export abstract class Enemy {
   public readonly kind: EnemyKind;
+  public readonly variant: EnemyVariant;
   public x: number;
   public y: number;
   public readonly w: number;
@@ -37,12 +38,13 @@ export abstract class Enemy {
     this.y = def.kind === "turret" ? def.row * TILE_SIZE : def.row * TILE_SIZE - h;
     this.baseY = this.y;
     this.facing = def.facing;
-    this.hp = baseHp + tuning.enemyHpBonus;
+    this.variant = def.variant ?? "std";
+    this.hp = baseHp + tuning.enemyHpBonus + (this.variant === "plated" ? 2 : 0);
     this.maxHp = this.hp;
     this.patrolMinX = def.patrolMinCol * TILE_SIZE;
     this.patrolMaxX = def.patrolMaxCol * TILE_SIZE;
-    this.fireRateMult = tuning.enemyFireRateMult;
-    this.bulletSpeedMult = tuning.enemyBulletSpeedMult;
+    this.fireRateMult = tuning.enemyFireRateMult * (this.variant === "swift" ? 0.75 : 1);
+    this.bulletSpeedMult = tuning.enemyBulletSpeedMult * (this.variant === "volley" ? 1.18 : 1);
   }
 
   public getRect(): Rect {

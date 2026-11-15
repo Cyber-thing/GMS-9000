@@ -17,6 +17,7 @@ import RoutingGame from "./components/RoutingGame";
 import HexwallGame from "./components/HexwallGame";
 import MemdumpGame from "./components/MemdumpGame";
 import WardenPass from "./components/WardenPass";
+import TrackedModal from "./components/TrackedModal";
 import ArchiveWindow from "./components/ArchiveWindow";
 import HackerExchange from "./components/HackerExchange";
 import KeyBanner from "./components/KeyBanner";
@@ -50,11 +51,12 @@ import {
 import {
   ZH_AMBIENT_POOL, ZH_CHAT_POOL, ZH_GREETING_POOL, ZH_REPLY_POOL,
 } from "./i18n/zhContent";
-import { useGame } from "./game/state";
+import { isHostileFaction, useGame } from "./game/state";
 import { NODE_META, factionById, resolveFile } from "./game/data";
 import { Lock, ShoppingBag } from "lucide-react";
 import { tierOf, usesBreach } from "./game/breach";
 import { usesVault } from "./game/vault";
+import { MAILBOX_OF } from "./game/mail";
 import type { NodeState, NotifKind, TabId } from "./game/types";
 
 /* 所有游戏通知都由系统控制台播报。 */
@@ -95,7 +97,7 @@ export default function App() {
   const game = useGame();
   const {
     g, notifs, hack, download, canHack, failBreach, sabotage, markTab, nodeState,
-    openArchiveJob, openFreddy, openMarla, setFlag, sableArrives, isAnyThreadOpen,
+    openArchiveJob, openFreddy, openMarla, openSato, plantVirus, setFlag, sableArrives, isAnyThreadOpen,
   } = game;
   const tut = useTut();
   const tutFire = tut.fire;
@@ -456,7 +458,7 @@ export default function App() {
     [hack, print, pushEvent, t, lang, tutFire]
   );
 
-  const runHack = useCallback(
+  const runHackCore = useCallback(
     (id: string) => {
       if (hackingId || breachId || vrId) return;
       const chk = canHack(id);
@@ -465,6 +467,12 @@ export default function App() {
       if (!chk.ok) {
         sfx("deny");
         print(t("hk.blocked", { r: chk.reason ?? "" }), "err");
+        return;
+      }
+
+      /* WARDEN PASS перед Virtuality: сначала нужен пароль (CRP-N06). */
+      if (usesVirtualityBreach(id) && NODE_META[id]?.password && g.nodeStates[id] !== "COMPROMISED") {
+        setPassId(id);
         return;
       }
 
@@ -531,6 +539,31 @@ export default function App() {
     [hackingId, breachId, vrId, canHack, completeHack, print, later, t, tutFire, g.nodeStates]
   );
 
+  /* Враждебная фракция отслеживает вторжение: сначала «ВАС ОТСЛЕЖИВАЮТ» + «Защита». */
+  const [tracked, setTracked] = useState<{ id: string; go: () => void } | null>(null);
+  const hostileOwner = useCallback(
+    (id: string) => {
+      const owner = NODE_META[id]?.owner;
+      return !!owner && isHostileFaction(owner, g.relations);
+    },
+    [g.relations]
+  );
+
+  const runHack = useCallback(
+    (id: string) => {
+      if (hackingId || breachId || vrId || tracked) return;
+      if (hostileOwner(id) && canHack(id).ok) {
+        const n = ALL_NODES.find((x) => x.id === id);
+        const own = factionById(NODE_META[id].owner);
+        if (n) print(t("trk.log", { owner: own ? pickL(lang, own.name, own.nameRu, own.nameZh) : "?", code: n.code }), "err");
+        setTracked({ id, go: () => runHackCore(id) });
+        return;
+      }
+      runHackCore(id);
+    },
+    [hackingId, breachId, vrId, tracked, hostileOwner, canHack, print, t, lang, runHackCore]
+  );
+
   const breachWin = useCallback(() => {
     const id = breachId;
     setBreachId(null);
@@ -576,7 +609,7 @@ export default function App() {
     [download, pushEvent, t, lang, tutFire, tut, g.files]
   );
 
-  const openVault = useCallback(
+  const openVaultCore = useCallback(
     (id: string) => {
       if (!usesVault(id)) return;
       const n = ALL_NODES.find((x) => x.id === id);
@@ -585,6 +618,21 @@ export default function App() {
       if (n) print(t("dv.logOpen", { code: n.code }), "ok");
     },
     [print, t, tutFire]
+  );
+
+  const openVault = useCallback(
+    (id: string) => {
+      if (tracked) return;
+      if (hostileOwner(id)) {
+        const n = ALL_NODES.find((x) => x.id === id);
+        const own = factionById(NODE_META[id].owner);
+        if (n) print(t("trk.log", { owner: own ? pickL(lang, own.name, own.nameRu, own.nameZh) : "?", code: n.code }), "err");
+        setTracked({ id, go: () => openVaultCore(id) });
+        return;
+      }
+      openVaultCore(id);
+    },
+    [tracked, hostileOwner, openVaultCore, print, t, lang]
   );
 
   const closeVault = useCallback(() => {
@@ -670,6 +718,14 @@ export default function App() {
     if (!id) return;
     const n = ALL_NODES.find((x) => x.id === id);
     if (n) print(t("t.wpOk", { code: n.code }), "ok");
+    /* Пароль принят: у CRP дальше идёт Virtuality Breach, у архива — окно хранилища. */
+    if (n && n.type !== "ARCHIVE" && usesVirtualityBreach(id)) {
+      later(() => {
+        setVrId(id);
+        print(t("t.vrStart", { code: n.code }), "ok");
+      }, 400);
+      return;
+    }
     completeHack(id, { silent: true });
 
     later(() => setArchiveId(id), 400);
@@ -720,14 +776,18 @@ export default function App() {
   );
 
   const vrWin = useCallback(
-    (info: { sabotaged: boolean }) => {
+    (info: { sabotaged: boolean; heist?: boolean }) => {
       const id = vrId;
       setVrId(null);
       if (!id) return;
       const n = ALL_NODES.find((x) => x.id === id);
       completeHack(id, { silent: true });
       if (n) {
-        if (info.sabotaged) {
+        if (info.heist) {
+          print(t("t.vrHeist", { code: n.code }), "warn");
+          pushEvent(t("e.vrHeist", { code: n.code }), "bad");
+          plantVirus();
+        } else if (info.sabotaged) {
           print(t("t.vrBlackout", { code: n.code }), "warn");
           pushEvent(t("e.vrBlackout", { code: n.code }), "bad");
           runSabotage(id, true);
@@ -736,7 +796,7 @@ export default function App() {
         }
       }
     },
-    [vrId, completeHack, runSabotage, print, pushEvent, t]
+    [vrId, completeHack, runSabotage, plantVirus, print, pushEvent, t]
   );
 
   const vrLose = useCallback(
@@ -809,6 +869,20 @@ export default function App() {
     }, 2600);
     timeouts.current.push(h);
   }, [archiveDone, g.flags.marla_intro, openMarla, markTab, isAnyThreadOpen]);
+
+  /* После квеста со светом в зале Takamuri выходит на связь сам. */
+  const projectorDone = g.contracts["sb_projector"]?.state === "COMPLETED";
+  useEffect(() => {
+    if (!projectorDone || g.flags.sato_intro) return;
+    const h = window.setTimeout(() => {
+      openSato();
+      if (isAnyThreadOpen()) return;
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }, 6500);
+    timeouts.current.push(h);
+  }, [projectorDone, g.flags.sato_intro, openSato, markTab, isAnyThreadOpen]);
 
   useEffect(() => {
     if (!archiveDone || g.flags.fred_intro) return;
@@ -1265,6 +1339,7 @@ export default function App() {
             warden={NODE_META[dumpId].warden}
             tier={dt}
             known={g.nodeStates[dumpId] === "COMPROMISED"}
+            mailbox={MAILBOX_OF[dumpId]}
             onCracked={dumpCracked}
             onWin={dumpWin}
             onLose={() => {
@@ -1374,6 +1449,25 @@ export default function App() {
       {exchange && (
         <HackerExchange operator={operator} onDone={() => setExchange(false)} />
       )}
+
+      {tracked && (() => {
+        const n = ALL_NODES.find((x) => x.id === tracked.id);
+        const own = factionById(NODE_META[tracked.id].owner);
+        if (!n) return null;
+        return (
+          <TrackedModal
+            key={tracked.id}
+            nodeCode={n.code}
+            ownerName={own ? pickL(lang, own.name, own.nameRu, own.nameZh) : "—"}
+            onClose={() => setTracked(null)}
+            onDefended={() => {
+              const go = tracked.go;
+              setTracked(null);
+              go();
+            }}
+          />
+        );
+      })()}
 
       {askLogout && (
         <ConfirmDialog

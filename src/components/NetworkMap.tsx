@@ -18,7 +18,8 @@ import { alfa, pad } from "../lib/util";
 import { useT } from "../i18n";
 import { regionContinent, sectorName } from "../i18n/content";
 import { useTut } from "../game/tutorial";
-import { useGame } from "../game/state";
+import { isHostileFaction, useGame } from "../game/state";
+import { NODE_META } from "../game/data";
 import { useMapView, ZOOM } from "../hooks/useMapView";
 
 const CH_COLORS = { phos: "var(--color-phos)", amber: "#cfa04b" };
@@ -50,6 +51,7 @@ function NodeMarker({
   spot,
   dim,
   burning,
+  hostile,
 }: {
   node: NetNode;
   status: NodeState;
@@ -61,6 +63,8 @@ function NodeMarker({
   spot: boolean;
   dim: boolean;
   burning: boolean;
+  /** Узел принадлежит враждебной фракции: красная рамка. */
+  hostile?: boolean;
   /** 标签摆放方向，由上层按邻居密度算好，避免互相压字。 */
   side: "right" | "left" | "top" | "bottom";
   onSelect: () => void;
@@ -100,6 +104,12 @@ function NodeMarker({
         {burst && (
           <span className="anim-ringout pointer-events-none absolute inset-0 border"
             style={{ borderColor: STATUS_COLOR.CONNECTED }}
+          />
+        )}
+        {hostile && (
+          <span
+            className="pointer-events-none absolute inset-[-4px] animate-softpulse border-2 border-[#ff3b3b]"
+            style={{ boxShadow: "0 0 9px rgba(255,59,59,0.7), inset 0 0 5px rgba(255,59,59,0.45)" }}
           />
         )}
         {burning && (
@@ -584,6 +594,7 @@ export default function NetworkMap({
               dimmed={!!selectedSector && n.sector !== selectedSector}
               burst={!!bursts[n.id]}
               burning={g.burning?.includes(n.id) ?? false}
+              hostile={isHostileFaction(NODE_META[n.id]?.owner ?? "indep", g.relations)}
               side={labelSides[n.id] ?? "right"}
               spot={isHl(`node:${n.id}` as never)}
               dim={gating && !isHl(`node:${n.id}` as never)}
