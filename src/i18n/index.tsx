@@ -90,6 +90,13 @@ export const DICT: Record<string, Entry> = {
   "map.zoomOut": { en: "zoom out · wheel down", ru: "отдалить · колесо вниз" },
   "map.zoomReset": { en: "reset view", ru: "сбросить вид" },
   "map.panHint": { en: "wheel to zoom · drag to pan", ru: "колесо — зум · перетаскивание — сдвиг" },
+  "map.pinchHint": { en: "pinch to zoom · drag to pan", ru: "щипок — зум · свайп — сдвиг" },
+  "map.pickSector": { en: "▷ TAP A DISTRICT TO OPEN ITS NODES", ru: "▷ НАЖМИТЕ РАЙОН — ОТКРОЮТСЯ ЕГО УЗЛЫ" },
+  "map.districts": { en: "districts", ru: "районы" },
+  "pop.info": { en: "FULL DOSSIER", ru: "ДОСЬЕ ЦЕЛИКОМ" },
+  "pop.close": { en: "close", ru: "закрыть" },
+  "vr.pad.move": { en: "MOVE", ru: "ДВИЖЕНИЕ" },
+  "vr.pad.aim": { en: "AIM", ru: "ПРИЦЕЛ" },
   "map.legend": { en: "▞ LEGEND", ru: "▞ ЛЕГЕНДА" },
   "map.links": {
     en: "─ STABLE  ┈ WEAK  ┄ DOWN  ══ BACKBONE",

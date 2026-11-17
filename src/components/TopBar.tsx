@@ -119,20 +119,20 @@ export default function TopBar({
 
   return (
     <div className="relative z-30 flex h-[38px] shrink-0 items-stretch border-b border-line2 bg-header">
-      {/* 身份标识块采用反色视频。 */}
-      <div className="flex items-center gap-2.5 border-r border-line2 bg-phos px-3 text-ink">
-        <ScanEye size={14} strokeWidth={2.2} />
+      {/* 身份标识块采用反色视频。 На мобильном — компактный логотип. */}
+      <div className="flex items-center gap-1.5 border-r border-line2 bg-phos px-2 text-ink lg:gap-2.5 lg:px-3">
+        <ScanEye size={13} strokeWidth={2.2} />
         <div className="leading-none">
-          <div className="text-[11px] font-bold tracking-[0.14em]">GNS-9000</div>
-          <div className="mt-[2px] text-[7.5px] font-semibold uppercase tracking-[0.28em] opacity-80">
+          <div className="text-[9.5px] font-bold tracking-[0.12em] lg:text-[11px] lg:tracking-[0.14em]">GNS-9000</div>
+          <div className="mt-[2px] hidden text-[7.5px] font-semibold uppercase tracking-[0.28em] opacity-80 lg:block">
             {t("brand.sub")}
           </div>
         </div>
-        <span className="ml-1 border border-ink/40 px-1 py-[1px] text-[8px] font-bold tracking-widest">v2.4.1</span>
+        <span className="ml-1 hidden border border-ink/40 px-1 py-[1px] text-[8px] font-bold tracking-widest lg:inline-block">v2.4.1</span>
       </div>
 
-      {/* 状态字段 */}
-      <div className="flex min-w-0 flex-1 items-center gap-x-4 gap-y-1 overflow-x-auto px-3 md:gap-x-5">
+      {/* 状态字段：在移动端隐藏为 название кнопки анонимности */}
+      <div className="hidden min-w-0 flex-1 items-center gap-x-4 gap-y-1 overflow-x-auto px-3 md:gap-x-5 lg:flex">
         <Field
           label={t("top.system")}
           value={
@@ -175,8 +175,8 @@ export default function TopBar({
         />
       </div>
 
-      {/* 活动指示器 */}
-      <div className="hidden items-center gap-2 border-l border-line2 px-3 sm:flex">
+      {/* 活动指示器 (только десктоп) */}
+      <div className="hidden items-center gap-2 border-l border-line2 px-3 lg:flex">
         <Activity size={12} className="text-phosdim" />
         <div className="flex h-[14px] items-end gap-[2px]" aria-hidden>
           {bars.map((v, i) => (
@@ -191,11 +191,11 @@ export default function TopBar({
       </div>
 
       {/* 操作员代号 */}
-      <div className="relative flex items-center gap-2 border-l border-line2 px-3">
+      <div className="relative flex min-w-0 items-center gap-2 border-l border-line2 px-2 lg:px-3">
         <button
           onClick={() => setPicking((v) => !v)}
           title={t("top.avatarTip")}
-          className="shrink-0 transition-opacity hover:opacity-80"
+          className="hidden shrink-0 transition-opacity hover:opacity-80 sm:block"
         >
           <Avatar id="OP" size={24} />
         </button>
@@ -239,7 +239,7 @@ export default function TopBar({
               setDraft(operator);
               setEditing(true);
             }}
-            className="group flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber hover:text-phosbrite"
+            className="group flex min-w-0 max-w-[96px] items-center gap-1.5 truncate text-[10px] font-semibold uppercase tracking-[0.1em] text-amber hover:text-phosbrite sm:max-w-none lg:text-[11px] lg:tracking-[0.12em]"
             title={t("top.handleTip")}
           >
             {operator}
@@ -248,10 +248,10 @@ export default function TopBar({
         )}
       </div>
 
-      {/* GENIUS 操作缓冲区。 */}
-      <div className="flex shrink-0 items-center gap-2 border-l border-line2 px-2.5">
+      {/* GENIUS 操作缓冲区。 На мобильном — сразу за именем, целиком. */}
+      <div className="ml-auto flex shrink-0 items-center gap-2 border-l border-line2 px-2 lg:ml-0 lg:px-2.5">
         <div className="leading-none">
-          <div className="text-[8px] uppercase tracking-[0.18em] text-faint">{t("genius.title")}</div>
+          <div className="hidden text-[8px] uppercase tracking-[0.18em] text-faint lg:block">{t("genius.title")}</div>
           <div className="mt-[2px] flex items-center gap-[2px]">
             {Array.from({ length: CFG.opsLimit }, (_, i) => (
               <span
@@ -274,7 +274,7 @@ export default function TopBar({
             }}
             disabled={g.recovering}
             className={cn(
-              "border px-1.5 py-[3px] text-[8px] font-bold uppercase tracking-[0.12em] transition-colors",
+              "shrink-0 whitespace-nowrap border px-1.5 py-[3px] text-[8px] font-bold uppercase tracking-[0.12em] transition-colors",
               g.recovering
                 ? "animate-softpulse border-amberdim text-amber"
                 : "border-oxide bg-oxide/15 text-oxide hover:bg-oxide hover:text-ink",
@@ -294,7 +294,7 @@ export default function TopBar({
       {/* 语言切换：EN → RU → 中文 */}
       <button
         onClick={() => setLang(lang === "en" ? "ru" : lang === "ru" ? "zh" : "en")}
-        className="flex w-[58px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-phos"
+        className="hidden w-[58px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-panel2 hover:text-phos lg:flex"
         title={t("top.langTip")}
       >
         <Languages size={12} />
@@ -304,7 +304,7 @@ export default function TopBar({
       {/* 特效切换 */}
       <button
         onClick={onToggleFx}
-        className={`flex w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+        className={`hidden w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors lg:flex ${
           fx ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
         }`}
         title={t("top.crtTip")}
@@ -317,7 +317,7 @@ export default function TopBar({
       <button
         onClick={() => { const next = cycleSfxMode(); if (next !== "off") sfx("toggle"); onSfxMode?.(next); }}
         data-sfx="none"
-        className={`flex w-[68px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.16em] transition-colors ${
+        className={`hidden w-[68px] items-center justify-center gap-1 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.16em] transition-colors lg:flex ${
           snd === "off" ? "text-faint hover:text-dim" : "bg-panel2 text-phos"
         }`}
         title={`${t("top.sfxTip")} · ${t(`sfx.${snd}`)}`}
@@ -329,7 +329,7 @@ export default function TopBar({
       {/* 3D 机壳切换 */}
       <button
         onClick={onToggleDepth}
-        className={`flex w-[58px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+        className={`hidden w-[58px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors lg:flex ${
           depth ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
         }`}
         title={t("top.depthTip")}
@@ -341,7 +341,7 @@ export default function TopBar({
       {/* 复古噪点切换 */}
       <button
         onClick={onToggleNoise}
-        className={`flex w-[58px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+        className={`hidden w-[58px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors lg:flex ${
           noise ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
         }`}
         title={t("top.noiseTip")}
@@ -353,7 +353,7 @@ export default function TopBar({
       {/* 界面配色切换：循环 绿色 → 洋红 → 蓝色 → 红色 → 琥珀 */}
       <button
         onClick={onTogglePhos}
-        className={`flex w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+        className={`hidden w-[64px] items-center justify-center gap-1.5 border-l border-line2 text-[9px] font-semibold uppercase tracking-[0.18em] transition-colors lg:flex ${
           phos !== "green" ? "bg-panel2 text-phos" : "text-faint hover:text-dim"
         }`}
         title={t("top.phosTip")}
@@ -366,7 +366,7 @@ export default function TopBar({
       <button
         onClick={onLogout}
         title={t("top.logoutTip")}
-        className="flex shrink-0 items-center justify-center gap-1.5 border-l border-line2 px-2.5 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-oxide hover:text-ink"
+        className="hidden shrink-0 items-center justify-center gap-1.5 border-l border-line2 px-2.5 text-[9px] font-bold uppercase tracking-[0.14em] text-dim transition-colors hover:bg-oxide hover:text-ink lg:flex"
       >
         <LogOut size={12} />
         <span className="hidden md:inline">{t("top.logout")}</span>

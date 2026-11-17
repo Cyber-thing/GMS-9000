@@ -98,6 +98,11 @@ export interface InputSnapshot {
   interactPressed: boolean;
   cycleWeaponPressed: boolean;
   selectWeapon: WeaponId | null;
+  /**
+   * Прицеливание по курсору мыши (мировые координаты точки прицела).
+   * null — прицеливание клавишами (вверх/вниз), как раньше.
+   */
+  aim: { x: number; y: number } | null;
 }
 
 export interface DoorDef {

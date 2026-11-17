@@ -49,9 +49,14 @@ export class Player {
     smg: 0,
   };
   public fireCooldown = 0;
+  /** Буфер нажатия для полуавтоматики: клик не теряется, если оружие ещё откатывается. */
+  public shootBufferTimer = 0;
   public muzzleFlashTimer = 0;
   public muzzleX = 0;
   public muzzleY = 0;
+
+  /** Точный угол прицеливания по курсору мыши; null — прицел клавишами. */
+  private aimAngle: number | null = null;
 
   public animState: HackerAnimState = "idle";
   public animFrame = 0;
@@ -200,6 +205,27 @@ export class Player {
       this.aimMode = "straight";
     }
 
+    /* Прицеливание мышью: персонаж разворачивается и стреляет туда,
+       где курсор, даже если бежит в другую сторону. */
+    if (input.aim) {
+      const centerX = this.x + this.w * 0.5;
+      const shoulderY = this.y + (this.crouching ? 10 : 12);
+      const ang0 = Math.atan2(input.aim.y - shoulderY, input.aim.x - centerX);
+      this.facing = Math.cos(ang0) >= 0 ? 1 : -1;
+      const shoulderX = centerX + this.facing * 2;
+      this.aimAngle = Math.atan2(input.aim.y - shoulderY, input.aim.x - shoulderX);
+      /* спрайту нужен ближайший дискретный режим прицела относительно стороны */
+      const rel = this.facing === 1 ? this.aimAngle : Math.PI - this.aimAngle;
+      const deg = (Math.atan2(Math.sin(rel), Math.cos(rel)) * 180) / Math.PI;
+      if (deg <= -67.5) this.aimMode = "up";
+      else if (deg <= -22.5) this.aimMode = "upDiag";
+      else if (deg >= 67.5) this.aimMode = "down";
+      else if (deg >= 22.5) this.aimMode = "downDiag";
+      else this.aimMode = "straight";
+    } else {
+      this.aimAngle = null;
+    }
+
     if (this.grounded) {
       this.coyoteTimer = PHYSICS.coyoteTime;
     } else {
@@ -328,8 +354,15 @@ export class Player {
     }
 
     const cfg = WEAPONS[this.weapon];
-    const wantsShoot = cfg.auto ? input.shootHeld : input.shootPressed || input.shootHeld;
+    /* Полуавтомат (пистолет, дробовик): один клик — один выстрел.
+       Удержание кнопки больше не даёт очередь — нужен новый клик.
+       Короткий буфер сохраняет нажатие, сделанное во время отката. */
+    if (input.shootPressed) this.shootBufferTimer = 0.14;
+    else this.shootBufferTimer = Math.max(0, this.shootBufferTimer - dt);
+
+    const wantsShoot = cfg.auto ? input.shootHeld : this.shootBufferTimer > 0;
     if (wantsShoot && this.fireCooldown <= 0 && this.dashTimer <= 0) {
+      this.shootBufferTimer = 0;
       if (this.weapon !== "pistol" && this.ammo[this.weapon] <= 0) {
         this.weapon = "pistol";
       }
@@ -379,6 +412,8 @@ export class Player {
   }
 
   public getAimAngleRad(): number {
+    /* Прицел по курсору имеет приоритет над дискретными направлениями. */
+    if (this.aimAngle !== null) return this.aimAngle;
     switch (this.aimMode) {
       case "up":
         return -Math.PI / 2;

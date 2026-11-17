@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "./utils/cn";
 import TopBar from "./components/TopBar";
 import NetworkMap from "./components/NetworkMap";
+import MobileRegionMap from "./components/MobileRegionMap";
 import WorldMap from "./components/WorldMap";
 import LoginGate from "./components/LoginGate";
 import NodeDossier from "./components/NodeDossier";
@@ -29,6 +30,7 @@ import { usesVirtualityBreach } from "./game/vr/levels";
 import TutorialCall from "./components/TutorialCall";
 import { MEMO_ASIDE, tutorialSeen, useTut, type TutHighlight } from "./game/tutorial";
 import { useColumns } from "./hooks/useColumns";
+import { useMobile } from "./hooks/useMobile";
 import { EventLog, SectorPanel, mkEvent, type NetEvent } from "./components/InfoPanels";
 import TerminalBar, { type TermLine } from "./components/TerminalBar";
 import CrtOverlay from "./components/CrtOverlay";
@@ -108,6 +110,9 @@ export default function App() {
   const langRef = useRef(lang);
   langRef.current = lang;
   useEffect(() => game.setLangRef(lang), [lang, game]);
+
+  /* Мобильный режим: узкий экран — попапы у узлов вместо вкладок данных. */
+  const mobile = useMobile();
 
   const pools = useCallback(() => {
     if (langRef.current === "ru")
@@ -409,12 +414,18 @@ export default function App() {
   );
 
   const selectNode = useCallback(
-    (id: string) => {
+    (id: string | null) => {
+      if (id === null) {
+        setSelectedNode(null);
+        return;
+      }
       const n = regionNodeById(nodes, id);
       if (!n) return;
       setSelectedNode(id);
       setSelectedSector(n.sector);
-      setPane("data");
+      /* На мобильном не переключаемся на вкладку данных:
+         узел управляется всплывающим окном прямо на карте. */
+      if (!mobile) setPane("data");
       tutFire(`node:${id}` as never);
       print(
         t("t.interrogate", {
@@ -424,7 +435,7 @@ export default function App() {
         })
       );
     },
-    [nodes, print, t, nodeState, tutFire]
+    [nodes, print, t, nodeState, tutFire, mobile]
   );
 
   
@@ -1167,11 +1178,36 @@ export default function App() {
           className={cn(
             "order-2 w-full flex-col gap-1.5 lg:order-3 lg:mx-0 lg:flex lg:h-auto lg:min-h-0 lg:min-w-0 lg:flex-1",
             pane === "map" ? "flex min-h-0 flex-1" : "hidden",
-            gate("world:west1", "node:w1p_dsv", "node:w1p_acc")
+            gate("world:west1", "node:w1p_dsv", "node:w1p_acc", "connect", "vault")
           )}
         >
           <div className="min-h-0 flex-1">
           {inRegion && rdata && region ? (
+            mobile ? (
+              /* Мобильный режим: сначала районы точками, затем — крупный план района */
+              <MobileRegionMap
+                region={region}
+                sectors={sectors}
+                nodes={nodes}
+                links={links}
+                statuses={nodeStates}
+                connected={compromised}
+                connectingId={hackingId ?? breachId ?? vrId}
+                selectedSector={selectedSector}
+                selectedNode={selectedNode}
+                hackPct={hackPct}
+                onSelectSector={selectSector}
+                onSelectNode={selectNode}
+                onBackToSectors={() => { setSelectedNode(null); setSelectedSector(null); }}
+                onBackToWorld={backToWorld}
+                onQuickHack={runHack}
+                onQuickVault={openVault}
+                onQuickArchive={(id) => setArchiveId(id)}
+                onQuickSabotage={(id) => runSabotage(id)}
+                onShowDossier={() => setPane("data")}
+                onDeselectNode={() => setSelectedNode(null)}
+              />
+            ) : (
             <NetworkMap
               region={region}
               sectors={sectors}
@@ -1186,6 +1222,7 @@ export default function App() {
               onSelectNode={selectNode}
               onBackToWorld={backToWorld}
             />
+            )
           ) : (
             <WorldMap
               trace={trace}
@@ -1199,8 +1236,8 @@ export default function App() {
 
           {}
           <div className="flex h-[26px] shrink-0 items-center justify-end gap-2 border border-line bg-soot px-2">
-            <span className="mr-auto hidden truncate text-[7.5px] uppercase tracking-[0.18em] text-faint sm:inline">
-              {inRegion ? t("map.panHint") : t("bm.footer")}
+            <span className="mr-auto truncate text-[7.5px] uppercase tracking-[0.18em] text-faint">
+              {inRegion ? t(mobile ? "map.pinchHint" : "map.panHint") : t("bm.footer")}
             </span>
             <button
               onClick={() => setMarketOpen(true)}
@@ -1268,7 +1305,7 @@ export default function App() {
 
       <KeyBanner />
 
-      <TutorialCall />
+      <TutorialCall mobile={mobile} />
 
       <div className={cn(tut.gating && "tut-gated")}>
         <TerminalBar lines={termLines} expanded={termOpen} onToggle={() => setTermOpen((o) => !o)} />

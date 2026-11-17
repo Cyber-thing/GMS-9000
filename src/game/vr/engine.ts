@@ -124,9 +124,16 @@ export class VrEngine {
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
     window.addEventListener("blur", this.onWindowBlur);
-    canvas.addEventListener("mousedown", this.onMouseDown);
+    /* pointerdown вместо mousedown: тач по канвасу не стреляет,
+       на мобильных стрельба идёт через экранные кнопки. */
+    canvas.addEventListener("pointerdown", this.onPointerDown);
+    canvas.addEventListener("mousemove", this.onMouseMove);
+    canvas.addEventListener("mouseleave", this.onMouseLeave);
     canvas.addEventListener("contextmenu", this.onContextMenu);
-    window.addEventListener("mouseup", this.onMouseUp);
+    /* События отпускания должны быть того же Pointer API, что и нажатие.
+       Иначе preventDefault(pointerdown) может подавить совместимый mouseup. */
+    window.addEventListener("pointerup", this.onPointerUp);
+    window.addEventListener("pointercancel", this.onPointerUp);
 
     sfx("vrDive");
     this.emitHud(true);
@@ -158,9 +165,12 @@ export class VrEngine {
     window.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("keyup", this.onKeyUp);
     window.removeEventListener("blur", this.onWindowBlur);
-    this.canvas.removeEventListener("mousedown", this.onMouseDown);
+    this.canvas.removeEventListener("pointerdown", this.onPointerDown);
+    this.canvas.removeEventListener("mousemove", this.onMouseMove);
+    this.canvas.removeEventListener("mouseleave", this.onMouseLeave);
     this.canvas.removeEventListener("contextmenu", this.onContextMenu);
-    window.removeEventListener("mouseup", this.onMouseUp);
+    window.removeEventListener("pointerup", this.onPointerUp);
+    window.removeEventListener("pointercancel", this.onPointerUp);
   }
 
   public setCrtEnabled(enabled: boolean): void {
@@ -332,13 +342,44 @@ export class VrEngine {
   /** ЛКМ удерживается над игровым полем. */
   private mouseShoot = false;
 
-  private onMouseDown = (e: MouseEvent): void => {
+  /* ---- прицеливание по курсору ---- */
+  /** Координаты курсора во внутренних пикселях канваса. */
+  private mouseX = 0;
+  private mouseY = 0;
+  /** Курсор мыши сейчас над игровым полем (тач не считается). */
+  private mouseInCanvas = false;
+
+  private updateMousePos(e: { clientX: number; clientY: number }): void {
+    const r = this.canvas.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return;
+    this.mouseX = ((e.clientX - r.left) / r.width) * INTERNAL_WIDTH;
+    this.mouseY = ((e.clientY - r.top) / r.height) * INTERNAL_HEIGHT;
+    this.mouseInCanvas = true;
+  }
+
+  private onMouseMove = (e: MouseEvent): void => {
+    this.updateMousePos(e);
+  };
+
+  private onMouseLeave = (): void => {
+    this.mouseInCanvas = false;
+  };
+
+  private onPointerDown = (e: PointerEvent): void => {
+    /* тач-тап по канвасу не стреляет: на мобильном есть экранная кнопка FIRE */
+    if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
     if (e.button !== 0 || this.phase !== "playing") return;
     e.preventDefault();
-    if (!this.mouseShoot) this.keysPressed.add("MouseShoot");
+    this.updateMousePos(e);
+    /* Каждый физический клик — новое нажатие для полуавтоматики.
+       Не завязываем событие на старое значение mouseShoot: даже если браузер
+       потерял отпускание, следующий pointerdown всё равно даст выстрел. */
+    this.keysPressed.add("MouseShoot");
     this.mouseShoot = true;
   };
-  private onMouseUp = (): void => {
+
+  private onPointerUp = (e: PointerEvent): void => {
+    if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
     this.mouseShoot = false;
   };
   private onContextMenu = (e: Event): void => e.preventDefault();
@@ -378,6 +419,11 @@ export class VrEngine {
       interactPressed: p.has("KeyE") || p.has("KeyF") || p.has("VirtualInteract"),
       cycleWeaponPressed: p.has("KeyQ") || p.has("KeyC") || p.has("VirtualCycle"),
       selectWeapon,
+      /* Прицел по курсору: переводим экранные координаты в мировые через камеру. */
+      aim:
+        this.mouseInCanvas && this.phase === "playing"
+          ? { x: this.camX + this.mouseX, y: this.camY + this.mouseY }
+          : null,
     };
 
     p.clear();
@@ -1079,6 +1125,26 @@ export class VrEngine {
 
     for (const b of this.bullets) {
       b.render(ctx, drawCamX, drawCamY);
+    }
+
+    /* Кастомный прицел: над игровым полем системный курсор прячем,
+       рисуем пиксельный перекрестие с точкой. */
+    const crosshair = this.mouseInCanvas && this.phase === "playing";
+    this.canvas.style.cursor = crosshair ? "none" : "default";
+    if (crosshair) {
+      const cx = Math.round(this.mouseX);
+      const cy = Math.round(this.mouseY);
+      const col = this.level.theme.primary;
+      ctx.fillStyle = col;
+      ctx.fillRect(cx - 6, cy, 4, 1);
+      ctx.fillRect(cx + 3, cy, 4, 1);
+      ctx.fillRect(cx, cy - 6, 1, 4);
+      ctx.fillRect(cx, cy + 3, 1, 4);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - 3.5, cy - 3.5, 8, 8);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(cx, cy, 1, 1);
     }
 
     this.particles.render(ctx, drawCamX, drawCamY);

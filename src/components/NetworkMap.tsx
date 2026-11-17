@@ -583,24 +583,27 @@ export default function NetworkMap({
           </div>
 
           {/* ======== 节点 ======== */}
-          {nodes.map((n) => (
-            <NodeMarker
-              key={n.id}
-              node={n}
-              status={statuses[n.id] ?? "LOCKED"}
-              selected={selectedNode === n.id}
-              connected={connected.has(n.id)}
-              connecting={connectingId === n.id}
-              dimmed={!!selectedSector && n.sector !== selectedSector}
-              burst={!!bursts[n.id]}
-              burning={g.burning?.includes(n.id) ?? false}
-              hostile={isHostileFaction(NODE_META[n.id]?.owner ?? "indep", g.relations)}
-              side={labelSides[n.id] ?? "right"}
-              spot={isHl(`node:${n.id}` as never)}
-              dim={gating && !isHl(`node:${n.id}` as never)}
-              onSelect={() => { if (!consumedDrag()) onSelectNode(n.id); }}
-            />
-          ))}
+          {nodes.map((n) => {
+            const hlNode = isHl(`node:${n.id}` as never);
+            return (
+              <NodeMarker
+                key={n.id}
+                node={n}
+                status={statuses[n.id] ?? "LOCKED"}
+                selected={selectedNode === n.id}
+                connected={connected.has(n.id)}
+                connecting={connectingId === n.id}
+                dimmed={!!selectedSector && n.sector !== selectedSector}
+                burst={!!bursts[n.id]}
+                burning={g.burning?.includes(n.id) ?? false}
+                hostile={isHostileFaction(NODE_META[n.id]?.owner ?? "indep", g.relations)}
+                side={labelSides[n.id] ?? "right"}
+                spot={hlNode}
+                dim={gating && !hlNode}
+                onSelect={() => { if (!consumedDrag()) onSelectNode(n.id); }}
+              />
+            );
+          })}
 
           {/* ======== 图例 (悬停展开) ======== */}
           <div className={cn("absolute bottom-[5px] left-[16px] z-[15] hidden md:block", gating && "tut-dim")}

@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Bomb, Pause, Play, Power, ShieldAlert, Skull, Unplug, Volume2, VolumeX, Zap } from "lucide-react";
+import {
+  Bomb, ChevronDown, ChevronLeft, ChevronRight, ChevronsUp, ChevronUp, Crosshair,
+  Hand, Pause, Play, Power, Repeat, ShieldAlert, Skull, Unplug, Volume2, VolumeX, Zap,
+} from "lucide-react";
 import { buildVrLevel } from "../../game/vr/levels";
 import { VrEngine } from "../../game/vr/engine";
+import { useCoarsePointer } from "../../hooks/useMobile";
+import { cn } from "../../utils/cn";
 import { setVrLang, vtr } from "../../game/vr/vrText";
 import { DOOR_COLORS, INTERNAL_HEIGHT, INTERNAL_WIDTH, WEAPONS } from "../../game/vr/themes";
 import type { VrHudSnapshot } from "../../game/vr/types";
@@ -20,6 +25,94 @@ function formatClock(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+type EngineRef = React.MutableRefObject<VrEngine | null>;
+type HoldControl = "left" | "right" | "up" | "down" | "jump" | "shoot";
+type TapAction = "dash" | "interact" | "cycle";
+
+/* Сенсорная кнопка-«удержание»: палец держит — кнопка зажата. */
+function HoldButton({
+  eng,
+  control,
+  label,
+  className,
+  children,
+}: {
+  eng: EngineRef;
+  control: HoldControl;
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const [held, setHeld] = useState(false);
+  const release = () => {
+    if (!held) return;
+    setHeld(false);
+    eng.current?.setVirtualControl(control, false);
+  };
+  return (
+    <button
+      type="button"
+      title={label}
+      className={cn(
+        "flex touch-none flex-col items-center justify-center gap-[1px] border border-line3 bg-[#0a0f1c] text-dim transition-colors",
+        held && "border-phos bg-phos/20 text-phosbrite",
+        className
+      )}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        setHeld(true);
+        eng.current?.setVirtualControl(control, true);
+      }}
+      onPointerUp={release}
+      onPointerCancel={release}
+      onLostPointerCapture={release}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {children}
+      <span className="text-[6.5px] font-bold uppercase leading-none tracking-[0.14em]">{label}</span>
+    </button>
+  );
+}
+
+/* Сенсорная кнопка-«тAP»: разовое действие (дэш, использование, смена оружия). */
+function TapButton({
+  eng,
+  action,
+  label,
+  className,
+  children,
+}: {
+  eng: EngineRef;
+  action: TapAction;
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const [flash, setFlash] = useState(false);
+  return (
+    <button
+      type="button"
+      title={label}
+      className={cn(
+        "flex touch-none flex-col items-center justify-center gap-[1px] border border-line3 bg-[#0a0f1c] text-dim transition-colors",
+        flash && "border-phos bg-phos/20 text-phosbrite",
+        className
+      )}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        setFlash(true);
+        eng.current?.triggerVirtualAction(action);
+        window.setTimeout(() => setFlash(false), 160);
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {children}
+      <span className="text-[6.5px] font-bold uppercase leading-none tracking-[0.14em]">{label}</span>
+    </button>
+  );
 }
 
 export default function VirtualityBreachModal({
@@ -135,6 +228,7 @@ export default function VirtualityBreachModal({
     onAbort();
   };
 
+  const coarse = useCoarsePointer();
   const activeWeapon = WEAPONS[hud.weapon];
   const ammoLabel = hud.weapon === "pistol" ? "INF" : String(hud.ammo[hud.weapon]);
   const timedDoors = hud.doors.filter((d) => d.timerRemaining !== null && d.timerRemaining > 0);
@@ -260,7 +354,11 @@ export default function VirtualityBreachModal({
       {/* Main 16:9 Pixel Canvas Stage */}
       <div className="flex min-h-0 flex-1 items-center justify-center bg-[#020308] p-2">
         <div
-          className="relative aspect-video w-[min(100%,calc((100vh-92px)*16/9))] border bg-[#03050a] shadow-[0_0_40px_rgba(0,0,0,0.9)]"
+          className={cn(
+            "relative aspect-video border bg-[#03050a] shadow-[0_0_40px_rgba(0,0,0,0.9)]",
+            /* На тач-устройствах под сценой живёт панель крестовины — учитываем её высоту */
+            coarse ? "w-[min(100%,calc((100dvh-232px)*16/9))]" : "w-[min(100%,calc((100vh-92px)*16/9))]"
+          )}
           style={{ borderColor: hud.blackoutActive ? "#ff2b45" : level.theme.primary }}
         >
           <canvas
@@ -425,9 +523,68 @@ export default function VirtualityBreachModal({
         </div>
       </div>
 
+      {/* Touch Controls: крестовина + прыжок/стрельба/дэш под окном геймплея */}
+      {coarse && (
+        <div
+          className={cn(
+            "flex shrink-0 touch-none select-none items-center justify-between gap-3 border-t border-line2 bg-[#060a14] px-3 py-1.5",
+            hud.phase !== "playing" && "pointer-events-none opacity-40"
+          )}
+        >
+          {/* Крестовина: движение + прицел вверх/вниз */}
+          <div className="grid grid-cols-3 grid-rows-3 gap-[4px]">
+            <span />
+            <HoldButton eng={engineRef} control="up" label="aim" className="h-[34px] w-[34px]">
+              <ChevronUp size={15} />
+            </HoldButton>
+            <span />
+            <HoldButton eng={engineRef} control="left" label="" className="h-[34px] w-[34px]">
+              <ChevronLeft size={16} />
+            </HoldButton>
+            <span className="flex h-[34px] w-[34px] items-center justify-center border border-line2/60 text-faint/50">
+              <span className="block h-[5px] w-[5px] bg-line3" />
+            </span>
+            <HoldButton eng={engineRef} control="right" label="" className="h-[34px] w-[34px]">
+              <ChevronRight size={16} />
+            </HoldButton>
+            <span />
+            <HoldButton eng={engineRef} control="down" label="aim" className="h-[34px] w-[34px]">
+              <ChevronDown size={15} />
+            </HoldButton>
+            <span />
+          </div>
+
+          {/* Действия: USE/WPN слева маленькие, DASH/JUMP/FIRE крупные */}
+          <div className="flex items-end gap-1.5">
+            <div className="mb-[2px] flex flex-col gap-1.5">
+              <TapButton eng={engineRef} action="interact" label="use" className="h-[28px] w-[38px]">
+                <Hand size={12} />
+              </TapButton>
+              <TapButton eng={engineRef} action="cycle" label="wpn" className="h-[28px] w-[38px]">
+                <Repeat size={12} />
+              </TapButton>
+            </div>
+            <TapButton eng={engineRef} action="dash" label="dash" className="h-[44px] w-[44px]">
+              <Zap size={16} />
+            </TapButton>
+            <HoldButton eng={engineRef} control="jump" label="jump" className="h-[52px] w-[52px]">
+              <ChevronsUp size={18} />
+            </HoldButton>
+            <HoldButton
+              eng={engineRef}
+              control="shoot"
+              label="fire"
+              className="h-[58px] w-[58px] border-oxide/60 bg-oxide/10 text-oxide"
+            >
+              <Crosshair size={20} />
+            </HoldButton>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Controls Strip */}
       <footer className="flex h-8 shrink-0 items-center justify-between gap-2 border-t border-line2 bg-[#060a14] px-3 text-[9px] text-dim">
-        <span className="truncate uppercase tracking-[0.12em]">
+        <span className={cn("truncate uppercase tracking-[0.12em]", coarse && "hidden sm:inline")}>
           {t("vr.controlsHint")}
         </span>
         <div className="hidden items-center gap-1 md:flex">

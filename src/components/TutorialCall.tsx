@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, PhoneCall, PhoneOff } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronUp, PhoneCall, PhoneOff } from "lucide-react";
 import { cn } from "../utils/cn";
 import { pickL, useT } from "../i18n";
 import { CALLER, useTut } from "../game/tutorial";
@@ -44,7 +44,7 @@ function Typed({ text, onDone }: { text: string; onDone: () => void }) {
   );
 }
 
-export default function TutorialCall() {
+export default function TutorialCall({ mobile = false }: { mobile?: boolean }) {
   const { t, lang } = useT();
   const { phase, step, answer, next, choose, call, callNext, callAnswer, callRinging, aside } = useTut();
   const [typed, setTyped] = useState(false);
@@ -56,6 +56,10 @@ export default function TutorialCall() {
     setSkip(false);
     setFolded(false); // 出现新台词时自动展开面板
   }, [step?.id]);
+
+  /* На мобильном окно звонка — оверлей в самом низу экрана поверх системной
+     консоли: остальные блоки не двигаются и не меняют размер. */
+  const docked = mobile;
 
   /* 来电铃声：响一阵、停一拍，直到接起或挂断 */
   const ringing = callRinging || phase === "ringing";
@@ -100,42 +104,72 @@ export default function TutorialCall() {
       );
     }
 
+    const card = (
+      <div
+        className={cn(
+          "anim-msgin pointer-events-auto border-2 border-viole bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(143,134,184,0.2)]",
+          docked ? "flex h-full w-full flex-col overflow-hidden shadow-none" : "w-[min(760px,100%)]"
+        )}
+        onClick={() => setSkip(true)}
+      >
+        <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
+          <span className="h-[5px] w-[5px] animate-softpulse bg-viole" />
+          <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-viole">{call.script.nick}</span>
+          <span className="text-[7.5px] uppercase tracking-[0.18em] text-faint">· {t("tut.live")}</span>
+          <span className="ml-auto text-[7.5px] tabular-nums text-faint">
+            {call.idx + 1}/{call.script.lines.length}
+          </span>
+        </div>
+        <div className={cn("flex", docked ? "min-h-0 flex-1 gap-2 px-2 py-1" : "gap-2.5 px-2.5 py-2.5")}>
+          <Avatar id={call.script.id === "sable1" ? "sablec" : call.script.nick} size={docked ? 32 : 66} animated />
+          <div className={cn("min-w-0 flex-1", docked && "h-full touch-pan-y overflow-y-auto overscroll-contain pr-1")}>
+            <p className={cn("leading-snug text-fog/95", docked ? "min-h-[24px] text-[11px]" : "min-h-[32px] text-[13px]")}>
+              {skip ? line : <Typed key={call.idx} text={line} onDone={() => setTyped(true)} />}
+            </p>
+            {!docked && (skip || typed) && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setSkip(false); setTyped(false); callNext(); }}
+                className={cn(
+                  "mt-1.5 border px-3 py-[7px] text-[9px] font-bold uppercase tracking-[0.16em] transition-colors",
+                  last
+                    ? "border-viole bg-viole/15 text-viole hover:bg-viole hover:text-ink"
+                    : "border-line3 text-dim hover:bg-panel2 hover:text-fog"
+                )}
+              >
+                {last ? t("tut.end") : t("tut.next")}
+              </button>
+            )}
+          </div>
+          {/* На мобильном кнопка стоит справа от прокручиваемого текста. */}
+          {docked && (skip || typed) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setSkip(false); setTyped(false); callNext(); }}
+              className={cn(
+                "flex h-full w-[58px] shrink-0 items-center justify-center gap-1 border px-1 text-[7.5px] font-bold uppercase tracking-[0.12em] transition-colors",
+                last
+                  ? "border-viole bg-viole/15 text-viole hover:bg-viole hover:text-ink"
+                  : "border-line3 text-dim hover:bg-panel2 hover:text-fog"
+              )}
+            >
+              <span>{last ? t("tut.end") : t("tut.next")}</span>
+              <ChevronRight size={10} />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+
+    /* На мобильном: окно звонка внизу экрана поверх системной консоли —
+       остальные блоки не перекрываются и не меняют размер. */
+    if (docked)
+      return (
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[110] h-[68px] overflow-hidden">
+          {card}
+        </div>
+      );
     return (
       <div className="pointer-events-none fixed inset-x-0 bottom-[76px] z-[110] flex justify-center px-2">
-        <div
-          className="anim-msgin pointer-events-auto w-[min(760px,100%)] border-2 border-viole bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(143,134,184,0.2)]"
-          onClick={() => setSkip(true)}
-        >
-          <div className="flex h-[22px] items-center gap-2 border-b border-line2 bg-header px-2">
-            <span className="h-[5px] w-[5px] animate-softpulse bg-viole" />
-            <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-viole">{call.script.nick}</span>
-            <span className="text-[7.5px] uppercase tracking-[0.18em] text-faint">· {t("tut.live")}</span>
-            <span className="ml-auto text-[7.5px] tabular-nums text-faint">
-              {call.idx + 1}/{call.script.lines.length}
-            </span>
-          </div>
-          <div className="flex gap-2.5 px-2.5 py-2.5">
-            <Avatar id={call.script.id === "sable1" ? "sablec" : call.script.nick} size={66} animated />
-            <div className="min-w-0 flex-1">
-              <p className="min-h-[32px] text-[13px] leading-snug text-fog/95">
-                {skip ? line : <Typed key={call.idx} text={line} onDone={() => setTyped(true)} />}
-              </p>
-              {(skip || typed) && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); setSkip(false); setTyped(false); callNext(); }}
-                  className={cn(
-                    "mt-1.5 border px-3 py-[5px] text-[8.5px] font-bold uppercase tracking-[0.16em] transition-colors",
-                    last
-                      ? "border-viole bg-viole/15 text-viole hover:bg-viole hover:text-ink"
-                      : "border-line3 text-dim hover:bg-panel2 hover:text-fog"
-                  )}
-                >
-                  {last ? t("tut.end") : t("tut.next")}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        {card}
       </div>
     );
   }
@@ -186,13 +220,12 @@ export default function TutorialCall() {
   const line = aside ?? pickL(lang, step.en, step.ru, step.zh);
   const waiting = !!step.waitFor;
 
-  return (
-    <div
-      className="pointer-events-none fixed inset-x-0 bottom-[76px] flex justify-center px-2"
-      style={{ zIndex: Z_CALL }}
-    >
+  const card = (
       <div
-        className="anim-msgin pointer-events-auto w-[min(760px,100%)] border-2 border-amberdim bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(207,160,75,0.18)]"
+        className={cn(
+          "anim-msgin pointer-events-auto border-2 border-amberdim bg-panel shadow-[0_0_0_1px_rgba(0,0,0,0.8),0_10px_40px_rgba(0,0,0,0.9),0_0_30px_rgba(207,160,75,0.18)]",
+          docked ? "flex h-full w-full flex-col overflow-hidden shadow-none" : "w-[min(760px,100%)]"
+        )}
         onClick={() => !folded && setSkip(true)}
       >
         {/* 来电者信息栏。 */}
@@ -220,16 +253,32 @@ export default function TutorialCall() {
 
         {}
         {folded ? (
-          <div className="flex items-center gap-2 px-2.5 py-[5px]">
+          <div className={cn("flex items-center gap-2", docked ? "min-h-0 flex-1 px-2 py-[3px]" : "px-2.5 py-[5px]")}>
             <Avatar id="ghost" size={22} />
             <span className="min-w-0 flex-1 truncate text-[9px] text-dim">{line}</span>
             {waiting && <span className="h-[4px] w-[4px] shrink-0 animate-softpulse bg-amber" />}
+            {/* В свёрнутом мобильном окне «Далее» остаётся активной стрелкой. */}
+            {docked && !step.choice && !waiting && (
+              <button
+                onClick={(e) => { e.stopPropagation(); next(); }}
+                title={step.final ? t("tut.end") : t("tut.next")}
+                aria-label={step.final ? t("tut.end") : t("tut.next")}
+                className={cn(
+                  "flex h-[30px] w-[34px] shrink-0 items-center justify-center border transition-colors",
+                  step.final
+                    ? "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink"
+                    : "border-line3 text-dim hover:bg-panel2 hover:text-fog"
+                )}
+              >
+                <ChevronRight size={14} />
+              </button>
+            )}
           </div>
         ) : (
-        <div className="flex gap-2.5 px-2.5 py-2.5">
-          <Avatar id="ghost" size={66} animated />
-          <div className="min-w-0 flex-1">
-            <p className="min-h-[32px] text-[13px] leading-snug text-fog/95">
+        <div className={cn("flex", docked ? "min-h-0 flex-1 gap-2 px-2 py-1" : "gap-2.5 px-2.5 py-2.5")}>
+          <Avatar id="ghost" size={docked ? 32 : 66} animated />
+          <div className={cn("min-w-0 flex-1", docked && "h-full touch-pan-y overflow-y-auto overscroll-contain pr-1")}>
+            <p className={cn("leading-snug text-fog/95", docked ? "min-h-[24px] text-[11px]" : "min-h-[32px] text-[13px]")}>
               {skip && !aside ? line : <Typed key={aside ?? step.id} text={line} onDone={() => setTyped(true)} />}
             </p>
 
@@ -258,7 +307,7 @@ export default function TutorialCall() {
                   <span className="h-[4px] w-[4px] animate-softpulse bg-amber" />
                   {t("tut.waiting")}
                 </div>
-              ) : (
+              ) : !docked ? (
                 <button
                   onClick={(e) => { e.stopPropagation(); next(); }}
                   className={cn(
@@ -270,12 +319,46 @@ export default function TutorialCall() {
                 >
                   {step.final ? t("tut.end") : t("tut.next")}
                 </button>
-              )
+              ) : null
             )}
           </div>
+          {/* В развёрнутом мобильном окне «Далее» всегда справа от текста. */}
+          {docked && !step.choice && !waiting && (skip || typed) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); next(); }}
+              className={cn(
+                "flex h-full w-[58px] shrink-0 items-center justify-center gap-1 border px-1 text-[7.5px] font-bold uppercase tracking-[0.12em] transition-colors",
+                step.final
+                  ? "border-phosdim bg-phos/10 text-phosbrite hover:bg-phos hover:text-ink"
+                  : "border-line3 text-dim hover:bg-panel2 hover:text-fog"
+              )}
+            >
+              <span>{step.final ? t("tut.end") : t("tut.next")}</span>
+              <ChevronRight size={10} />
+            </button>
+          )}
         </div>
         )}
       </div>
+  );
+
+  /* На мобильном: внизу экрана поверх системной консоли — не влияет на раскладку */
+  if (docked)
+    return (
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-0 h-[68px] overflow-hidden"
+        style={{ zIndex: Z_CALL }}
+      >
+        {card}
+      </div>
+    );
+
+  return (
+    <div
+      className="pointer-events-none fixed inset-x-0 bottom-[76px] flex justify-center px-2"
+      style={{ zIndex: Z_CALL }}
+    >
+      {card}
     </div>
   );
 }

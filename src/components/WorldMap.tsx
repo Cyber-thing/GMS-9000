@@ -13,6 +13,7 @@ import {
 } from "../data/world";
 import { Brackets, Panel, StatusDot } from "./chrome";
 import { useTut } from "../game/tutorial";
+import { useMapView } from "../hooks/useMapView";
 import { blockBar, pad } from "../lib/util";
 import { useT } from "../i18n";
 import { regionContinent } from "../i18n/content";
@@ -97,6 +98,8 @@ export default function WorldMap({
 }) {
   const { t, lang } = useT();
   const { isHl, gating } = useTut();
+  /* Щипок/колесо для приближения, драг для сдвига — как на карте региона */
+  const { frameRef, view, dragging, onPointerDown, consumedDrag } = useMapView();
   const hostRef = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 300, h: 190 });
   useEffect(() => {
@@ -144,9 +147,26 @@ export default function WorldMap({
         </div>
       }
     >
-      <div ref={hostRef} data-zone="Map" className="relative flex h-full w-full items-center justify-center overflow-hidden p-1.5">
+      <div
+        ref={(el) => {
+          hostRef.current = el;
+          frameRef.current = el;
+        }}
+        data-zone="Map"
+        onPointerDown={onPointerDown}
+        className={cn(
+          "relative flex h-full w-full touch-none items-center justify-center overflow-hidden p-1.5",
+          dragging ? "cursor-grabbing" : view.scale > 1 ? "cursor-grab" : "cursor-default"
+        )}
+      >
         <div className="relative border border-line2 bg-[#0b0e11]"
-          style={{ width: box.w, height: box.h }}
+          style={{
+            width: box.w,
+            height: box.h,
+            transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`,
+            transformOrigin: "center center",
+            transition: dragging ? "none" : "transform 140ms ease-out",
+          }}
         >
           {}
           <svg className="absolute inset-0 h-full w-full" viewBox={`0 0 ${MAP_W} ${MAP_H}`} preserveAspectRatio="none" aria-hidden>
@@ -210,7 +230,7 @@ export default function WorldMap({
               <button
                 key={r.id}
                 disabled={!!trace}
-                onClick={() => onEnterRegion(r)}
+                onClick={() => { if (!consumedDrag()) onEnterRegion(r); }}
                 className={cn(
                   "group absolute z-20 outline-none",
                   trace && !active && "opacity-30",
@@ -267,7 +287,7 @@ export default function WorldMap({
             <button
               key={p.code}
               disabled={!!trace}
-              onClick={() => onDeadPoint(p.code, p.note)}
+              onClick={() => { if (!consumedDrag()) onDeadPoint(p.code, p.note); }}
               className={cn("group absolute z-10 outline-none", trace && "opacity-30")}
               style={{ left: `${lonToX(p.lon) * 100}%`, top: `${latToY(p.lat) * 100}%`, transform: "translate(-50%,-50%)" }}
               title={`${p.code} · ${t(`dead.${p.code}`)}`}
