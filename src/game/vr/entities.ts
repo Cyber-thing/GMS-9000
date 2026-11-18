@@ -1,4 +1,5 @@
 import { DOOR_COLORS, TILE_SIZE } from "./themes";
+import type { Tilemap } from "./tilemap";
 import type { ButtonDef, DoorColor, DoorDef, ElevatorDef, PickupKind, PropKind, Rect, VrCorpTheme, WeaponId } from "./types";
 
 export class Bullet {
@@ -471,15 +472,28 @@ export class Prop {
 export class Pickup {
   public active = true;
   public readonly kind: PickupKind;
-  public readonly x: number;
-  public readonly y: number;
+  public x: number;
+  public y: number;
   public readonly w = 14;
   public readonly h = 12;
+  /** Drops from enemies/props that spawn mid-air (or on the ceiling) sink slowly to the floor. */
+  public falling: boolean;
+  private static readonly FALL_SPEED = 34;
 
-  constructor(kind: PickupKind, x: number, y: number) {
+  constructor(kind: PickupKind, x: number, y: number, falling = false) {
     this.kind = kind;
     this.x = x;
     this.y = y;
+    this.falling = falling;
+  }
+
+  public update(dt: number, tilemap: Tilemap): void {
+    if (!this.active || !this.falling) return;
+    const rect: Rect = { x: this.x, y: this.y, w: this.w, h: this.h };
+    const res = tilemap.moveAndCollide(rect, 0, Pickup.FALL_SPEED, dt);
+    this.x = rect.x;
+    this.y = rect.y;
+    if (res.hitBottom) this.falling = false;
   }
 
   public getRect(): Rect {

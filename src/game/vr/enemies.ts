@@ -4,6 +4,9 @@ import { PHYSICS, TILE_SIZE } from "./themes";
 import type { Tilemap } from "./tilemap";
 import type { EnemyAIState, EnemyKind, EnemyVariant, EnemySpawnDef, PickupKind, Rect, TierTuning, VrCorpTheme } from "./types";
 
+/** Global slow-down for all WADENS projectiles (easier to read & dodge). */
+export const ENEMY_BULLET_SLOWDOWN = 0.68;
+
 export abstract class Enemy {
   public readonly kind: EnemyKind;
   public readonly variant: EnemyVariant;
@@ -44,7 +47,7 @@ export abstract class Enemy {
     this.patrolMinX = def.patrolMinCol * TILE_SIZE;
     this.patrolMaxX = def.patrolMaxCol * TILE_SIZE;
     this.fireRateMult = tuning.enemyFireRateMult * (this.variant === "swift" ? 0.75 : 1);
-    this.bulletSpeedMult = tuning.enemyBulletSpeedMult * (this.variant === "volley" ? 1.18 : 1);
+    this.bulletSpeedMult = tuning.enemyBulletSpeedMult * (this.variant === "volley" ? 1.18 : 1) * ENEMY_BULLET_SLOWDOWN;
   }
 
   public getRect(): Rect {

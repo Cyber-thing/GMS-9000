@@ -73,7 +73,7 @@ const W1_NODES: NetNode[] = [
   { id: "w1g_acc", code: "ACC-G01", type: "ACCESS", sector: "w1_gulf", x: 520, y: 470, status: "ONLINE", desc: "Austin dial pool. Slackers welcome." },
   { id: "w1g_dsv", code: "DSV-G02", type: "DATA SERVER", sector: "w1_gulf", x: 645, y: 500, status: "ONLINE", desc: "Oil & gas telemetry vault. Pressure logs by the minute." },
   { id: "w1g_rly", code: "RLY-G03", type: "RELAY", sector: "w1_gulf", x: 765, y: 460, status: "ONLINE", desc: "Gulf coastal relay. Hurricane-rated enclosure." },
-  { id: "w1g_prv", code: "PRV-G04", type: "PRIVATE", sector: "w1_gulf", x: 560, y: 565, status: "OFFLINE", desc: "Shrimp boat packet node. It sank." },
+  { id: "w1g_prv", code: "PRV-G04", type: "PRIVATE", sector: "w1_gulf", x: 560, y: 565, status: "ONLINE", desc: "Houseboat workstation. A Fusion regional director reads his private mail from the deck." },
   { id: "w1g_prv2", code: "PRV-G05", type: "PRIVATE", sector: "w1_gulf", x: 710, y: 575, status: "RESTRICTED", desc: "Military reservation gateway. Test range traffic only." },
   { id: "w1g_crp", code: "CRP-G06", type: "CORPORATE", sector: "w1_gulf", x: 602, y: 454, status: "ONLINE", desc: "Fusion Cybernetics core telemetry vault. Hardened neural ICE." },
 

@@ -32,7 +32,7 @@ const D: Record<string, Pair> = {
   "PROJECTOR SUBGRID": ["СЕТЬ ПРОЕКТОРОВ", "投影子网"],
   "RELAY-01": ["РЕЛЕ-01", "中继-01"],
   "POWER DISTRIBUTION": ["РАСПРЕДЕЛЕНИЕ ПИТАНИЯ", "配电"],
-  "ICE SECTOR": ["СЕКТОР ICE", "ICE 区"],
+  "WADENS SECTOR": ["СЕКТОР WADENS", "WADENS 区"],
   "MEMORY VAULT": ["ХРАНИЛИЩЕ ПАМЯТИ", "记忆库"],
   OVERRIDE: ["ОБХОД", "强制接管"],
   "HEX FIREWALL": ["HEX-БРАНДМАУЭР", "HEX 防火墙"],

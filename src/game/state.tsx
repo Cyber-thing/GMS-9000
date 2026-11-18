@@ -14,6 +14,8 @@ import {
   MARLA_PROJ_WRECKED, MARLA_PROJ_DONE,
   ARCHIVE_PAY, ARCHIVE_REL,
   SATO_INTRO, SATO_2, SATO_3, SATO_READY, SATO_ALREADY, SATO_DONE, SATO_PAY,
+  KANE_INTRO, KANE_2, KANE_3, KANE_READY, KANE_ALREADY, KANE_WELL, KANE_REACT, KANE_PAY,
+  GHOST_OFFER, GHOST_SOLD, GHOST_DECLINED, GHOST_PAY,
   type Beat,
 } from "./questArchive";
 import {
@@ -121,6 +123,9 @@ interface Ctx {
   openArchiveJob: () => void;
   openSato: () => void;
   plantVirus: () => void;
+  openKane: () => void;
+  ghostOffer: () => void;
+  mailIntel: (key: string) => void;
   revealKey: (nodeId: string) => void;
   setFlag: (k: string, v?: string | boolean) => void;
   pushBeat: (b: Beat, thread?: string) => void;
@@ -509,6 +514,43 @@ export function GameProvider({ children }: { children: ReactNode }) {
     SATO_INTRO.forEach((b) => pushBeat(b, "sato"));
   }, [g.flags.sato_intro, setFlag, pushBeat]);
 
+  /* Fusion: «Премия под вопросом» — v.kane просит влезть в почту начальника (PRV-G04). */
+  const openKane = useCallback(() => {
+    if (gRef.current.flags.kane_intro) return;
+    setFlag("kane_intro");
+    setG((s) => ({
+      ...s,
+      contacts: s.contacts.includes("kane") ? s.contacts : [...s.contacts, "kane"],
+    }));
+    KANE_INTRO.forEach((b) => pushBeat(b, "kane"));
+  }, [g.flags.kane_intro, setFlag, pushBeat]);
+
+  /* Письмо с важной информацией прочитано (из почтового клиента PRV). */
+  const mailIntel = useCallback((key: string) => {
+    if (gRef.current.flags[key]) return;
+    setFlag(key);
+    if (key !== "kane_intel") return;
+    const st = gRef.current.contracts.ct_bonus?.state;
+    if (st === "ACCEPTED" || st === "TARGET ACCESSED") {
+      setG((s) => ({
+        ...s,
+        contracts: { ...s.contracts, ct_bonus: { state: "DATA ACQUIRED", accepted: true } },
+      }));
+      timers.current.push(window.setTimeout(() => KANE_WELL.forEach((b) => pushBeat(b, "kane")), 1500));
+    }
+  }, [setFlag, pushBeat]);
+
+  /* Ghost_404 видит, что у игрока нет чёрного рынка, и предлагает выкупить всё разом. */
+  const ghostOffer = useCallback(() => {
+    if (gRef.current.flags.ghost_offer) return;
+    setFlag("ghost_offer", "open");
+    setG((s) => ({
+      ...s,
+      contacts: s.contacts.includes("ghost") ? s.contacts : [...s.contacts, "ghost"],
+    }));
+    GHOST_OFFER.forEach((b) => pushBeat(b, "ghost"));
+  }, [setFlag, pushBeat]);
+
   /* Показывает пароль узла нижним баннером (KeyBanner). */
   const revealKey = useCallback((nodeId: string) => {
     const meta = NODE_META[nodeId];
@@ -826,6 +868,104 @@ export function GameProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      if (choiceId === "kn_what") {
+        pushBeat({ id: "kn_a1", from: "OP", line: { en: "What do you need?", ru: "Что нужно?", zh: "你需要什么？" } }, "kane");
+        later(() => KANE_2.forEach((b) => pushBeat(b, "kane")), 800);
+        return;
+      }
+      if (choiceId === "kn_ask") {
+        pushBeat({ id: "kn_a2", from: "OP", line: { en: "Where is his mail?", ru: "Где его почта?", zh: "他的邮箱在哪？" } }, "kane");
+        later(() => KANE_3.forEach((b) => pushBeat(b, "kane")), 800);
+        return;
+      }
+      if (choiceId === "kn_ok") {
+        pushBeat({
+          id: "kn_a3", from: "OP",
+          line: { en: "Taking it.", ru: "Берусь.", zh: "接了。" },
+          contract: "ct_bonus", action: "accepted",
+        }, "kane");
+        const cur = gRef.current;
+        const read = cur.flags.kane_intel === true;
+        const inside = cur.nodeStates["w1g_prv"] === "COMPROMISED";
+        setG((s) => ({
+          ...s,
+          contracts: {
+            ...s.contracts,
+            ct_bonus: { state: read ? "DATA ACQUIRED" : inside ? "TARGET ACCESSED" : "ACCEPTED", accepted: true },
+          },
+        }));
+        const script = read ? KANE_ALREADY : KANE_READY;
+        script.forEach((b, i) => later(() => pushBeat(b, "kane"), 850 + i * 1000));
+        return;
+      }
+      if (choiceId === "kn_tell") {
+        if (gRef.current.contracts.ct_bonus?.state === "COMPLETED") return;
+        pushBeat({
+          id: "kn_a4", from: "OP",
+          line: { en: "You are being fired. No bonus.", ru: "Тебя уволят. Премии не будет.", zh: "你要被开了。没有奖金。" },
+        }, "kane");
+        setG((s) => ({
+          ...s,
+          contracts: { ...s.contracts, ct_bonus: { state: "COMPLETED" } },
+          credits: s.credits + KANE_PAY.credits,
+          rep: s.rep + KANE_PAY.rep,
+          relations: { ...s.relations, fusion: (s.relations.fusion ?? 0) + KANE_PAY.relFusion },
+          stats: { ...s.stats, contracts: s.stats.contracts + 1 },
+        }));
+        KANE_REACT.forEach((b, i) =>
+          later(() => pushBeat(
+            i === KANE_REACT.length - 1 ? { ...b, payout: KANE_PAY.credits } : b, "kane"), 1000 + i * 1600)
+        );
+        notify("CONTRACT COMPLETED", `+${KANE_PAY.credits}cr`, "CONTACTS");
+        notify("REP INCREASED", `+${KANE_PAY.rep} REP`, "STATUS");
+        notify("FACTION RELATIONS CHANGED", `Fusion Cybernetics +${KANE_PAY.relFusion}`, "STATUS");
+        return;
+      }
+
+      if (choiceId === "gh_sell") {
+        pushBeat({ id: "gh_a1", from: "OP", line: { en: "Deal. Take all of it.", ru: "Договорились. Забирай всё.", zh: "成交。全拿走。" } }, "ghost");
+        const cur = gRef.current;
+        const held = cur.files.slice();
+        /* файлы, обещанные клиентам по живым контрактам, тоже уходят — контракт срывается */
+        const owedList = CONTRACTS.filter(
+          (ct) =>
+            ct.kind === "DATA" && ct.file && held.includes(ct.file) &&
+            cur.contracts[ct.id] && !["COMPLETED", "FAILED"].includes(cur.contracts[ct.id].state)
+        );
+        setFlag("ghost_offer", "sold");
+        setG((s) => {
+          const contracts = { ...s.contracts };
+          const relations = { ...s.relations };
+          owedList.forEach((ct) => {
+            contracts[ct.id] = { state: "FAILED" as const };
+            relations[ct.client] = (relations[ct.client] ?? 0) + CFG.betrayRelHit;
+          });
+          return {
+            ...s,
+            credits: s.credits + GHOST_PAY,
+            files: [],
+            burned: [...s.burned, ...s.files.filter((f) => !s.burned.includes(f))],
+            contracts,
+            relations,
+            stats: {
+              ...s.stats,
+              sold: s.stats.sold + s.files.length,
+              failed: s.stats.failed + owedList.length,
+            },
+          };
+        });
+        notify("DATA SOLD", `ALL FILES (${held.length}) · +${GHOST_PAY}cr`, "STATUS");
+        owedList.forEach((ct) => notify("CONTRACT FAILED", at(ct.title, ct.titleRu, ct.titleZh), "CONTACTS"));
+        GHOST_SOLD.forEach((b, i) => later(() => pushBeat(b, "ghost"), 1000 + i * 1500));
+        return;
+      }
+      if (choiceId === "gh_no") {
+        pushBeat({ id: "gh_a2", from: "OP", line: { en: "No. I will keep my data.", ru: "Нет. Данные оставлю себе.", zh: "不。数据我自己留着。" } }, "ghost");
+        setFlag("ghost_offer", "declined");
+        GHOST_DECLINED.forEach((b, i) => later(() => pushBeat(b, "ghost"), 900 + i * 1200));
+        return;
+      }
+
       if (choiceId === "sendsable") {
         
         setFlag("sable-ok", true);
@@ -1072,7 +1212,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (g.recovering) return;
     setG((s) => ({ ...s, recovering: true }));
     const t = window.setTimeout(() => {
-      setG((s) => ({ ...s, recovering: false, ops: 0, burning: [] }));
+      setG((s) => ({ ...s, recovering: false, ops: 0, burning: [], flags: { ...s.flags, trk_defended: false } }));
     }, CFG.recoveryMs);
     timers.current.push(t);
   }, [g.recovering]);
@@ -1336,13 +1476,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
     () => ({
       g, notifs, lastHack, nodeState, canHack, hack, download,
       acceptContract, deliverContract, recover, failBreach,
-      sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, openSato, plantVirus, revealKey, setFlag, pushBeat,
+      sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, openSato, plantVirus, openKane, ghostOffer, mailIntel, revealKey, setFlag, pushBeat,
       openMarket, buyScript, sellFile, fenceValue, buyUpgrade,
       markTab, markThreadRead, setOpenThread, isThreadOpen, isAnyThreadOpen, markCodexSeen, reset,
       lang: langRef.current, setLangRef,
     }),
     [g, notifs, lastHack, nodeState, canHack, hack, download, acceptContract,
-     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, openSato, plantVirus, revealKey, setFlag, pushBeat,
+     deliverContract, recover, failBreach, sabotage, pickChoice, sableArrives, openArchiveJob, openFreddy, openMarla, openSato, plantVirus, openKane, ghostOffer, mailIntel, revealKey, setFlag, pushBeat,
      openMarket, buyScript, sellFile, fenceValue,
      buyUpgrade, markTab, markThreadRead, setOpenThread, isThreadOpen, isAnyThreadOpen, markCodexSeen, reset, setLangRef]
   );

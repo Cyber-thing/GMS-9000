@@ -171,7 +171,7 @@ function renderWeaponArm(
 }
 
 /**
- * ICE SENTRY (VR thug) — geometric hologram enforcer stylized per corporation theme.
+ * WADENS SENTRY (VR thug) — geometric hologram enforcer stylized per corporation theme.
  */
 export function renderVrSentrySprite(
   ctx: CanvasRenderingContext2D,
@@ -208,7 +208,7 @@ export function renderVrSentrySprite(
   ctx.fillStyle = theme.secondary;
   ctx.fillRect(-4, -16 + bob + crouch, 8, 2);
 
-  // Geometric ICE helmet & glowing crest
+  // Geometric WADENS helmet & glowing crest
   drawWiredBox(ctx, -4, -25 + bob + crouch, 8, 6, theme.tileRecess, theme.enemyAccent);
   ctx.fillStyle = state === "attack" || state === "alert" ? "#ffffff" : theme.enemyAccent;
   ctx.fillRect(0, -23 + bob + crouch, 4, 2);

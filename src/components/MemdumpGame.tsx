@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HardDrive, Mail, Power, Settings2, ShieldAlert, Terminal, X } from "lucide-react";
 import MailWindow from "./MailWindow";
-import type { MARROW_MAILBOX } from "../game/mail";
+import type { Mailbox } from "../game/mail";
 import { cn } from "../utils/cn";
 import { useT } from "../i18n";
 import { sfx } from "../lib/sfx";
@@ -143,7 +143,7 @@ function Desktop({
   nodeCode: string;
   onExit: () => void;
   /** Если у станции есть живой почтовый ящик — иконка MAIL открывает его. */
-  mailbox?: typeof MARROW_MAILBOX;
+  mailbox?: Mailbox;
 }) {
   const { t } = useT();
   const [denied, setDenied] = useState<DeskIcon | null>(null);
@@ -240,7 +240,7 @@ export default function MemdumpGame({
   nodeCode, warden, tier, known = false, mailbox, onCracked, onWin, onLose, onAbort, onLog,
 }: {
   nodeCode: string;
-  mailbox?: typeof MARROW_MAILBOX;
+  mailbox?: Mailbox;
   warden: number;
   tier: DumpTier;
   /** 口令已经记在本子上了：直接进桌面，不再重猜。 */
@@ -346,7 +346,12 @@ export default function MemdumpGame({
 
   return (
     <div data-zone="Game" className="fixed inset-0 z-[115] flex items-center justify-center bg-ink/85 p-3">
-      <div className="anim-msgin flex max-h-[94vh] w-[min(660px,97%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]">
+      <div
+        className={cn(
+          "anim-msgin flex w-[min(1120px,98%)] flex-col border border-line3 bg-panel shadow-[0_0_80px_rgba(0,0,0,0.75)]",
+          cracked || granted ? "h-[min(92vh,820px)]" : "max-h-[94vh] min-h-[min(560px,90vh)]"
+        )}
+      >
         {/* 标题栏 */}
         <div className="flex shrink-0 items-center gap-2 border-b border-line2 bg-header px-2.5 py-[6px]">
           <Terminal size={12} className="text-phos" />

@@ -568,7 +568,7 @@ export function generateVrLevel(opt: GenOptions): VrLevelDef {
   signs.push({ col: Math.max(3, coreCol - 2), row: S[top] - 6, text: coreSign });
   const extraSigns = isSabotageBlackout
     ? ["TAKAMURI HALL // WR-3", "PROJECTOR SUBGRID", "RELAY-01", "POWER DISTRIBUTION"]
-    : ["ICE SECTOR", "MEMORY VAULT", "OVERRIDE", "HEX FIREWALL", "CARGO LIFT", "SERVICE BAY"];
+    : ["WADENS SECTOR", "MEMORY VAULT", "OVERRIDE", "HEX FIREWALL", "CARGO LIFT", "SERVICE BAY"];
   for (let f = 0; f < n - 1; f++) {
     if (f >= extraSigns.length) break;
     signs.push({ col: rng.int(8, cols - 24), row: S[f] - 5, text: extraSigns[(f + rng.int(0, 2)) % extraSigns.length] });

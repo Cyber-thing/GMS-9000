@@ -557,3 +557,164 @@ export const SATO_DONE: Beat[] = [
 ];
 
 export const SATO_PAY = { credits: 900, rep: 40, relTakamuri: 30, relSlayer: -30 };
+
+/* ---------------- Fusion: «Премия под вопросом» (v.kane) ---------------- */
+
+export const KANE_INTRO: Beat[] = [
+  {
+    id: "kn1", from: "kane",
+    line: L(
+      "Hey. Got your channel from a guy in sales. I work at Fusion Cybernetics, Gulf office. It is about money, and about a boss who never gives straight answers.",
+      "Привет. Твой канал мне дал один знакомый из отдела продаж. Я работаю в Fusion Cybernetics, офис в Gulf. Речь о деньгах и о начальнике, который никогда не отвечает прямо.",
+      "嘿。你的频道是销售部一个熟人给的。我在 Fusion Cybernetics 的 Gulf 办公室上班。事关钱，还有一个从不给准话的老板。"
+    ),
+    choices: [{ id: "kn_what", en: "What do you need?", ru: "Что нужно?", zh: "你需要什么？" }],
+  },
+];
+
+export const KANE_2: Beat[] = [
+  {
+    id: "kn2", from: "kane",
+    line: L(
+      "The quarter is closing and I need to know if I am getting my bonus. Whitlock — the regional director — keeps every decision in his private mail and just smiles when I ask. I have a mortgage on a flat that is already half underwater.",
+      "Квартал закрывается, а мне надо знать, дадут ли мне премию. Уитлок, региональный директор, держит все решения в личной почте и только улыбается, когда я спрашиваю. У меня ипотека на квартиру, которая и так наполовину под водой.",
+      "季度快结了，我得知道自己有没有奖金。区域总监 Whitlock 所有决定都放在私人邮箱里，我一问他就笑。我背着房贷，那套房已经半泡在水里了。"
+    ),
+    choices: [{ id: "kn_ask", en: "Where is his mail?", ru: "Где его почта?", zh: "他的邮箱在哪？" }],
+  },
+];
+
+export const KANE_3: Beat[] = [
+  {
+    id: "kn3", from: "kane",
+    line: L(
+      "He reads it from a houseboat in the Gulf — private workstation, node **PRV-G04**. Residential cloud, so the login material is sitting in memory. Get in, read what they write about me. That is all. Do not touch anything.",
+      "Он читает её с плавучего дома в Gulf — личная станция, узел **PRV-G04**. Жилое облако, так что данные для входа валяются прямо в памяти. Зайди, прочти, что про меня пишут. И всё. Ничего не трогай.",
+      "他在 Gulf 的一艘船屋上看邮件 —— 私人工作站，节点 **PRV-G04**。住户云，登录凭据就摆在内存里。进去，看看他们怎么写我。就这样，别动别的。"
+    ),
+    choices: [{ id: "kn_ok", en: "Taking it.", ru: "Берусь.", zh: "接了。" }],
+  },
+];
+
+export const KANE_READY: Beat[] = [
+  {
+    id: "kn4", from: "kane",
+    line: L(
+      "Thank you. Look for anything about the Q3 bonus pool or about me. His mail is mostly boat talk and implant sales, so dig a little.",
+      "Спасибо. Ищи всё про премиальный фонд Q3 и про меня. Его почта — в основном про лодку и продажи имплантов, так что покопайся.",
+      "谢了。找 Q3 奖金池的内容，或者提到我的。他的邮件多半是船和植入体销售，得多翻翻。"
+    ),
+  },
+];
+
+/* Игрок уже успел прочитать почту до принятия задания */
+export const KANE_ALREADY: Beat[] = [
+  {
+    id: "kn5", from: "kane",
+    line: L(
+      "You already got into his mail? Fast. Then do not keep me waiting. What did they write about me?",
+      "Ты уже залез в его почту? Быстро. Тогда не томи. Что про меня пишут?",
+      "你已经进他邮箱了？够快。那别吊我胃口，他们怎么写我的？"
+    ),
+    choices: [{ id: "kn_tell", en: "You are being fired. No bonus.", ru: "Тебя уволят. Премии не будет.", zh: "你要被开了。没有奖金。" }],
+  },
+];
+
+/* Прочитано письмо Девенпорт → Уитлок */
+export const KANE_WELL: Beat[] = [
+  {
+    id: "kn6", from: "kane",
+    line: L(
+      "Well? Anything? My palms are sweating just typing this.",
+      "Ну что? Нашёл что-нибудь? У меня ладони потеют, пока я это печатаю.",
+      "怎么样？有发现吗？我打这行字手心都在出汗。"
+    ),
+    choices: [{ id: "kn_tell", en: "You are being fired. No bonus.", ru: "Тебя уволят. Премии не будет.", zh: "你要被开了。没有奖金。" }],
+  },
+];
+
+export const KANE_REACT: Beat[] = [
+  {
+    id: "kn7", from: "kane",
+    line: L(
+      "WHAT?! Fired? After three years? I closed the Pensacola deal on my own! That smiling snake — he looked me in the eye on Friday and said the committee was still deciding!",
+      "ЧТО?! Уволить? После трёх лет? Я в одиночку закрыл сделку в Пенсаколе! Эта улыбчивая змея смотрела мне в глаза в пятницу и говорила, что комитет ещё решает!",
+      "什么？！开除？干了三年？Pensacola 那单是我一个人谈下来的！那条笑面蛇上周五还看着我的眼睛说委员会还在讨论！"
+    ),
+  },
+  {
+    id: "kn8", from: "kane",
+    line: L(
+      "...",
+      "...",
+      "……"
+    ),
+  },
+  {
+    id: "kn9", from: "kane",
+    line: L(
+      "No. Fine. It is fine. Actually — it is better that I know now. I have a plan. I will not say what it is yet, I need to think it through properly.",
+      "Нет. Ладно. Всё нормально. Даже лучше, что я узнал сейчас. У меня есть план. Пока не скажу какой, надо как следует всё обдумать.",
+      "不。行。没事。其实早点知道更好。我有个计划，现在先不说，我得好好想清楚。"
+    ),
+  },
+  {
+    id: "kn10", from: "kane",
+    line: L(
+      "I will contact you when I have worked it out. And thank you. It is about time someone sat in Whitlock's chair who actually reads the mail he writes. Your payment is on its way.",
+      "Я выйду на связь, когда всё продумаю. И спасибо. Давно пора, чтобы в кресле Уитлока сидел тот, кто хотя бы читает собственные письма. Оплата уже в пути.",
+      "等我想好了会联系你。还有，谢谢。早该有人坐上 Whitlock 的位子了，至少得是个会读自己写的邮件的人。报酬已经在路上了。"
+    ),
+  },
+];
+
+export const KANE_PAY = { credits: 550, rep: 20, relFusion: 25 };
+
+/* ---------------- Ghost_404: выкуп всех данных, если нет доступа к чёрному рынку ---------------- */
+
+export const GHOST_OFFER: Beat[] = [
+  {
+    id: "gh1", from: "ghost",
+    line: L(
+      "I see you bought your way into WETLOW and cracked a few hosts down there. I also see you still have no access to the black market. All that data is just rotting on your drive. I will take the lot off you right now: **1500 cr**, flat, every file you are holding. No questions.",
+      "Вижу, ты купил вход в WETLOW и уже вскрыл там несколько узлов. И ещё вижу, что доступа к чёрному рынку у тебя до сих пор нет. Все эти данные просто гниют у тебя на диске. Я заберу всё прямо сейчас: **1500 cr**, ровно, за все файлы, что у тебя есть. Без вопросов.",
+      "我看到你买下了进 WETLOW 的路子，还在那边撬开了几台主机。我还看到你到现在也没拿到黑市权限。那些数据在你硬盘里干放着发霉。我现在就全收了：**1500 cr**，一口价，你手上所有文件。不问来路。"
+    ),
+    choices: [
+      { id: "gh_sell", en: "Deal. Take all of it.", ru: "Договорились. Забирай всё.", zh: "成交。全拿走。" },
+      { id: "gh_no", en: "No. I will keep my data.", ru: "Нет. Данные оставлю себе.", zh: "不。数据我自己留着。" },
+    ],
+  },
+];
+
+export const GHOST_SOLD: Beat[] = [
+  {
+    id: "gh2", from: "ghost",
+    line: L(
+      "Done. 1500 cr moved, and every file you had is mine now. Nice doing business.",
+      "Готово. 1500 cr переведены, и все твои файлы теперь мои. Приятно иметь дело.",
+      "搞定。1500 cr 已转，你手上的文件现在全归我了。合作愉快。"
+    ),
+  },
+  {
+    id: "gh3", from: "ghost",
+    line: L(
+      "One more thing, rookie. The **BLACK MARKET** button is right under the map. Everything you just gave me you could have sold there for far more. Think about that next time.",
+      "И ещё кое-что, новичок. Кнопка **ЧЁРНЫЙ РЫНОК** находится прямо под картой. Всё, что ты мне сейчас отдал, там можно было продать намного дороже. Подумай об этом в следующий раз.",
+      "还有件事，新人。**黑市** 按钮就在地图下面。你刚给我的这些东西，在那边能卖得贵得多。下次想想这个。"
+    ),
+  },
+];
+
+export const GHOST_DECLINED: Beat[] = [
+  {
+    id: "gh4", from: "ghost",
+    line: L(
+      "Your call. But the **BLACK MARKET** button is right under the map. Whatever you are holding, you will get a lot more for it there than I offered.",
+      "Дело твоё. Но кнопка **ЧЁРНЫЙ РЫНОК** находится прямо под картой. За всё, что у тебя лежит, там дадут намного больше, чем предлагал я.",
+      "随你。不过 **黑市** 按钮就在地图下面。你手上的东西，在那儿能卖得比我开的价高得多。"
+    ),
+  },
+];
+
+export const GHOST_PAY = 1500;

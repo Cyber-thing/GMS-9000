@@ -1,7 +1,7 @@
 import { sfx, startVrBassLoop, stopVrBassLoop } from "../../lib/sfx";
 import { vrFont, vtr } from "./vrText";
 import { VrBackgroundRenderer } from "./background";
-import { createEnemy, type Enemy } from "./enemies";
+import { createEnemy, ENEMY_BULLET_SLOWDOWN, type Enemy } from "./enemies";
 import { Bullet, ButtonTerminal, Door, Elevator, Pickup, Prop } from "./entities";
 import { ParticlePool } from "./particles";
 import { Player } from "./player";
@@ -30,7 +30,7 @@ const BLACKOUT_HOLD_DURATION = 1.5;
 
 export interface VrEngineCallbacks {
   onHud: (hud: VrHudSnapshot) => void;
-  onVictory: (info: { sabotaged: boolean; elapsed: number; kills: number; damageTaken: number }) => void;
+  onVictory: (info: { sabotaged: boolean; heist?: boolean; elapsed: number; kills: number; damageTaken: number }) => void;
   onDefeat: (info: { failRep: number; reason: "hp" | "overload" }) => void;
 }
 
@@ -221,7 +221,7 @@ export class VrEngine {
     this.emitHud(true);
   }
 
-  public completeFinale(opts?: { blackout?: boolean }): void {
+  public completeFinale(opts?: { blackout?: boolean; heist?: boolean }): void {
     if (this.phase !== "finale" && this.phase !== "playing") return;
     stopVrBassLoop();
     if (opts?.blackout || this.level.isSabotageBlackout) {
@@ -238,7 +238,7 @@ export class VrEngine {
       return;
     }
 
-    this.triggerVictory(false);
+    this.triggerVictory(false, !!opts?.heist || this.level.finaleKind === "DATA_HEIST");
   }
 
   public warpToCore(): void {
@@ -253,7 +253,7 @@ export class VrEngine {
     this.emitHud(true);
   }
 
-  private triggerVictory(sabotaged: boolean): void {
+  private triggerVictory(sabotaged: boolean, heist = false): void {
     if (this.victorySent) return;
     this.victorySent = true;
     this.phase = "victory";
@@ -262,6 +262,7 @@ export class VrEngine {
     this.emitHud(true);
     this.callbacks.onVictory({
       sabotaged,
+      heist,
       elapsed: this.elapsedTime,
       kills: this.kills,
       damageTaken: this.damageTaken,
@@ -617,6 +618,8 @@ export class VrEngine {
     // Enemies
     for (const e of this.enemies) {
       e.updateAI(dt, this.player.getRect(), this.tilemap, doorSolids, (enemyBullets) => {
+        // slower projectiles keep their original travel range
+        for (const eb of enemyBullets) eb.life /= ENEMY_BULLET_SLOWDOWN;
         this.bullets.push(...enemyBullets);
         sfx("vrEnemyShoot");
       });
@@ -664,6 +667,7 @@ export class VrEngine {
       }
     }
     this.pickups = this.pickups.filter((p) => p.active);
+    for (const pk of this.pickups) pk.update(dt, this.tilemap);
 
     // Props flash timers
     for (const prop of this.props) {
@@ -1000,7 +1004,7 @@ export class VrEngine {
   }
 
   private spawnPickup(kind: PickupKind, x: number, y: number): void {
-    this.pickups.push(new Pickup(kind, x, y));
+    this.pickups.push(new Pickup(kind, x, y, true));
   }
 
   private setBanner(text: string, duration = 1.6): void {

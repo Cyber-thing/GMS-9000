@@ -16,7 +16,7 @@ import VrFinaleMinigame from "./VrFinaleMinigame";
 
 interface Props {
   nodeId: string;
-  onWin: (info: { sabotaged: boolean; elapsed: number; kills: number; damageTaken: number }) => void;
+  onWin: (info: { sabotaged: boolean; heist?: boolean; elapsed: number; kills: number; damageTaken: number }) => void;
   onLose: (info: { failRep: number; reason: "hp" | "overload" }) => void;
   onAbort: () => void;
 }
@@ -165,6 +165,7 @@ export default function VirtualityBreachModal({
 
   const [winInfo, setWinInfo] = useState<{
     sabotaged: boolean;
+    heist?: boolean;
     elapsed: number;
     kills: number;
     damageTaken: number;
@@ -287,10 +288,10 @@ export default function VirtualityBreachModal({
 
           <span className="hidden text-line3 sm:inline">|</span>
 
-          {/* ICE & Clock */}
+          {/* WADENS & Clock */}
           <div className="hidden items-center gap-2.5 sm:flex">
             <span className="text-dim">
-              ICE <strong className="text-fog">{hud.kills}/{hud.totalEnemies}</strong>
+              WADENS <strong className="text-fog">{hud.kills}/{hud.totalEnemies}</strong>
             </span>
             <span className="text-dim">{formatClock(hud.elapsedTime)}</span>
           </div>
@@ -390,7 +391,7 @@ export default function VirtualityBreachModal({
               tier={level.tier}
               theme={level.theme}
               finaleKind={level.finaleKind}
-              onComplete={({ blackout }) => engineRef.current?.completeFinale({ blackout })}
+              onComplete={({ blackout, heist }) => engineRef.current?.completeFinale({ blackout, heist })}
               onCancel={() => engineRef.current?.cancelFinale()}
             />
           )}

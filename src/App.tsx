@@ -54,7 +54,7 @@ import {
   ZH_AMBIENT_POOL, ZH_CHAT_POOL, ZH_GREETING_POOL, ZH_REPLY_POOL,
 } from "./i18n/zhContent";
 import { isHostileFaction, useGame } from "./game/state";
-import { NODE_META, factionById, resolveFile } from "./game/data";
+import { NODE_META, NODE_REGION, factionById, resolveFile } from "./game/data";
 import { Lock, ShoppingBag } from "lucide-react";
 import { tierOf, usesBreach } from "./game/breach";
 import { usesVault } from "./game/vault";
@@ -99,7 +99,7 @@ export default function App() {
   const game = useGame();
   const {
     g, notifs, hack, download, canHack, failBreach, sabotage, markTab, nodeState,
-    openArchiveJob, openFreddy, openMarla, openSato, plantVirus, setFlag, sableArrives, isAnyThreadOpen,
+    openArchiveJob, openFreddy, openMarla, openSato, openKane, ghostOffer, plantVirus, setFlag, sableArrives, isAnyThreadOpen,
   } = game;
   const tut = useTut();
   const tutFire = tut.fire;
@@ -555,9 +555,11 @@ export default function App() {
   const hostileOwner = useCallback(
     (id: string) => {
       const owner = NODE_META[id]?.owner;
+      /* после успешной защиты слежка больше не повторяется — до следующего сброса анонимности */
+      if (g.flags.trk_defended) return false;
       return !!owner && isHostileFaction(owner, g.relations);
     },
-    [g.relations]
+    [g.relations, g.flags.trk_defended]
   );
 
   const runHack = useCallback(
@@ -907,6 +909,39 @@ export default function App() {
     }, 5200);
     timeouts.current.push(h);
   }, [archiveDone, g.flags.fred_intro, g.rep, openFreddy, markTab, isAnyThreadOpen]);
+
+  /* Fusion: v.kane просит заглянуть в почту начальника (PRV-G04). Приходит после Freddy. */
+  useEffect(() => {
+    if (!archiveDone || g.flags.kane_intro || !g.flags.fred_intro) return;
+    if (g.rep < 45) return;   // цель в секторе GULF
+    const h = window.setTimeout(() => {
+      openKane();
+      if (isAnyThreadOpen()) return;
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }, 9000);
+    return () => clearTimeout(h);
+  }, [archiveDone, g.flags.kane_intro, g.flags.fred_intro, g.rep, openKane, markTab, isAnyThreadOpen]);
+
+  /* Ghost_404: купили WETLOW, вскрыли несколько узлов, а доступа к чёрному рынку всё нет — предлагает выкупить данные. */
+  const wetlowHacks = useMemo(
+    () => Object.keys(g.nodeStates).filter((id) => g.nodeStates[id] === "COMPROMISED" && NODE_REGION[id] === "wetlow").length,
+    [g.nodeStates]
+  );
+  useEffect(() => {
+    if (g.flags.ghost_offer || g.market.unlocked) return;
+    if (!g.regions.includes("wetlow") || wetlowHacks < 3 || g.files.length === 0) return;
+    if (tut.phase !== "over" && !tutorialSeen()) return;
+    const h = window.setTimeout(() => {
+      ghostOffer();
+      if (isAnyThreadOpen()) return;
+      setTab("CONTACTS");
+      markTab("CONTACTS");
+      setContactsHome((n) => n + 1);
+    }, 4000);
+    return () => clearTimeout(h);
+  }, [g.flags.ghost_offer, g.market.unlocked, g.regions, g.files.length, wetlowHacks, tut.phase, ghostOffer, markTab, isAnyThreadOpen]);
 
   const wasRecovering = useRef(false);
   useEffect(() => {
@@ -1499,6 +1534,7 @@ export default function App() {
             onClose={() => setTracked(null)}
             onDefended={() => {
               const go = tracked.go;
+              setFlag("trk_defended", true);
               setTracked(null);
               go();
             }}

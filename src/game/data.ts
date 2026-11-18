@@ -136,6 +136,8 @@ const OVERRIDES: Record<string, Partial<NodeMeta>> = {
     intel: "Freight desk and the hall it books. Projector rigs hang off the same controller as the index.",
   },
   w1m_prv: { owner: "indep", cls: "UNDERGROUND", warden: 2, rep: 14, files: ["f_cbgate"], codex: ["c_koma", "n_residential"] },
+  /* PRV-G04: личная станция регионального директора Fusion. Подбор пароля как на PRV-P04. */
+  w1g_prv: { owner: "indep", cls: "UNDERGROUND", warden: 1, rep: 14, codex: ["n_residential"] },
 
   w1e_crp: {
     owner: "agogee", cls: "CORPORATE", warden: 4, rep: 24,
@@ -321,6 +323,16 @@ export const FILES: DataFile[] = [
   F("f_marrow_chart", "PATIENT-CHART-JM-0417", "КАРТА-ПАЦИЕНТА-JM-0417", "病历-JM-0417", "PERSONAL DATA", "w1n_gex", "gexogen", 320),
   F("f_slayer_vr_dump", "SLAYER-VR-CORE-DUMP", "SLAYER-VR-ДАМП-ЯДРА", "SLAYER-VR-核心转储", "CLASSIFIED DATA", "w1n_crp", "slayer", 1350),
   F("f_fusion_grid", "FUSION-NEURAL-FIRMWARE", "FUSION-НЕЙРОПРОШИВКА", "FUSION-神经固件", "CLASSIFIED DATA", "w1g_crp", "fusion", 960),
+  /* ---- Вложения из личной почты (PRV) — можно украсть и продать на чёрном рынке ---- */
+  F("f_mail_icx_audit", "ICX-AUDIT-DRAFT-LUND", "ICX-ЧЕРНОВИК-АУДИТА-LUND", "ICX-审计草稿-LUND", "CORPORATE DATA", "w1p_prv", "intercell", 380),
+  F("f_mail_bbs_ledger", "BBS-USER-LEDGER", "BBS-РЕЕСТР-ПОЛЬЗОВАТЕЛЕЙ", "BBS-用户名册", "PERSONAL DATA", "w1p_prv", "indep", 210),
+  F("f_mail_convoy", "SLY-CONVOY-MANIFEST", "SLY-МАНИФЕСТ-КОНВОЕВ", "SLY-车队舱单", "CORPORATE DATA", "w1m_prv", "slayer", 360),
+  F("f_mail_cbfreq", "CB-FREQ-LOG-NIGHT", "CB-ЖУРНАЛ-ЧАСТОТ-НОЧЬ", "CB-夜间频率日志", "INTEL", "w1m_prv", "indep", 170),
+  F("f_mail_fus_bonus", "FUS-Q3-BONUS-SHEET", "FUS-Q3-ВЕДОМОСТЬ-ПРЕМИЙ", "FUS-Q3-奖金表", "CORPORATE DATA", "w1g_prv", "fusion", 420),
+  F("f_mail_fus_priority", "FUS-PRIORITY-CLIENTS", "FUS-ПРИОРИТЕТНЫЕ-КЛИЕНТЫ", "FUS-优先客户名单", "CLASSIFIED DATA", "w1g_prv", "fusion", 720),
+  F("f_mail_amz_survey", "SLY-AMAZON-SURVEY-7", "SLY-АМАЗОНКА-ИЗЫСКАНИЕ-7", "SLY-亚马逊勘测-7", "CORPORATE DATA", "wlz_prv", "slayer", 440),
+  F("f_mail_amz_notes", "VALCARCEL-FIELD-NOTES", "VALCARCEL-ПОЛЕВЫЕ-ЗАМЕТКИ", "VALCARCEL-野外笔记", "PERSONAL DATA", "wlz_prv", "indep", 200),
+  F("f_mail_marrow_roster", "SLY-WARDEN-ROSTER-NL", "SLY-СПИСОК-WARDEN-NL", "SLY-WARDEN-名册-NL", "CLASSIFIED DATA", "wlp_prv", "slayer", 540),
 ];
 
 export const fileById = (id: string) => FILES.find((f) => f.id === id);
@@ -518,6 +530,10 @@ export const CONTACTS: ContactDef[] = [
     intro: "", introRu: "", introZh: "", silent: true,
   },
   {
+    id: "kane", nick: "v.kane", faction: "fusion", role: "sales manager", roleRu: "менеджер по продажам", roleZh: "销售经理", repReq: 9999,
+    intro: "", introRu: "", introZh: "", silent: true,
+  },
+  {
     id: "sablec", nick: "sable", faction: "intercell", role: "unknown", roleRu: "неизвестно", roleZh: "不明", repReq: 9999,
     intro: "",
     introRu: "",
@@ -528,6 +544,7 @@ export const CONTACTS: ContactDef[] = [
 
 export const FREDDY = "freddy";
 export const MARLA = "marla";
+export const KANE = "kane";
 
 export const contactById = (id: string) => CONTACTS.find((c) => c.id === id);
 
@@ -573,6 +590,14 @@ export const CONTRACTS: ContractDef[] = [
     briefRu: "Подсадить вирус в Virtuality Slayer Incorporated в Northline (CRP-N06). Узел защищён WARDEN MAX.",
     briefZh: "往 Northline 的 Slayer Incorporated Virtuality（CRP-N06）里种一个病毒。该节点由 WARDEN MAX 封锁。",
     target: "w1n_crp", credits: 900, rep: 40, relation: 30, repReq: 0, scripted: true,
+  },
+  {
+    id: "ct_bonus", kind: "DATA", contact: "kane", client: "fusion",
+    title: "BONUS WATCH", titleRu: "ПРЕМИЯ ПОД ВОПРОСОМ", titleZh: "奖金悬案",
+    brief: "Get into my boss's private mailbox (PRV-G04) and find out whether I am getting a bonus this quarter.",
+    briefRu: "Залезь в личную почту моего начальника (PRV-G04) и выясни, дадут ли мне премию в этом квартале.",
+    briefZh: "黑进我老板的私人邮箱（PRV-G04），查查我这个季度有没有奖金。",
+    target: "w1g_prv", credits: 550, rep: 20, relation: 25, repReq: 45, scripted: true,
   },
 ];
 

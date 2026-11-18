@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bomb, Cpu, PowerOff, RotateCw, ShieldAlert, Zap } from "lucide-react";
+import { Bomb, Cpu, Database, PowerOff, RotateCw, ShieldAlert, Zap } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { sfx } from "../../lib/sfx";
 import {
@@ -37,7 +37,7 @@ interface Props {
   tier: 1 | 2 | 3 | 4 | 5;
   theme: VrCorpTheme;
   finaleKind: VrFinaleKind;
-  onComplete: (result: { blackout: boolean }) => void;
+  onComplete: (result: { blackout: boolean; heist?: boolean }) => void;
   onCancel: () => void;
 }
 
@@ -147,6 +147,217 @@ function BlackoutSwitchSubgame({
         <PowerOff size={13} />
         {executing ? t("vr.cutting") : t("vr.cutPower")}
       </button>
+    </div>
+  );
+}
+
+/* DATA_HEIST (CRP-N06): вскрыть канал хранилища и залить вирус. */
+const VAULT_SLOTS = 12;
+const VAULT_TUMBLERS = 3;
+
+function VaultUplinkSubgame({
+  nodeCode,
+  theme,
+  onComplete,
+}: {
+  nodeCode: string;
+  theme: VrCorpTheme;
+  onComplete: () => void;
+}) {
+  const { t } = useT();
+  const [stage, setStage] = useState<"lock" | "ready" | "upload" | "done">("lock");
+  const [locked, setLocked] = useState(0);
+  const [pos, setPos] = useState(0);
+  const [miss, setMiss] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  /* целевая зона для каждого тумблера (детерминированно, но разная) */
+  const targets = useMemo(
+    () => Array.from({ length: VAULT_TUMBLERS }, (_, i) => 2 + ((i * 5 + 3) % (VAULT_SLOTS - 4))),
+    []
+  );
+
+  useEffect(() => {
+    if (stage !== "lock") return;
+    let dir = 1;
+    const speed = 150 - locked * 22;
+    const id = window.setInterval(() => {
+      setPos((p) => {
+        let n = p + dir;
+        if (n >= VAULT_SLOTS - 1) { n = VAULT_SLOTS - 1; dir = -1; }
+        if (n <= 0) { n = 0; dir = 1; }
+        return n;
+      });
+    }, speed);
+    return () => window.clearInterval(id);
+  }, [stage, locked]);
+
+  const hit = () => {
+    if (stage !== "lock") return;
+    const tgt = targets[locked];
+    if (Math.abs(pos - tgt) <= 1) {
+      sfx("hackOk");
+      setMiss(false);
+      const next = locked + 1;
+      setLocked(next);
+      if (next >= VAULT_TUMBLERS) setStage("ready");
+    } else {
+      sfx("deny");
+      setMiss(true);
+    }
+  };
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        hit();
+      }
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  });
+
+  const startUpload = () => {
+    if (stage !== "ready") return;
+    sfx("uiSys");
+    setStage("upload");
+  };
+
+  useEffect(() => {
+    if (stage !== "upload") return;
+    const id = window.setInterval(() => {
+      setProgress((p) => {
+        const n = Math.min(100, p + 3 + Math.random() * 4);
+        if (n % 9 < 4) sfx("tick");
+        return n;
+      });
+    }, 110);
+    return () => window.clearInterval(id);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage === "upload" && progress >= 100) {
+      setStage("done");
+      sfx("hackOk");
+      const tm = window.setTimeout(onComplete, 900);
+      return () => clearTimeout(tm);
+    }
+  }, [stage, progress, onComplete]);
+
+  const logLines = [
+    t("vr.heistLog1"),
+    t("vr.heistLog2"),
+    t("vr.heistLog3"),
+    t("vr.heistLog4"),
+  ];
+  const shown = Math.min(logLines.length, Math.floor((progress / 100) * logLines.length) + 1);
+
+  return (
+    <div className="space-y-3">
+      <div className="border-l-2 bg-[#ffb020]/10 px-3 py-2 text-[10.5px] leading-snug text-fog" style={{ borderColor: theme.primary }}>
+        <div className="font-bold uppercase tracking-[0.16em]" style={{ color: theme.primary }}>
+          {t("vr.heistHeader", { code: nodeCode })}
+        </div>
+        <div className="mt-1 text-dim">{t("vr.heistHint")}</div>
+      </div>
+
+      {stage === "lock" && (
+        <div className="space-y-2">
+          {targets.map((tg, ti) => (
+            <div key={ti} className="flex items-center gap-2">
+              <span className="w-14 shrink-0 text-[8px] uppercase tracking-[0.16em] text-faint">
+                {t("vr.heistTumbler")} {ti + 1}
+              </span>
+              <div className="grid flex-1 gap-[3px]" style={{ gridTemplateColumns: `repeat(${VAULT_SLOTS}, minmax(0, 1fr))` }}>
+                {Array.from({ length: VAULT_SLOTS }).map((_, i) => {
+                  const inZone = Math.abs(i - tg) <= 1;
+                  const isDone = ti < locked;
+                  const isActive = ti === locked;
+                  const cursor = isActive && i === pos;
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-5 border",
+                        isDone
+                          ? inZone ? "border-phos bg-phos/60" : "border-line2 bg-ink"
+                          : cursor
+                            ? "border-white bg-white"
+                            : inZone && isActive
+                              ? "border-[#ffb020] bg-[#ffb020]/25"
+                              : "border-line2 bg-panel"
+                      )}
+                    />
+                  );
+                })}
+              </div>
+              <span className={cn("w-4 text-center text-[10px] font-bold", ti < locked ? "text-phosbrite" : "text-faint")}>
+                {ti < locked ? "✓" : "·"}
+              </span>
+            </div>
+          ))}
+          {miss && (
+            <div className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-oxide">{t("vr.heistMiss")}</div>
+          )}
+          <button
+            type="button"
+            tabIndex={-1}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={hit}
+            className="flex w-full items-center justify-center gap-2 border border-phos bg-phos/15 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-phosbrite hover:bg-phos hover:text-ink"
+          >
+            <Database size={13} /> {t("vr.heistLock")}
+          </button>
+        </div>
+      )}
+
+      {stage !== "lock" && (
+        <div className="space-y-3">
+          <div className="border border-line2 bg-[#05080f] p-2.5 text-[10px] leading-relaxed">
+            <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.16em] text-faint">
+              <span>{t("vr.heistChannel")}</span>
+              <span className="text-phosbrite">● {t("vr.heistOpen")}</span>
+            </div>
+            {stage === "ready" ? (
+              <div className="mt-1.5 text-dim">{t("vr.heistReady")}</div>
+            ) : (
+              <div className="mt-1.5 space-y-0.5 text-dim">
+                {logLines.slice(0, shown).map((l, i) => (
+                  <div key={i} className={i === shown - 1 && stage === "upload" ? "text-amber" : "text-phosbrite"}>
+                    &gt; {l}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {stage !== "ready" && (
+            <div>
+              <div className="h-3 border border-line2 bg-ink">
+                <div
+                  className="h-full transition-[width] duration-100"
+                  style={{ width: `${progress}%`, background: stage === "done" ? "#39ff14" : theme.danger }}
+                />
+              </div>
+              <div className="mt-1 text-right text-[9px] tabular-nums text-dim">
+                {stage === "done" ? t("vr.heistDone") : `${t("vr.heistUploading")} ${Math.floor(progress)}%`}
+              </div>
+            </div>
+          )}
+
+          {stage === "ready" && (
+            <button
+              type="button"
+              onClick={startUpload}
+              className="flex w-full items-center justify-center gap-2 border border-[#ff2b45] bg-[#ff2b45]/20 px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#ff7a8a] hover:bg-[#ff2b45] hover:text-ink"
+              style={{ boxShadow: `0 0 18px ${theme.danger}55` }}
+            >
+              <Bomb size={13} /> {t("vr.heistInject")}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -547,7 +758,9 @@ export default function VrFinaleMinigame({
         ? t("vr.finaleRouting")
         : finaleKind === "HEX_PURGE"
           ? t("vr.finaleHex")
-          : t("vr.finaleCipher");
+          : finaleKind === "DATA_HEIST"
+            ? t("vr.finaleHeist")
+            : t("vr.finaleCipher");
 
   const Icon =
     finaleKind === "BLACKOUT_SWITCH"
@@ -556,7 +769,9 @@ export default function VrFinaleMinigame({
         ? Zap
         : finaleKind === "HEX_PURGE"
           ? ShieldAlert
-          : Cpu;
+          : finaleKind === "DATA_HEIST"
+            ? Database
+            : Cpu;
 
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#03050aee] p-4">
@@ -595,6 +810,13 @@ export default function VrFinaleMinigame({
         )}
         {finaleKind === "HEX_PURGE" && (
           <HexPurgeSubgame onComplete={() => onComplete({ blackout: false })} />
+        )}
+        {finaleKind === "DATA_HEIST" && (
+          <VaultUplinkSubgame
+            nodeCode={nodeCode}
+            theme={theme}
+            onComplete={() => onComplete({ blackout: false, heist: true })}
+          />
         )}
         {finaleKind === "CIPHER_DECODE" && (
           <CipherDecodeSubgame onComplete={() => onComplete({ blackout: false })} />
